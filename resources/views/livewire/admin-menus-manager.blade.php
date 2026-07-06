@@ -66,6 +66,18 @@ $removeItem = function ($index) {
     $this->menuItems = array_values($this->menuItems);
 };
 
+$reorderItems = function ($fromIndex, $toIndex) {
+    if (!isset($this->menuItems[$fromIndex]) || !isset($this->menuItems[$toIndex])) {
+        return;
+    }
+    
+    $item = $this->menuItems[$fromIndex];
+    unset($this->menuItems[$fromIndex]);
+    
+    array_splice($this->menuItems, $toIndex, 0, [$item]);
+    $this->menuItems = array_values($this->menuItems);
+};
+
 $saveMenu = function () {
     $key = $this->activeMenu . '_menu';
     Setting::set($key, $this->menuItems);
@@ -102,10 +114,22 @@ $saveMenu = function () {
         <div class="lg:col-span-2 space-y-4">
             <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Menu Link Items</h3>
             
-            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 shadow-sm space-y-3">
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 shadow-sm space-y-3"
+                 x-data="{ draggedIndex: null, dragOverIndex: null }">
                 @forelse($menuItems as $index => $item)
-                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-950 rounded border border-gray-200 dark:border-gray-850 text-xs">
+                    <div draggable="true"
+                         x-on:dragstart="draggedIndex = {{ $index }}"
+                         x-on:dragover.prevent=""
+                         x-on:dragenter="dragOverIndex = {{ $index }}"
+                         x-on:dragleave="if (dragOverIndex === {{ $index }}) dragOverIndex = null"
+                         x-on:drop="$wire.reorderItems(draggedIndex, {{ $index }}); draggedIndex = null; dragOverIndex = null;"
+                         class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-950 rounded border border-gray-200 dark:border-gray-850 text-xs cursor-move hover:bg-gray-100 dark:hover:bg-gray-850 transition duration-150"
+                         :class="dragOverIndex === {{ $index }} ? 'border-dashed border-2 border-[#C8102E] bg-red-50/10' : ''">
                         <div class="flex items-center space-x-4">
+                            <!-- Drag Handle Icon -->
+                            <svg class="h-4 w-4 text-gray-400 cursor-grab active:cursor-grabbing" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/>
+                            </svg>
                             <span class="font-bold text-gray-400">#{{ $index + 1 }}</span>
                             <div>
                                 <span class="font-bold text-gray-900 dark:text-white">{{ $item['label'] }}</span>

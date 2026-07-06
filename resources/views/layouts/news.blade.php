@@ -6,23 +6,23 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- SEO Metadata -->
-    <title>{{ $title ?? 'Getembe News - Fast, Reliable News & Analysis' }}</title>
-    <meta name="description" content="{{ $metaDescription ?? 'Getembe News is your leading source for politics, business, technology, sports, opinion, and global news.' }}">
-    <link rel="canonical" href="{{ $metaUrl ?? url()->current() }}">
+    <title>{{ isset($title) ? $title : 'Getembe News - Fast, Reliable News & Analysis' }}</title>
+    <meta name="description" content="{{ isset($metaDescription) ? $metaDescription : 'Getembe News is your leading source for politics, business, technology, sports, opinion, and global news.' }}">
+    <link rel="canonical" href="{{ isset($metaUrl) ? $metaUrl : url()->current() }}">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ $metaUrl ?? url()->current() }}">
-    <meta property="og:title" content="{{ $title ?? 'Getembe News' }}">
-    <meta property="og:description" content="{{ $metaDescription ?? 'Getembe News is your leading source for politics, business, technology, sports, and global news.' }}">
-    <meta property="og:image" content="{{ $metaImage ?? asset('images/default-og.jpg') }}">
+    <meta property="og:url" content="{{ isset($metaUrl) ? $metaUrl : url()->current() }}">
+    <meta property="og:title" content="{{ isset($title) ? $title : 'Getembe News' }}">
+    <meta property="og:description" content="{{ isset($metaDescription) ? $metaDescription : 'Getembe News is your leading source for politics, business, technology, sports, and global news.' }}">
+    <meta property="og:image" content="{{ isset($metaImage) ? $metaImage : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600&h=400' }}">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="{{ $metaUrl ?? url()->current() }}">
-    <meta property="twitter:title" content="{{ $title ?? 'Getembe News' }}">
-    <meta property="twitter:description" content="{{ $metaDescription ?? 'Getembe News is your leading source for politics, business, technology, sports, and global news.' }}">
-    <meta property="twitter:image" content="{{ $metaImage ?? asset('images/default-og.jpg') }}">
+    <meta property="twitter:url" content="{{ isset($metaUrl) ? $metaUrl : url()->current() }}">
+    <meta property="twitter:title" content="{{ isset($title) ? $title : 'Getembe News' }}">
+    <meta property="twitter:description" content="{{ isset($metaDescription) ? $metaDescription : 'Getembe News is your leading source for politics, business, technology, sports, and global news.' }}">
+    <meta property="twitter:image" content="{{ isset($metaImage) ? $metaImage : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600&h=400' }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

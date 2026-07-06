@@ -21,7 +21,7 @@ class ArticleController extends Controller
 
         // Fetch related articles (same category, excluding current)
         $relatedArticles = Article::published()
-            ->where('category_id', $article->category_id)
+            ->forCategory($article->category_id)
             ->where('id', '!=', $article->id)
             ->take(3)
             ->get();
@@ -39,7 +39,7 @@ class ArticleController extends Controller
         $category = Category::where('slug', $slug)->firstOrFail();
         
         $articles = Article::published()
-            ->where('category_id', $category->id)
+            ->forCategory($category->id)
             ->paginate(12);
 
         return view('categories.show', compact('category', 'articles'));

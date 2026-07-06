@@ -29,6 +29,12 @@ class Category extends Model
         return $this->hasMany(Article::class);
     }
 
+    // Many-to-many relationship with articles
+    public function posts()
+    {
+        return $this->belongsToMany(Article::class, 'article_category');
+    }
+
     // A category has many videos
     public function videos()
     {

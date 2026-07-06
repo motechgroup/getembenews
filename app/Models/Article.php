@@ -53,6 +53,11 @@ class Article extends Model
         return $this->belongsToMany(User::class, 'saved_articles', 'article_id', 'user_id');
     }
 
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'article_category');
+    }
+
     // Scopes
     public function scopePublished($query)
     {
@@ -60,6 +65,26 @@ class Article extends Model
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now())
             ->orderBy('published_at', 'desc');
+    }
+
+    public function scopeForCategory($query, $category)
+    {
+        if (is_numeric($category)) {
+            return $query->where(function ($q) use ($category) {
+                $q->where('category_id', $category)
+                  ->orWhereHas('categories', function ($inner) use ($category) {
+                      $inner->where('categories.id', $category);
+                  });
+            });
+        }
+
+        return $query->where(function ($q) use ($category) {
+            $q->whereHas('category', function ($inner) use ($category) {
+                $inner->where('slug', $category);
+            })->orWhereHas('categories', function ($inner) use ($category) {
+                $inner->where('categories.slug', $category);
+            });
+        });
     }
 
     public function scopeFeatured($query)

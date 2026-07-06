@@ -34,22 +34,22 @@ Route::get('/', function () {
 
     // Specific category feeds
     $politicsArticles = (clone $baseQuery)
-        ->whereHas('category', fn($q) => $q->where('slug', 'politics'))
+        ->forCategory('politics')
         ->take(4)
         ->get();
 
     $businessArticles = (clone $baseQuery)
-        ->whereHas('category', fn($q) => $q->where('slug', 'business'))
+        ->forCategory('business')
         ->take(4)
         ->get();
 
     $techArticles = (clone $baseQuery)
-        ->whereHas('category', fn($q) => $q->where('slug', 'technology'))
+        ->forCategory('technology')
         ->take(4)
         ->get();
 
     $sportsArticles = (clone $baseQuery)
-        ->whereHas('category', fn($q) => $q->where('slug', 'sports'))
+        ->forCategory('sports')
         ->take(4)
         ->get();
 
@@ -79,7 +79,7 @@ Route::get('/', function () {
             $categoryBlocks[] = [
                 'category' => $cat,
                 'articles' => (clone $baseQuery)
-                    ->where('category_id', $cat->id)
+                    ->forCategory($cat->id)
                     ->take(5)
                     ->get()
             ];

@@ -1,6 +1,8 @@
 <x-news-layout>
     <x-slot name="title">{{ $article->title }} - Getembe News</x-slot>
     <x-slot name="metaDescription">{{ $article->seo_description ?? Str::limit(strip_tags($article->body), 150) }}</x-slot>
+    <x-slot name="metaImage">{{ $article->featured_image }}</x-slot>
+    <x-slot name="metaUrl">{{ url()->current() }}</x-slot>
 
     <!-- Main Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6" x-data="{ copied: false }">
@@ -68,15 +70,61 @@
                     </div>
                 @endif
 
-                <!-- Sharing & Toolbar -->
-                <div class="flex items-center space-x-4 text-xs font-semibold text-gray-500 py-2 border-b border-gray-100 dark:border-gray-800">
-                    <span>SHARE:</span>
-                    <a href="https://facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}" target="_blank" class="hover:text-[#C8102E] transition">Facebook</a>
-                    <a href="https://twitter.com/intent/tweet?url={{ urlencode(url()->current()) }}&text={{ urlencode($article->title) }}" target="_blank" class="hover:text-[#C8102E] transition">Twitter</a>
-                    <button @click="navigator.clipboard.writeText('{{ url()->current() }}'); copied = true; setTimeout(() => copied = false, 2000)" class="hover:text-[#C8102E] transition flex items-center space-x-1">
-                        <span x-text="copied ? 'Copied!' : 'Copy Link'">Copy Link</span>
+                <!-- Sharing & Toolbar with Premium Social Icons -->
+                <div class="flex flex-wrap items-center gap-2 py-3 border-b border-gray-100 dark:border-gray-800 text-xs font-bold text-gray-550 dark:text-gray-400">
+                    <span class="mr-2 uppercase tracking-wider text-[10px]">Share:</span>
+                    
+                    <!-- Facebook Share Icon Button -->
+                    <a href="https://facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}" target="_blank" 
+                       class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-600 text-blue-700 hover:text-white transition duration-200 transform hover:scale-105" title="Share on Facebook">
+                        <svg class="h-4.5 w-4.5 fill-current" viewBox="0 0 24 24">
+                            <path d="M9 8H7v3h2v9h4v-9h3.6l.4-3H13V6c0-.5.5-1 1-1h3V1h-4c-3 0-5 2-5 5v2z"/>
+                        </svg>
+                    </a>
+
+                    <!-- Twitter / X Share Icon Button -->
+                    <a href="https://twitter.com/intent/tweet?url={{ urlencode(url()->current()) }}&text={{ urlencode($article->title) }}" target="_blank" 
+                       class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-black hover:text-white text-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white dark:hover:text-black transition duration-200 transform hover:scale-105" title="Share on X (Twitter)">
+                        <svg class="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                    </a>
+
+                    <!-- WhatsApp Share Icon Button -->
+                    <a href="https://api.whatsapp.com/send?text={{ urlencode($article->title . ' - ' . url()->current()) }}" target="_blank" 
+                       class="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 hover:bg-green-600 text-green-700 hover:text-white transition duration-200 transform hover:scale-105" title="Share on WhatsApp">
+                        <svg class="h-4.5 w-4.5 fill-current" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.968C16.634 1.97 14.161.945 11.536.945c-5.445 0-9.87 4.373-9.874 9.8.001 2.05.539 4.05 1.56 5.824l-1.02 3.722 3.829-1.002c1.724.94 3.447 1.44 5.126 1.44z"/>
+                        </svg>
+                    </a>
+
+                    <!-- LinkedIn Share Icon Button -->
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ urlencode(url()->current()) }}" target="_blank" 
+                       class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 hover:bg-blue-800 text-blue-600 hover:text-white transition duration-200 transform hover:scale-105" title="Share on LinkedIn">
+                        <svg class="h-4.5 w-4.5 fill-current" viewBox="0 0 24 24">
+                            <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                        </svg>
+                    </a>
+
+                    <!-- Copy Link Action Icon Button -->
+                    <button @click="navigator.clipboard.writeText('{{ url()->current() }}'); copied = true; setTimeout(() => copied = false, 2000)" 
+                            class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-800 text-gray-700 hover:text-white dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white dark:hover:text-black transition duration-200 transform hover:scale-105" title="Copy Article URL">
+                        <!-- Clipboard Icon -->
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                        </svg>
                     </button>
-                    <button onclick="window.print()" class="hover:text-[#C8102E] transition">Print</button>
+                    
+                    <!-- Print Action Icon Button -->
+                    <button onclick="window.print()" 
+                            class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-500 text-gray-700 hover:text-white dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-200 dark:hover:text-black transition duration-200 transform hover:scale-105" title="Print Article">
+                        <!-- Printer Icon -->
+                        <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        </svg>
+                    </button>
+                    
+                    <span x-show="copied" x-transition class="text-[10px] text-green-600 bg-green-50 dark:bg-green-950/20 px-2 py-0.5 rounded border border-green-200 dark:border-green-900 ml-2" style="display: none;">Copied URL to Clipboard!</span>
                 </div>
 
                 <!-- Article Body (Content-First Typography) -->

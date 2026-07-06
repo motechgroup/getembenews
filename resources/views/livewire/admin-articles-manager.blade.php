@@ -19,6 +19,7 @@ state([
     'body' => '',
     'featured_image' => '',
     'category_id' => '',
+    'selectedCategories' => [],
     'status' => 'draft',
     'is_featured' => false,
     'is_breaking' => false,
@@ -34,6 +35,8 @@ rules([
     'body' => 'required|string',
     'featured_image' => 'nullable|url',
     'category_id' => 'required|exists:categories,id',
+    'selectedCategories' => 'nullable|array',
+    'selectedCategories.*' => 'exists:categories,id',
     'status' => 'required|in:draft,published',
     'is_featured' => 'boolean',
     'is_breaking' => 'boolean',
@@ -47,7 +50,7 @@ $create = function () {
     $this->resetErrorBag();
     $this->reset([
         'articleId', 'title', 'slug', 'subtitle', 'body', 'featured_image',
-        'category_id', 'status', 'is_featured', 'is_breaking', 'is_pinned',
+        'category_id', 'selectedCategories', 'status', 'is_featured', 'is_breaking', 'is_pinned',
         'seo_title', 'seo_description'
     ]);
     // Set default category if possible
@@ -72,6 +75,7 @@ $edit = function ($id) {
     $this->body = $article->body;
     $this->featured_image = $article->featured_image;
     $this->category_id = $article->category_id;
+    $this->selectedCategories = $article->categories()->pluck('categories.id')->toArray();
     $this->status = $article->status;
     $this->is_featured = $article->is_featured;
     $this->is_breaking = $article->is_breaking;
@@ -122,13 +126,17 @@ $save = function () {
         $article = Article::findOrFail($this->articleId);
         $article->update($data);
     } else {
-        Article::create($data);
+        $article = Article::create($data);
     }
+
+    // Sync categories
+    $allSelected = array_unique(array_filter(array_merge([$this->category_id], $this->selectedCategories)));
+    $article->categories()->sync($allSelected);
 
     $this->isEditing = false;
     $this->reset([
         'articleId', 'title', 'slug', 'subtitle', 'body', 'featured_image',
-        'category_id', 'status', 'is_featured', 'is_breaking', 'is_pinned',
+        'category_id', 'selectedCategories', 'status', 'is_featured', 'is_breaking', 'is_pinned',
         'seo_title', 'seo_description'
     ]);
 };
@@ -298,13 +306,29 @@ $articles = function () {
                 
                 <!-- Category Select -->
                 <div class="space-y-1">
-                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Category</label>
-                    <select wire:model="category_id" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Primary Category</label>
+                    <select wire:model="category_id" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white font-semibold">
                         @foreach(Category::orderBy('name')->get() as $cat)
                             <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                         @endforeach
                     </select>
                     @error('category_id') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                </div>
+
+                <!-- Additional Categories Selection -->
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Additional Categories</label>
+                    <div class="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border border-gray-350 dark:border-gray-700 rounded p-2.5 bg-gray-50 dark:bg-gray-950/20">
+                        @foreach(Category::orderBy('name')->get() as $cat)
+                            @if($cat->id != $category_id)
+                                <label class="flex items-center text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                                    <input type="checkbox" wire:model="selectedCategories" value="{{ $cat->id }}" class="rounded text-[#C8102E] focus:ring-[#C8102E] mr-2">
+                                    <span>{{ $cat->name }}</span>
+                                </label>
+                            @endif
+                        @endforeach
+                    </div>
+                    @error('selectedCategories') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>
 
                 <!-- Status Select -->

@@ -1,0 +1,17 @@
+document.addEventListener('alpine:init', () => {
+    Alpine.store('theme', {
+        darkMode: localStorage.getItem('darkMode') === 'true',
+        toggle() {
+            this.darkMode = !this.darkMode;
+            localStorage.setItem('darkMode', this.darkMode);
+            document.documentElement.classList.toggle('dark', this.darkMode);
+        }
+    });
+});
+
+// Immediately set the theme class to prevent flash of light theme
+if (localStorage.getItem('darkMode') === 'true') {
+    document.documentElement.classList.add('dark');
+} else {
+    document.documentElement.classList.remove('dark');
+}

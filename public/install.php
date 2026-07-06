@@ -222,12 +222,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'install') {
             $log[] = "✓ Database seeding completed successfully.";
 
             // 4. Create storage link
-            Artisan::call('storage:link', ['--force' => true]);
-            $log[] = "✓ Created public storage symlink connection.";
+            try {
+                Artisan::call('storage:link', ['--force' => true]);
+                $log[] = "✓ Created public storage symlink connection.";
+            } catch (\Throwable $e) {
+                $log[] = "⚠️ Warning: Storage symlink could not be created automatically (possibly due to hosting restrictions): " . $e->getMessage();
+            }
 
             // 5. Optimize cache
-            Artisan::call('optimize');
-            $log[] = "✓ Optimizations and configurations cached successfully.";
+            try {
+                Artisan::call('optimize');
+                $log[] = "✓ Optimizations and configurations cached successfully.";
+            } catch (\Throwable $e) {
+                $log[] = "⚠️ Warning: Cache optimizations could not be completed automatically: " . $e->getMessage();
+            }
 
             $success = true;
         } catch (\Throwable $e) {

@@ -180,6 +180,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'install') {
             $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
             $kernel->bootstrap();
 
+            // Restore PHP default handlers to allow this script's try-catch block to catch and display execution errors
+            restore_exception_handler();
+            restore_error_handler();
+
             $log[] = "✓ Bootstrapped Laravel Framework successfully.";
 
             // 1. Generate app key if not set

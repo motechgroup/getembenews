@@ -6,41 +6,54 @@ on:
       - main
 
 jobs:
-  test-and-build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.3'
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
           coverage: none
 
-      - name: Copy .env
-        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-
       - name: Install Composer Dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
+        run: composer install --no-dev --optimize-autoloader --no-progress --no-interaction
 
-      - name: Run Tests
-        run: php artisan test
-
-  deploy:
-    needs: test-and-build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Execute Remote Deployment via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          script: |
-            cd /var/www/getembe-news
-            bash deploy.sh
+          node-version: '20'
+
+      - name: Install npm Packages & Build Assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: 📂 Sync Files via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_DIRECTORY || '/' }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.github/**
+            **/tests/**
+            **/phpunit.xml
+            **/.editorconfig
+            **/.env
+            **/.env.backup
+            **/.env.production
+            **/.env.example
+            **/deploy.sh
+            **/database/database.sqlite
+

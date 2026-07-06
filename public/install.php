@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'install') {
             PDO::ATTR_TIMEOUT => 5
         ]);
         $log[] = "✓ Database connection test succeeded.";
-    } catch (Exception $e) {
+    } catch (\Throwable $e) {
         $errorMsg = "Database Connection Failed: " . $e->getMessage();
     }
 
@@ -149,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'install') {
 
             file_put_contents($envFile, $envContent);
             $log[] = "✓ Saved credentials to your .env file.";
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $errorMsg = "Failed to update .env configuration file: " . $e->getMessage();
         }
     }
@@ -230,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'install') {
             $log[] = "✓ Optimizations and configurations cached successfully.";
 
             $success = true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $errorMsg = "Installation failed during execution: " . $e->getMessage();
         }
     }

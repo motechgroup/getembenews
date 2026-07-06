@@ -4,12 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-
-#[Fillable(['title', 'link', 'priority', 'is_active', 'expires_at'])]
 class BreakingNews extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['title', 'link', 'priority', 'is_active', 'expires_at'];
 
     protected $table = 'breaking_news';
 

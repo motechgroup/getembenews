@@ -4,12 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-
-#[Fillable(['name', 'slug', 'description', 'parent_id', 'order', 'image_url'])]
 class Category extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['name', 'slug', 'description', 'parent_id', 'order', 'image_url'];
 
     // A category can have a parent category
     public function parent()

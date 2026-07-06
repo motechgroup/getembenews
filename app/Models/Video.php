@@ -4,12 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-
-#[Fillable(['title', 'slug', 'description', 'embed_url', 'thumbnail_url', 'category_id', 'is_featured', 'status', 'published_at'])]
 class Video extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['title', 'slug', 'description', 'embed_url', 'thumbnail_url', 'category_id', 'is_featured', 'status', 'published_at'];
 
     protected function casts(): array
     {

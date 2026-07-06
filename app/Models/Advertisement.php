@@ -4,12 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-
-#[Fillable(['title', 'image_url', 'script_code', 'destination_url', 'location', 'is_active', 'starts_at', 'expires_at', 'clicks', 'impressions'])]
 class Advertisement extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['title', 'image_url', 'script_code', 'destination_url', 'location', 'is_active', 'starts_at', 'expires_at', 'clicks', 'impressions'];
 
     protected function casts(): array
     {

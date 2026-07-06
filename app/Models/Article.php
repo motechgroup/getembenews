@@ -4,16 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-
-#[Fillable([
-    'title', 'slug', 'subtitle', 'body', 'featured_image', 'user_id', 
-    'category_id', 'status', 'is_featured', 'is_breaking', 'is_pinned', 
-    'published_at', 'seo_title', 'seo_description', 'read_time', 'views_count'
-])]
 class Article extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'title', 'slug', 'subtitle', 'body', 'featured_image', 'user_id', 
+        'category_id', 'status', 'is_featured', 'is_breaking', 'is_pinned', 
+        'published_at', 'seo_title', 'seo_description', 'read_time', 'views_count'
+    ];
 
     protected function casts(): array
     {

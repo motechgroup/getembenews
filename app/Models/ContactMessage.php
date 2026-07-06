@@ -3,11 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-
-#[Fillable(['name', 'email', 'subject', 'message', 'is_read'])]
 class ContactMessage extends Model
 {
+    protected $fillable = ['name', 'email', 'subject', 'message', 'is_read'];
     protected function casts(): array
     {
         return [

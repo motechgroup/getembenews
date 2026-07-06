@@ -4,12 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-
-#[Fillable(['article_id', 'user_id', 'body', 'parent_id', 'status'])]
 class Comment extends Model
 {
     use HasFactory;
+
+    protected $fillable = ['article_id', 'user_id', 'body', 'parent_id', 'status'];
 
     // A comment belongs to an article
     public function article()

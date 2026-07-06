@@ -1,16 +1,23 @@
 <?php
 
-use function Livewire\Volt\{state, mount};
+use function Livewire\Volt\{state, mount, uses};
+use Livewire\WithFileUploads;
 use App\Models\Setting;
 use App\Models\Newsletter;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+uses(WithFileUploads::class);
+
 state([
     // Navigation active tab
     'activeTab' => 'identity',
     'saved' => false,
+
+    // File Upload Temporary States
+    'uploadedLogo' => null,
+    'uploadedFavicon' => null,
 
     // 1. Site Identity & Theme Settings
     'site_name' => fn() => Setting::get('site_name', 'Getembe News'),
@@ -483,6 +490,24 @@ $restoreBackup = function ($id, $name) use ($logAction) {
 
 // Save standard settings form
 $save = function () use ($logAction) {
+    if ($this->uploadedLogo) {
+        $this->validate([
+            'uploadedLogo' => 'image|max:2048',
+        ]);
+        $logoPath = $this->uploadedLogo->store('site', 'public');
+        $this->site_logo = asset('storage/' . $logoPath);
+        $this->uploadedLogo = null;
+    }
+
+    if ($this->uploadedFavicon) {
+        $this->validate([
+            'uploadedFavicon' => 'file|mimes:ico,png,svg,jpg,jpeg|max:1024',
+        ]);
+        $faviconPath = $this->uploadedFavicon->store('site', 'public');
+        $this->favicon = asset('storage/' . $faviconPath);
+        $this->uploadedFavicon = null;
+    }
+
     $fields = [
         'site_name', 'site_logo', 'brand_color', 'favicon',
         'website', 'facebook', 'twitter', 'instagram', 'linkedin', 'whatsapp', 'youtube', 'tiktok', 'snapchat', 'telegram', 'pinterest', 'threads', 'other_social_links',
@@ -558,14 +583,52 @@ $getSystemInfo = function () {
                             <input type="text" wire:model="site_name" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Favicon Icon URL</label>
-                            <input type="url" wire:model="favicon" placeholder="https://example.com/favicon.ico" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Favicon Icon</label>
+                            <div class="flex flex-col space-y-2">
+                                @if($favicon)
+                                    <div class="flex items-center space-x-2">
+                                        <img src="{{ $favicon }}" alt="Favicon Preview" class="w-8 h-8 object-contain border border-gray-200 dark:border-gray-700 rounded p-1 bg-white">
+                                        <span class="text-[10px] text-gray-500 truncate max-w-[150px]">{{ basename($favicon) }}</span>
+                                    </div>
+                                @endif
+                                <div class="flex items-center space-x-2">
+                                    <input type="file" wire:model="uploadedFavicon" class="hidden" id="upload-favicon-input" accept=".ico,.png,.svg,.jpg,.jpeg">
+                                    <label for="upload-favicon-input" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-[11px] font-bold py-1.5 px-3 rounded cursor-pointer transition border border-gray-300 dark:border-gray-700">
+                                        Choose File
+                                    </label>
+                                    <span class="text-[10px] text-gray-550" wire:loading wire:target="uploadedFavicon">Uploading...</span>
+                                    @if($uploadedFavicon)
+                                        <span class="text-[10px] text-green-600 font-bold">✓ Ready to Save</span>
+                                    @endif
+                                </div>
+                                <input type="url" wire:model="favicon" placeholder="Or enter Favicon URL" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                @error('uploadedFavicon') <span class="text-red-500 text-[10px] block">{{ $message }}</span> @enderror
+                            </div>
                         </div>
                     </div>
 
                     <div class="space-y-1">
-                        <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Website Logo URL</label>
-                        <input type="url" wire:model="site_logo" placeholder="https://example.com/logo.png" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Website Logo</label>
+                        <div class="flex flex-col space-y-2">
+                            @if($site_logo)
+                                <div class="flex items-center space-x-2">
+                                    <img src="{{ $site_logo }}" alt="Logo Preview" class="h-10 object-contain border border-gray-200 dark:border-gray-700 rounded p-1 bg-white">
+                                    <span class="text-[10px] text-gray-500 truncate max-w-[300px]">{{ basename($site_logo) }}</span>
+                                </div>
+                            @endif
+                            <div class="flex items-center space-x-2">
+                                <input type="file" wire:model="uploadedLogo" class="hidden" id="upload-logo-input" accept="image/*">
+                                <label for="upload-logo-input" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-[11px] font-bold py-1.5 px-3 rounded cursor-pointer transition border border-gray-300 dark:border-gray-700">
+                                    Choose File
+                                </label>
+                                <span class="text-[10px] text-gray-555" wire:loading wire:target="uploadedLogo">Uploading...</span>
+                                @if($uploadedLogo)
+                                    <span class="text-[10px] text-green-600 font-bold">✓ Ready to Save</span>
+                                @endif
+                            </div>
+                            <input type="url" wire:model="site_logo" placeholder="Or enter Logo URL" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            @error('uploadedLogo') <span class="text-red-500 text-[10px] block">{{ $message }}</span> @enderror
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">

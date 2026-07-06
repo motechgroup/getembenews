@@ -171,7 +171,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'install') {
 
             // Include autoloader
             if (!file_exists($baseDir . '/vendor/autoload.php')) {
-                throw new Exception("Composer autoload.php is missing. Please make sure the 'vendor' folder is uploaded to the server.");
+                $dirContents = [];
+                if (is_dir($baseDir)) {
+                    $files = @scandir($baseDir);
+                    if ($files !== false) {
+                        foreach ($files as $file) {
+                            if ($file !== '.' && $file !== '..') {
+                                $dirContents[] = $file . (is_dir($baseDir . '/' . $file) ? '/' : '');
+                            }
+                        }
+                    }
+                }
+                $contentsStr = empty($dirContents) ? 'Empty directory' : implode(', ', $dirContents);
+                throw new Exception(
+                    "Composer autoload.php is missing. " .
+                    "[Calculated Base Directory: '{$baseDir}'] " .
+                    "[Expected Autoload Path: '{$baseDir}/vendor/autoload.php'] " .
+                    "[Files/Folders found in Base Directory: {$contentsStr}]"
+                );
             }
             require_once $baseDir . '/vendor/autoload.php';
 

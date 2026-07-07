@@ -129,6 +129,16 @@ state([
     'pinterest_login' => fn() => Setting::get('pinterest_login', false),
     'threads_login' => fn() => Setting::get('threads_login', false),
 
+    // OAuth Client Credentials
+    'google_client_id' => fn() => Setting::get('google_client_id', ''),
+    'google_client_secret' => fn() => Setting::get('google_client_secret', ''),
+    'facebook_client_id' => fn() => Setting::get('facebook_client_id', ''),
+    'facebook_client_secret' => fn() => Setting::get('facebook_client_secret', ''),
+    'github_client_id' => fn() => Setting::get('github_client_id', ''),
+    'github_client_secret' => fn() => Setting::get('github_client_secret', ''),
+    'twitter_client_id' => fn() => Setting::get('twitter_client_id', ''),
+    'twitter_client_secret' => fn() => Setting::get('twitter_client_secret', ''),
+
     // 15. Notification Settings
     'notifications_enabled' => fn() => Setting::get('notifications_enabled', true),
     'notifications_push' => fn() => Setting::get('notifications_push', false),
@@ -656,6 +666,7 @@ $save = function () use ($logAction) {
         'home_page', 'about_page', 'contact_page', 'privacy_page', 'terms_page',
         'footer_copyright', 'footer_bg_color', 'footer_text_color', 'footer_logo', 'footer_link_color', 'footer_link_hover_color', 'footer_link_active_color', 'footer_link_visited_color',
         'google_login', 'facebook_login', 'twitter_login', 'github_login', 'linkedin_login', 'whatsapp_login', 'apple_login', 'pinterest_login', 'threads_login',
+        'google_client_id', 'google_client_secret', 'facebook_client_id', 'facebook_client_secret', 'github_client_id', 'github_client_secret', 'twitter_client_id', 'twitter_client_secret',
         'notifications_enabled', 'notifications_push', 'notifications_in_app', 'notifications_email',
         'live_tv_url', 'live_radio_url', 'weather_city', 'homepage_categories',
         'tv_schedule', 'radio_schedule'
@@ -1062,48 +1073,141 @@ $getSystemInfo = function () {
                 </div>
 
                 <!-- SOCIAL AUTH INTEGRATIONS TAB -->
-                <div x-show="activeTab === 'social-login'" class="space-y-4" style="display: none;">
+                <div x-show="activeTab === 'social-login'" class="space-y-6" style="display: none;">
                     <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">OAuth Login Connections</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 font-semibold text-xs text-gray-700 dark:text-gray-300">
-                        <div class="flex items-center p-2 bg-gray-50 dark:bg-gray-950 rounded border border-gray-250 dark:border-gray-850">
-                            <input type="checkbox" wire:model="google_login" id="google_login" class="rounded text-[#C8102E] border-gray-300">
-                            <label for="google_login" class="ml-2 cursor-pointer">Enable Google Sign-in</label>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 text-xs text-gray-700 dark:text-gray-300">
+                        
+                        <!-- Google OAuth -->
+                        <div class="p-4 bg-gray-50 dark:bg-gray-955 rounded-lg border border-gray-200 dark:border-gray-850 space-y-4">
+                            <div class="flex items-center">
+                                <input type="checkbox" wire:model.live="google_login" id="google_login" class="rounded text-[#C8102E] border-gray-300">
+                                <label for="google_login" class="ml-2 font-bold cursor-pointer text-gray-900 dark:text-white">Enable Google Sign-in</label>
+                            </div>
+                            
+                            @if($google_login)
+                                <div class="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-850">
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Google Client ID</label>
+                                        <input type="text" wire:model="google_client_id" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white font-mono">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Google Client Secret</label>
+                                        <input type="password" wire:model="google_client_secret" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white font-mono">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Redirect URL (Callback)</label>
+                                        <input type="text" readonly value="{{ url('/auth/google/callback') }}" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-400 font-mono select-all">
+                                    </div>
+                                </div>
+                            @endif
                         </div>
-                        <div class="flex items-center p-2 bg-gray-50 dark:bg-gray-950 rounded border border-gray-250 dark:border-gray-850">
-                            <input type="checkbox" wire:model="facebook_login" id="facebook_login" class="rounded text-[#C8102E] border-gray-300">
-                            <label for="facebook_login" class="ml-2 cursor-pointer">Enable Facebook Sign-in</label>
+
+                        <!-- Facebook OAuth -->
+                        <div class="p-4 bg-gray-50 dark:bg-gray-955 rounded-lg border border-gray-200 dark:border-gray-850 space-y-4">
+                            <div class="flex items-center">
+                                <input type="checkbox" wire:model.live="facebook_login" id="facebook_login" class="rounded text-[#C8102E] border-gray-300">
+                                <label for="facebook_login" class="ml-2 font-bold cursor-pointer text-gray-900 dark:text-white">Enable Facebook Sign-in</label>
+                            </div>
+                            
+                            @if($facebook_login)
+                                <div class="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-850">
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Facebook App ID (Client ID)</label>
+                                        <input type="text" wire:model="facebook_client_id" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white font-mono">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Facebook App Secret (Client Secret)</label>
+                                        <input type="password" wire:model="facebook_client_secret" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white font-mono">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Redirect URL (Callback)</label>
+                                        <input type="text" readonly value="{{ url('/auth/facebook/callback') }}" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-400 font-mono select-all">
+                                    </div>
+                                </div>
+                            @endif
                         </div>
-                        <div class="flex items-center p-2 bg-gray-50 dark:bg-gray-950 rounded border border-gray-250 dark:border-gray-850">
-                            <input type="checkbox" wire:model="twitter_login" id="twitter_login" class="rounded text-[#C8102E] border-gray-300">
-                            <label for="twitter_login" class="ml-2 cursor-pointer">Enable Twitter / X Sign-in</label>
+
+                        <!-- GitHub OAuth -->
+                        <div class="p-4 bg-gray-50 dark:bg-gray-955 rounded-lg border border-gray-200 dark:border-gray-855 space-y-4">
+                            <div class="flex items-center">
+                                <input type="checkbox" wire:model.live="github_login" id="github_login" class="rounded text-[#C8102E] border-gray-300">
+                                <label for="github_login" class="ml-2 font-bold cursor-pointer text-gray-900 dark:text-white">Enable GitHub Sign-in</label>
+                            </div>
+                            
+                            @if($github_login)
+                                <div class="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-850">
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">GitHub Client ID</label>
+                                        <input type="text" wire:model="github_client_id" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white font-mono">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">GitHub Client Secret</label>
+                                        <input type="password" wire:model="github_client_secret" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white font-mono">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Redirect URL (Callback)</label>
+                                        <input type="text" readonly value="{{ url('/auth/github/callback') }}" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-400 font-mono select-all">
+                                    </div>
+                                </div>
+                            @endif
                         </div>
-                        <div class="flex items-center p-2 bg-gray-50 dark:bg-gray-950 rounded border border-gray-250 dark:border-gray-850">
-                            <input type="checkbox" wire:model="github_login" id="github_login" class="rounded text-[#C8102E] border-gray-300">
-                            <label for="github_login" class="ml-2 cursor-pointer">Enable GitHub Sign-in</label>
+
+                        <!-- Twitter/X OAuth -->
+                        <div class="p-4 bg-gray-50 dark:bg-gray-955 rounded-lg border border-gray-200 dark:border-gray-850 space-y-4">
+                            <div class="flex items-center">
+                                <input type="checkbox" wire:model.live="twitter_login" id="twitter_login" class="rounded text-[#C8102E] border-gray-300">
+                                <label for="twitter_login" class="ml-2 font-bold cursor-pointer text-gray-900 dark:text-white">Enable Twitter / X Sign-in</label>
+                            </div>
+                            
+                            @if($twitter_login)
+                                <div class="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-850">
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Twitter Client ID</label>
+                                        <input type="text" wire:model="twitter_client_id" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white font-mono">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Twitter Client Secret</label>
+                                        <input type="password" wire:model="twitter_client_secret" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white font-mono">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Redirect URL (Callback)</label>
+                                        <input type="text" readonly value="{{ url('/auth/twitter/callback') }}" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-400 font-mono select-all">
+                                    </div>
+                                </div>
+                            @endif
                         </div>
-                        <div class="flex items-center p-2 bg-gray-50 dark:bg-gray-950 rounded border border-gray-250 dark:border-gray-850">
-                            <input type="checkbox" wire:model="linkedin_login" id="linkedin_login" class="rounded text-[#C8102E] border-gray-300">
-                            <label for="linkedin_login" class="ml-2 cursor-pointer">Enable LinkedIn Sign-in</label>
+
+                        <!-- Other Quick Sign-in Checks -->
+                        <div class="p-4 bg-gray-50 dark:bg-gray-955 rounded-lg border border-gray-200 dark:border-gray-850 space-y-4 col-span-full">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Other OAuth Options</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                <div class="flex items-center p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-800">
+                                    <input type="checkbox" wire:model="linkedin_login" id="linkedin_login" class="rounded text-[#C8102E] border-gray-300">
+                                    <label for="linkedin_login" class="ml-2 cursor-pointer">Enable LinkedIn Sign-in</label>
+                                </div>
+                                <div class="flex items-center p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-800">
+                                    <input type="checkbox" wire:model="whatsapp_login" id="whatsapp_login" class="rounded text-[#C8102E] border-gray-300">
+                                    <label for="whatsapp_login" class="ml-2 cursor-pointer">Enable WhatsApp QuickSign</label>
+                                </div>
+                                <div class="flex items-center p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-800">
+                                    <input type="checkbox" wire:model="apple_login" id="apple_login" class="rounded text-[#C8102E] border-gray-300">
+                                    <label for="apple_login" class="ml-2 cursor-pointer">Enable Apple Sign-in</label>
+                                </div>
+                                <div class="flex items-center p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-800">
+                                    <input type="checkbox" wire:model="pinterest_login" id="pinterest_login" class="rounded text-[#C8102E] border-gray-300">
+                                    <label for="pinterest_login" class="ml-2 cursor-pointer">Enable Pinterest Logins</label>
+                                </div>
+                                <div class="flex items-center p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-800">
+                                    <input type="checkbox" wire:model="threads_login" id="threads_login" class="rounded text-[#C8102E] border-gray-300">
+                                    <label for="threads_login" class="ml-2 cursor-pointer">Enable Threads Identity Check</label>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex items-center p-2 bg-gray-50 dark:bg-gray-950 rounded border border-gray-250 dark:border-gray-850">
-                            <input type="checkbox" wire:model="whatsapp_login" id="whatsapp_login" class="rounded text-[#C8102E] border-gray-300">
-                            <label for="whatsapp_login" class="ml-2 cursor-pointer">Enable WhatsApp QuickSign</label>
-                        </div>
-                        <div class="flex items-center p-2 bg-gray-50 dark:bg-gray-950 rounded border border-gray-250 dark:border-gray-850">
-                            <input type="checkbox" wire:model="apple_login" id="apple_login" class="rounded text-[#C8102E] border-gray-300">
-                            <label for="apple_login" class="ml-2 cursor-pointer">Enable Apple Sign-in</label>
-                        </div>
-                        <div class="flex items-center p-2 bg-gray-50 dark:bg-gray-950 rounded border border-gray-250 dark:border-gray-850">
-                            <input type="checkbox" wire:model="pinterest_login" id="pinterest_login" class="rounded text-[#C8102E] border-gray-300">
-                            <label for="pinterest_login" class="ml-2 cursor-pointer">Enable Pinterest Logins</label>
-                        </div>
-                        <div class="flex items-center p-2 bg-gray-50 dark:bg-gray-950 rounded border border-gray-250 dark:border-gray-850">
-                            <input type="checkbox" wire:model="threads_login" id="threads_login" class="rounded text-[#C8102E] border-gray-300">
-                            <label for="threads_login" class="ml-2 cursor-pointer">Enable Threads Identity Check</label>
-                        </div>
+
                     </div>
 
-                    <div class="pt-4">
+                    <div class="pt-4 border-t border-gray-150 dark:border-gray-850">
                         <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save Settings</button>
                     </div>
                 </div>

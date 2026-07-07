@@ -77,7 +77,15 @@ $reorderItems = function ($fromIndex, $toIndex) {
     unset($this->menuItems[$fromIndex]);
     
     array_splice($this->menuItems, $toIndex, 0, [$item]);
-    $this->menuItems = array_values($this->menuItems);
+};
+
+$selectCategory = function ($slug) {
+    if (!$slug) return;
+    $category = \App\Models\Category::where('slug', $slug)->first();
+    if ($category) {
+        $this->newLabel = $category->name;
+        $this->newUrl = '/' . $category->slug;
+    }
 };
 
 $saveMenu = function () {
@@ -161,6 +169,16 @@ $saveMenu = function () {
             <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Add Link Item</h3>
             
             <form wire:submit.prevent="addItem" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 shadow-sm space-y-4">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Quick-Select Category Link</label>
+                    <select wire:change="selectCategory($event.target.value)" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none font-bold">
+                        <option value="">-- Choose Category --</option>
+                        @foreach(\App\Models\Category::all() as $category)
+                            <option value="{{ $category->slug }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div class="space-y-1">
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Link Label / Text</label>
                     <input type="text" wire:model="newLabel" required placeholder="e.g. World News" 

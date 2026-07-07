@@ -92,4 +92,18 @@ class AnnouncementTest extends TestCase
         $response = $this->actingAs($manager)->get('/admin/users');
         $response->assertForbidden();
     }
+
+    public function test_admin_menus_manager_can_select_category(): void
+    {
+        $category = \App\Models\Category::create([
+            'name' => 'Education News',
+            'slug' => 'education',
+            'order' => 10,
+        ]);
+
+        Livewire::test('admin-menus-manager')
+            ->call('selectCategory', 'education')
+            ->assertSet('newLabel', 'Education News')
+            ->assertSet('newUrl', '/education');
+    }
 }

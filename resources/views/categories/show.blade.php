@@ -20,19 +20,47 @@
         @php
             $sidebarAd = \App\Models\Advertisement::active()->location('sidebar')->first();
             $items = collect($articles->items());
-            $spotlight = $items->first();
-            $centerFeatured = $items->get(1);
-            $centerList = $items->slice(2, 4);
-            $rightFeatured = $items->get(6);
-            $rightList = $items->slice(7, 4);
-            
-            // For any remaining articles beyond index 10 on this page
-            $remaining = $items->slice(11);
+            $count = $items->count();
+
+            // Set up containers
+            $spotlight = null;
+            $centerFeatured = null;
+            $centerList = collect();
+            $rightFeatured = null;
+            $rightList = collect();
+            $remaining = collect();
+
+            if ($count > 0) {
+                $spotlight = $items->first();
+            }
+            if ($count > 1) {
+                $centerFeatured = $items->get(1);
+            }
+            if ($count > 2) {
+                $rightFeatured = $items->get(2);
+            }
+
+            // Distribute remaining articles up to index 10 between center and right lists
+            if ($count > 3) {
+                $listArticles = $items->slice(3, 8); // index 3 to 10
+                foreach ($listArticles as $idx => $article) {
+                    if ($idx % 2 === 0) {
+                        $centerList->push($article);
+                    } else {
+                        $rightList->push($article);
+                    }
+                }
+            }
+
+            // Articles beyond index 10 go to remaining
+            if ($count > 11) {
+                $remaining = $items->slice(11);
+            }
         @endphp
 
         @if($items->isNotEmpty())
-            <!-- Al Jazeera-style 3-Column Magazine Grid Layout -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10 border-b border-gray-150 dark:border-gray-850">
+            <!-- Al Jazeera-style Magazine Grid Layout (Responsive Auto-centering Columns) -->
+            <div class="@if($count === 1) max-w-2xl mx-auto pb-10 border-b border-gray-150 dark:border-gray-850 @elseif($count === 2) max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 pb-10 border-b border-gray-150 dark:border-gray-855 @else grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10 border-b border-gray-150 dark:border-gray-855 @endif">
                 
                 <!-- LEFT COLUMN: Large Spotlight -->
                 <div class="lg:col-span-1">
@@ -65,8 +93,8 @@
                 </div>
 
                 <!-- CENTER COLUMN: Explainer Spotlight & List -->
-                <div class="lg:col-span-1 space-y-6">
-                    @if($centerFeatured)
+                @if($centerFeatured)
+                    <div class="lg:col-span-1 space-y-6">
                         <article class="group space-y-3">
                             <div class="aspect-[16/10] overflow-hidden rounded-lg bg-gray-105 dark:bg-gray-850 border border-gray-200 dark:border-gray-800">
                                 <img src="{{ $centerFeatured->featured_image }}" alt="{{ $centerFeatured->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
@@ -79,33 +107,33 @@
                                 <span class="text-[10px] text-gray-400 font-bold block">{{ $centerFeatured->published_at->format('j M Y') }}</span>
                             </div>
                         </article>
-                    @endif
 
-                    @if($centerList->isNotEmpty())
-                        <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-850">
-                            @foreach($centerList as $article)
-                                <article class="group flex items-start gap-4 pb-4 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
-                                    <div class="space-y-1 flex-grow min-w-0">
-                                        @if($loop->first)
-                                            <span class="text-[8px] font-black text-yellow-600 dark:text-yellow-500 uppercase tracking-widest block">EXPLAINER</span>
-                                        @endif
-                                        <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-3">
-                                            <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
-                                        </h4>
-                                        <span class="text-[9px] text-gray-400 font-bold block">{{ $article->published_at->format('j M Y') }}</span>
-                                    </div>
-                                    <div class="w-20 sm:w-24 aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-855 shrink-0 border border-gray-200 dark:border-gray-800">
-                                        <img src="{{ $article->featured_image }}" alt="{{ $article->title }}" class="w-full h-full object-cover">
-                                    </div>
-                                </article>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
+                        @if($centerList->isNotEmpty())
+                            <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-850">
+                                @foreach($centerList as $article)
+                                    <article class="group flex items-start gap-4 pb-4 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
+                                        <div class="space-y-1 flex-grow min-w-0">
+                                            @if($loop->first)
+                                                <span class="text-[8px] font-black text-yellow-600 dark:text-yellow-500 uppercase tracking-widest block">EXPLAINER</span>
+                                            @endif
+                                            <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-3">
+                                                <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
+                                            </h4>
+                                            <span class="text-[9px] text-gray-400 font-bold block">{{ $article->published_at->format('j M Y') }}</span>
+                                        </div>
+                                        <div class="w-20 sm:w-24 aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-855 shrink-0 border border-gray-200 dark:border-gray-800">
+                                            <img src="{{ $article->featured_image }}" alt="{{ $article->title }}" class="w-full h-full object-cover">
+                                        </div>
+                                    </article>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endif
 
                 <!-- RIGHT COLUMN: Spotlight & List -->
-                <div class="lg:col-span-1 space-y-6">
-                    @if($rightFeatured)
+                @if($rightFeatured)
+                    <div class="lg:col-span-1 space-y-6">
                         <article class="group space-y-3">
                             <div class="aspect-[16/10] overflow-hidden rounded-lg bg-gray-105 dark:bg-gray-850 border border-gray-200 dark:border-gray-800">
                                 <img src="{{ $rightFeatured->featured_image }}" alt="{{ $rightFeatured->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
@@ -117,26 +145,26 @@
                                 <span class="text-[10px] text-gray-400 font-bold block">{{ $rightFeatured->published_at->format('j M Y') }}</span>
                             </div>
                         </article>
-                    @endif
 
-                    @if($rightList->isNotEmpty())
-                        <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-855">
-                            @foreach($rightList as $article)
-                                <article class="group flex items-start gap-4 pb-4 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
-                                    <div class="space-y-1 flex-grow min-w-0">
-                                        <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-3">
-                                            <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
-                                        </h4>
-                                        <span class="text-[9px] text-gray-400 font-bold block">{{ $article->published_at->format('j M Y') }}</span>
-                                    </div>
-                                    <div class="w-20 sm:w-24 aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-855 shrink-0 border border-gray-200 dark:border-gray-800">
-                                        <img src="{{ $article->featured_image }}" alt="{{ $article->title }}" class="w-full h-full object-cover">
-                                    </div>
-                                </article>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
+                        @if($rightList->isNotEmpty())
+                            <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-855">
+                                @foreach($rightList as $article)
+                                    <article class="group flex items-start gap-4 pb-4 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
+                                        <div class="space-y-1 flex-grow min-w-0">
+                                            <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-3">
+                                                <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
+                                            </h4>
+                                            <span class="text-[9px] text-gray-400 font-bold block">{{ $article->published_at->format('j M Y') }}</span>
+                                        </div>
+                                        <div class="w-20 sm:w-24 aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-855 shrink-0 border border-gray-200 dark:border-gray-800">
+                                            <img src="{{ $article->featured_image }}" alt="{{ $article->title }}" class="w-full h-full object-cover">
+                                        </div>
+                                    </article>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endif
 
             </div>
 

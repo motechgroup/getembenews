@@ -25,7 +25,7 @@ class AnnouncementTest extends TestCase
 
         $component = Livewire::test(\App\Livewire\AnnouncementSubmit::class)
             ->set('visitor_name', 'Emma Nyabera')
-            ->set('visitor_email', 'emma@example.com')
+            ->set('visitor_email', '') // Optional email
             ->set('visitor_phone', '+254712345678')
             ->set('type', 'funeral')
             ->set('media', 'tv')
@@ -44,7 +44,14 @@ class AnnouncementTest extends TestCase
         $component->assertSet('showCheckoutModal', true);
         $this->assertDatabaseHas('announcements', [
             'visitor_name' => 'Emma Nyabera',
+            'visitor_email' => null,
             'payment_status' => 'pending',
+        ]);
+
+        // Verify system draft alert was logged to contact messages
+        $this->assertDatabaseHas('contact_messages', [
+            'name' => 'System Alert',
+            'subject' => 'New Announcement Submitted (Pending Payment)',
         ]);
 
         $announcementId = $component->get('currentAnnouncementId');
@@ -58,6 +65,12 @@ class AnnouncementTest extends TestCase
         $this->assertDatabaseHas('announcements', [
             'id' => $announcementId,
             'payment_status' => 'paid',
+        ]);
+
+        // Verify system paid alert was logged to contact messages
+        $this->assertDatabaseHas('contact_messages', [
+            'name' => 'System Alert',
+            'subject' => 'Announcement Paid (Ref: ' . Announcement::find($announcementId)->payment_reference . ')',
         ]);
     }
 }

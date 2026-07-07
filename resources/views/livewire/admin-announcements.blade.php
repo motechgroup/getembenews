@@ -80,7 +80,9 @@
                             <!-- Visitor -->
                             <td class="py-4 px-4 space-y-1">
                                 <div class="font-bold text-gray-900 dark:text-white">{{ $ann->visitor_name }}</div>
-                                <div class="text-[10px] text-gray-400 font-medium">Email: {{ $ann->visitor_email }}</div>
+                                @if($ann->visitor_email)
+                                    <div class="text-[10px] text-gray-400 font-medium">Email: {{ $ann->visitor_email }}</div>
+                                @endif
                                 <div class="text-[10px] text-gray-400 font-mono">{{ $ann->visitor_phone }}</div>
                             </td>
 

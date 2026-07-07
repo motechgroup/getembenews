@@ -31,7 +31,7 @@ class AnnouncementSubmit extends Component
 
     protected $rules = [
         'visitor_name' => 'required|string|max:255',
-        'visitor_email' => 'required|email|max:255',
+        'visitor_email' => 'nullable|email|max:255',
         'visitor_phone' => 'required|string|max:20',
         'type' => 'required|in:funeral,general',
         'media' => 'required|in:tv,radio,both',
@@ -85,7 +85,7 @@ class AnnouncementSubmit extends Component
 
         $announcement = Announcement::create([
             'visitor_name' => $this->visitor_name,
-            'visitor_email' => $this->visitor_email,
+            'visitor_email' => $this->visitor_email ?: null,
             'visitor_phone' => $this->visitor_phone,
             'type' => $this->type,
             'media' => $this->media,
@@ -96,6 +96,14 @@ class AnnouncementSubmit extends Component
             'total_amount' => $this->total_price,
             'payment_status' => 'pending',
             'is_approved' => false,
+        ]);
+
+        // Notify admin via ContactMessage log
+        \App\Models\ContactMessage::create([
+            'name' => 'System Alert',
+            'email' => 'announcements@getembenews.com',
+            'subject' => 'New Announcement Submitted (Pending Payment)',
+            'message' => "A new announcement has been drafted by {$this->visitor_name} ({$this->visitor_phone}) with cost KSh {$this->total_price} for {$this->days_count} days."
         ]);
 
         $this->currentAnnouncementId = $announcement->id;
@@ -132,6 +140,14 @@ class AnnouncementSubmit extends Component
             $announcement->update([
                 'payment_status' => 'paid',
                 'payment_reference' => $ref,
+            ]);
+
+            // Notify admin of payment success
+            \App\Models\ContactMessage::create([
+                'name' => 'System Alert',
+                'email' => 'announcements@getembenews.com',
+                'subject' => 'Announcement Paid (Ref: ' . $ref . ')',
+                'message' => "Announcement ID: {$announcement->id} has been paid successfully. Visitor: {$announcement->visitor_name} ({$announcement->visitor_phone}). Amount: KSh {$announcement->total_amount}."
             ]);
 
             $this->mpesa_status = 'success';

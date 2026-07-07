@@ -23,19 +23,12 @@
                 </h3>
 
                 <form wire:submit.prevent="submitAnnouncement" class="space-y-4 text-xs font-semibold">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="space-y-1">
                             <label class="text-gray-700 dark:text-gray-300 uppercase tracking-wide text-[10px] font-bold">Your Name</label>
                             <input type="text" wire:model="visitor_name" required placeholder="e.g. John Nyabuto" 
                                    class="w-full bg-gray-55 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-2.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#cc6c3b]">
                             @error('visitor_name') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div class="space-y-1">
-                            <label class="text-gray-700 dark:text-gray-300 uppercase tracking-wide text-[10px] font-bold">Email Address</label>
-                            <input type="email" wire:model="visitor_email" required placeholder="e.g. john@example.com" 
-                                   class="w-full bg-gray-55 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-2.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#cc6c3b]">
-                            @error('visitor_email') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
                         </div>
 
                         <div class="space-y-1">

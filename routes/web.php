@@ -131,6 +131,9 @@ Route::view('profile', 'profile')
     ->name('profile');
 
 Route::get('/announcements', \App\Livewire\AnnouncementSubmit::class)->name('announcements');
+Route::get('/agent/dashboard', \App\Livewire\AgentDashboard::class)
+    ->middleware(\App\Http\Middleware\RedirectIfAgentNotLoggedIn::class)
+    ->name('agent.dashboard');
 
 Route::middleware(['auth', 'can:access-admin'])->prefix('admin')->group(function () {
     Route::view('/', 'admin.dashboard')->name('admin.dashboard');

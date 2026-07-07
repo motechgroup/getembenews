@@ -34,6 +34,10 @@ class AnnouncementSubmit extends Component
     public $mpesa_status = 'idle'; // idle, sending, success, error
     public $currentAnnouncementId = null;
 
+    // Agent Login State
+    public $showAgentLoginModal = false;
+    public $login_pin = '';
+
     protected $rules = [
         'visitor_name' => 'required|string|max:255',
         'visitor_email' => 'nullable|email|max:255',
@@ -184,6 +188,40 @@ class AnnouncementSubmit extends Component
             $this->reset(['visitor_name', 'visitor_email', 'visitor_phone', 'content', 'days_count', 'submitter_type', 'agent_pin']);
             $this->updateCalculations();
         }
+    }
+
+    public function openAgentLogin()
+    {
+        $this->resetValidation();
+        $this->login_pin = '';
+        $this->showAgentLoginModal = true;
+    }
+
+    public function closeAgentLogin()
+    {
+        $this->showAgentLoginModal = false;
+        $this->login_pin = '';
+        $this->resetValidation();
+    }
+
+    public function loginAsAgent()
+    {
+        $this->validate([
+            'login_pin' => 'required|string|size:4|regex:/^[0-9]{4}$/',
+        ], [
+            'login_pin.regex' => 'The PIN must consist of exactly 4 digits.',
+            'login_pin.size' => 'The PIN must be exactly 4 digits.',
+        ]);
+
+        $agent = \App\Models\Agent::where('pin', $this->login_pin)->first();
+
+        if (!$agent) {
+            $this->addError('login_pin', 'Invalid PIN code.');
+            return;
+        }
+
+        session(['agent_logged_in' => $agent->id]);
+        return $this->redirect('/agent/dashboard');
     }
 
     public function render()

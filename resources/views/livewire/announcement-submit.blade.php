@@ -132,6 +132,15 @@
                         <span>Submit & Pay via M-Pesa</span>
                     </button>
                 </form>
+
+                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 text-center">
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold">
+                        Are you a registered Kisii County news agent? 
+                        <button type="button" wire:click="openAgentLogin" class="text-[#cc6c3b] hover:text-orange-700 font-black hover:underline ml-1">
+                            Agent Portal Login &rarr;
+                        </button>
+                    </p>
+                </div>
             </div>
         </div>
 
@@ -295,6 +304,48 @@
                         Cancel & Go Back
                     </button>
                 @endif
+            </div>
+        </div>
+    @endif
+
+    <!-- Agent Login Modal -->
+    @if($showAgentLoginModal)
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-950 border border-gray-250 dark:border-gray-800 max-w-sm w-full rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl text-xs text-left">
+                <!-- Header -->
+                <div class="space-y-1 text-center font-bold">
+                    <span class="bg-orange-50 dark:bg-orange-950/20 text-[#cc6c3b] font-black uppercase text-[9px] tracking-wider px-3 py-1 rounded-full">
+                        Kisii County News Agents
+                    </span>
+                    <h3 class="text-base font-black text-gray-900 dark:text-white font-serif mt-2 uppercase">
+                        Agent Portal Login
+                    </h3>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 font-semibold mt-1">
+                        Enter your secure 4-digit Agent PIN code to access your performance dashboard and commission logs.
+                    </p>
+                </div>
+
+                <!-- Form -->
+                <form wire:submit.prevent="loginAsAgent" class="space-y-4">
+                    <div class="space-y-1 font-bold">
+                        <label class="text-[10px] uppercase text-gray-500 dark:text-gray-400">Agent PIN Code</label>
+                        <input type="password" wire:model="login_pin" required placeholder="Enter 4-digit PIN" maxlength="4"
+                               class="w-full text-center tracking-widest text-lg font-mono bg-gray-55 dark:bg-gray-900 border border-gray-250 dark:border-gray-800 rounded-lg p-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#cc6c3b]">
+                        @error('login_pin') <p class="text-red-550 text-[10px] text-center mt-1 font-bold">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="flex space-x-2 pt-2">
+                        <button type="submit" 
+                                class="flex-1 bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold py-2.5 rounded-lg transition uppercase tracking-wider text-[11px] shadow-sm">
+                            Verify & Log In
+                        </button>
+                        <button type="button" 
+                                wire:click="closeAgentLogin"
+                                class="flex-1 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2.5 rounded-lg transition uppercase tracking-wider text-[11px]">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     @endif

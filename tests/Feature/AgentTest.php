@@ -219,4 +219,73 @@ class AgentTest extends TestCase
             ->call('saveAgent')
             ->assertHasErrors(['pin']);
     }
+
+    public function test_agent_portal_login_flow(): void
+    {
+        $agent = Agent::create([
+            'name' => 'Samuel Mogaka',
+            'location' => 'Kisii Town',
+            'pin' => '1357',
+            'commission_percentage' => 15,
+        ]);
+
+        // 1. Visit announcements page - login modal is closed by default
+        $submitComponent = Livewire::test(\App\Livewire\AnnouncementSubmit::class)
+            ->assertSet('showAgentLoginModal', false);
+
+        // 2. Open login modal
+        $submitComponent->call('openAgentLogin')
+            ->assertSet('showAgentLoginModal', true);
+
+        // 3. Login with invalid PIN
+        $submitComponent->set('login_pin', '9999')
+            ->call('loginAsAgent')
+            ->assertHasErrors(['login_pin'])
+            ->assertSessionMissing('agent_logged_in');
+
+        // 4. Login with valid PIN redirects to agent dashboard
+        $submitComponent->set('login_pin', '1357')
+            ->call('loginAsAgent')
+            ->assertHasNoErrors()
+            ->assertSessionHas('agent_logged_in', $agent->id);
+    }
+
+    public function test_guest_agent_is_redirected_from_dashboard(): void
+    {
+        // Access dashboard without session redirects back
+        $this->get('/agent/dashboard')
+            ->assertRedirect('/announcements');
+    }
+
+    public function test_authenticated_agent_can_access_dashboard(): void
+    {
+        $agent = Agent::create([
+            'name' => 'Samuel Mogaka',
+            'location' => 'Kisii Town',
+            'pin' => '1357',
+            'commission_percentage' => 15,
+        ]);
+
+        // Access dashboard with session loads profile
+        $this->withSession(['agent_logged_in' => $agent->id])
+            ->get('/agent/dashboard')
+            ->assertOk();
+    }
+
+    public function test_agent_can_logout(): void
+    {
+        $agent = Agent::create([
+            'name' => 'Samuel Mogaka',
+            'location' => 'Kisii Town',
+            'pin' => '1357',
+            'commission_percentage' => 15,
+        ]);
+
+        // Logout agent session forgets session and redirects
+        session(['agent_logged_in' => $agent->id]);
+        Livewire::test(\App\Livewire\AgentDashboard::class)
+            ->call('logoutAgent')
+            ->assertRedirect('/announcements')
+            ->assertSessionMissing('agent_logged_in');
+    }
 }

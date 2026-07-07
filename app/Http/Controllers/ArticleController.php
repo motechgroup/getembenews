@@ -40,7 +40,7 @@ class ArticleController extends Controller
         
         $articles = Article::published()
             ->forCategory($category->id)
-            ->paginate(12);
+            ->paginate(17);
 
         return view('categories.show', compact('category', 'articles'));
     }

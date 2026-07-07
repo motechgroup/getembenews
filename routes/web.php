@@ -146,6 +146,7 @@ Route::middleware(['auth', 'can:access-admin'])->prefix('admin')->group(function
 Route::view('/about', 'about')->name('about');
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/privacy', 'privacy')->name('privacy');
-Route::get('/{slug}', [ArticleController::class, 'category'])->name('category.show');
 
 require __DIR__.'/auth.php';
+
+Route::get('/{slug}', [ArticleController::class, 'category'])->name('category.show');

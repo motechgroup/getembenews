@@ -24,10 +24,10 @@ $loadMenu = function () {
     // Default fallback configurations
     $defaultHeader = [
         ['label' => 'Home', 'url' => '/'],
-        ['label' => 'Politics', 'url' => '/category/politics'],
-        ['label' => 'Business', 'url' => '/category/business'],
-        ['label' => 'Technology', 'url' => '/category/technology'],
-        ['label' => 'Sports', 'url' => '/category/sports'],
+        ['label' => 'Politics', 'url' => '/politics'],
+        ['label' => 'Business', 'url' => '/business'],
+        ['label' => 'Technology', 'url' => '/technology'],
+        ['label' => 'Sports', 'url' => '/sports'],
     ];
 
     $defaultFooter = [
@@ -168,7 +168,7 @@ $saveMenu = function () {
 
                 <div class="space-y-1">
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Link Destination URL</label>
-                    <input type="text" wire:model="newUrl" required placeholder="e.g. /category/world" 
+                    <input type="text" wire:model="newUrl" required placeholder="e.g. /world" 
                            class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono focus:outline-none">
                     @error('newUrl') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>

@@ -68,10 +68,10 @@
                 @php
                     $defaultHeader = [
                         ['label' => 'Home', 'url' => '/'],
-                        ['label' => 'Politics', 'url' => '/category/politics'],
-                        ['label' => 'Business', 'url' => '/category/business'],
-                        ['label' => 'Technology', 'url' => '/category/technology'],
-                        ['label' => 'Sports', 'url' => '/category/sports'],
+                        ['label' => 'Politics', 'url' => '/politics'],
+                        ['label' => 'Business', 'url' => '/business'],
+                        ['label' => 'Technology', 'url' => '/technology'],
+                        ['label' => 'Sports', 'url' => '/sports'],
                     ];
                     $headerLinks = \App\Models\Setting::get('header_menu', $defaultHeader);
                 @endphp
@@ -173,11 +173,11 @@
             
             <!-- Trending Items Horizontal List -->
             <div class="flex items-center space-x-6 overflow-x-auto scrollbar-none py-0.5 text-gray-600 dark:text-gray-300 font-semibold text-[11px]">
-                <a href="/category/politics" class="hover:text-[#FF7900] whitespace-nowrap transition">US-Israel war on Iran</a>
-                <a href="/category/sports" class="hover:text-[#FF7900] whitespace-nowrap transition">World Cup 2026</a>
-                <a href="/category/world" class="hover:text-[#FF7900] whitespace-nowrap transition">Tracking Israel's ceasefire violations</a>
-                <a href="/category/politics" class="hover:text-[#FF7900] whitespace-nowrap transition">Donald Trump</a>
-                <a href="/category/business" class="hover:text-[#FF7900] whitespace-nowrap transition">Getembe Development</a>
+                <a href="/politics" class="hover:text-[#FF7900] whitespace-nowrap transition">US-Israel war on Iran</a>
+                <a href="/sports" class="hover:text-[#FF7900] whitespace-nowrap transition">World Cup 2026</a>
+                <a href="/world" class="hover:text-[#FF7900] whitespace-nowrap transition">Tracking Israel's ceasefire violations</a>
+                <a href="/politics" class="hover:text-[#FF7900] whitespace-nowrap transition">Donald Trump</a>
+                <a href="/business" class="hover:text-[#FF7900] whitespace-nowrap transition">Getembe Development</a>
             </div>
         </div>
     </div>
@@ -216,7 +216,7 @@
                 <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">News Categories</h4>
                 <ul class="space-y-2 text-xs text-gray-400">
                     @foreach(\App\Models\Category::orderBy('order')->take(6)->get() as $cat)
-                        <li><a href="/category/{{ $cat->slug }}" class="hover:text-white transition">{{ $cat->name }}</a></li>
+                        <li><a href="/{{ $cat->slug }}" class="hover:text-white transition">{{ $cat->name }}</a></li>
                     @endforeach
                 </ul>
             </div>

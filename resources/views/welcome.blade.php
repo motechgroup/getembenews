@@ -387,7 +387,7 @@
                             </div>
                             <!-- Title Block -->
                             <div class="flex-grow min-w-0">
-                                <a href="/category/{{ $trending->category->slug }}" class="text-[9px] font-bold text-[#C8102E] dark:text-red-400 uppercase tracking-wider hover:underline block mb-1">
+                                <a href="/{{ $trending->category->slug }}" class="text-[9px] font-bold text-[#C8102E] dark:text-red-400 uppercase tracking-wider hover:underline block mb-1">
                                     {{ $trending->category->name }}
                                 </a>
                                 <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition">

@@ -11,7 +11,7 @@
         <nav class="flex text-xs text-gray-500 space-x-2 mb-6 uppercase tracking-wider font-semibold">
             <a href="/" class="hover:text-[#C8102E] transition">Home</a>
             <span>/</span>
-            <a href="/category/{{ $article->category->slug }}" class="hover:text-[#C8102E] transition">{{ $article->category->name }}</a>
+            <a href="/{{ $article->category->slug }}" class="hover:text-[#C8102E] transition">{{ $article->category->name }}</a>
             <span>/</span>
             <span class="text-gray-400 dark:text-gray-600 truncate">{{ $article->title }}</span>
         </nav>
@@ -23,7 +23,7 @@
             <div class="lg:col-span-2 space-y-6">
                 
                 <!-- Category Badge -->
-                <a href="/category/{{ $article->category->slug }}" class="inline-block text-xs font-bold text-[#C8102E] uppercase hover:underline">
+                <a href="/{{ $article->category->slug }}" class="inline-block text-xs font-bold text-[#C8102E] uppercase hover:underline">
                     {{ $article->category->name }}
                 </a>
 

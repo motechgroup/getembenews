@@ -59,8 +59,66 @@
 
     </div>
 
+    <!-- Announcement & Agent Commercial Stats Grid -->
+    <h2 class="text-[10px] font-black uppercase text-gray-400 tracking-wider mb-3">Announcements & Agent Performance</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        
+        <!-- Total Announcements -->
+        <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4">
+            <div class="p-3 bg-orange-100 dark:bg-orange-950/20 text-[#cc6c3b] rounded-md">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Announcements</div>
+                <div class="text-2xl font-black text-gray-900 dark:text-white">{{ \App\Models\Announcement::count() }}</div>
+            </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4">
+            <div class="p-3 bg-green-100 dark:bg-green-950/20 text-green-600 rounded-md">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 8H7m5 8h5M5 12a7 7 0 1114 0 7 7 0 01-14 0z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Paid Revenue</div>
+                <div class="text-2xl font-black text-gray-900 dark:text-white">KSh {{ number_format(\App\Models\Announcement::where('payment_status', 'paid')->sum('total_amount')) }}</div>
+            </div>
+        </div>
+
+        <!-- Pending Moderation -->
+        <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4">
+            <div class="p-3 bg-yellow-100 dark:bg-yellow-950/20 text-yellow-600 rounded-md">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Pending Approval</div>
+                <div class="text-2xl font-black text-gray-900 dark:text-white">{{ \App\Models\Announcement::where('payment_status', 'paid')->where('is_approved', false)->count() }}</div>
+            </div>
+        </div>
+
+        <!-- Active Agents -->
+        <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4">
+            <div class="p-3 bg-indigo-100 dark:bg-indigo-950/20 text-indigo-600 rounded-md">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Active Agents</div>
+                <div class="text-2xl font-black text-gray-900 dark:text-white">{{ \App\Models\Agent::count() }}</div>
+            </div>
+        </div>
+
+    </div>
+
     <!-- Details Panels -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         <!-- Recent Articles -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 space-y-4">
@@ -71,7 +129,7 @@
                 @foreach(\App\Models\Article::orderBy('created_at', 'desc')->take(5)->get() as $art)
                     <div class="py-3 flex justify-between items-center text-xs">
                         <div class="space-y-0.5 pr-4">
-                            <h4 class="font-bold text-gray-900 dark:text-white truncate max-w-sm">
+                            <h4 class="font-bold text-gray-900 dark:text-white truncate max-w-[150px]">
                                 <a href="/articles/{{ $art->slug }}" target="_blank" class="hover:underline">{{ $art->title }}</a>
                             </h4>
                             <p class="text-[10px] text-gray-400">By {{ $art->author->name }} &bull; {{ $art->category->name }}</p>
@@ -102,6 +160,35 @@
                     </div>
                 @empty
                     <p class="text-gray-400 text-center py-6">No comments posted yet.</p>
+                @endforelse
+            </div>
+        </div>
+
+        <!-- Recent Announcements -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 space-y-4">
+            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-150 dark:border-gray-800 pb-2">
+                Recent Announcements
+            </h3>
+            <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                @forelse(\App\Models\Announcement::orderBy('created_at', 'desc')->take(5)->get() as $ann)
+                    <div class="py-3 flex justify-between items-center text-xs">
+                        <div class="space-y-0.5 pr-4">
+                            <h4 class="font-bold text-gray-900 dark:text-white truncate max-w-[130px]">
+                                {{ $ann->visitor_name }}
+                            </h4>
+                            <p class="text-[10px] text-gray-400">
+                                {{ $ann->created_at->diffForHumans() }} &bull; {{ strtoupper($ann->media) }}
+                            </p>
+                        </div>
+                        <div class="text-right space-y-1">
+                            <div class="font-bold text-gray-900 dark:text-white">KSh {{ number_format($ann->total_amount) }}</div>
+                            <span class="px-1.5 py-0.5 rounded text-[8px] font-black uppercase {{ $ann->payment_status === 'paid' ? 'bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400' : 'bg-red-50 text-red-750 dark:bg-red-950/20 dark:text-red-400' }}">
+                                {{ $ann->payment_status }}
+                            </span>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-gray-400 text-center py-6">No announcements submitted yet.</p>
                 @endforelse
             </div>
         </div>

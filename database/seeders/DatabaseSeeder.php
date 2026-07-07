@@ -587,6 +587,10 @@ class DatabaseSeeder extends Seeder
         Setting::set('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE');
         Setting::set('live_radio_url', 'http://stream.zeno.fm/f5r7x1t1zv8uv'); // A live radio URL placeholder
         Setting::set('weather_city', 'Kisii');
+        Setting::set('app_play_store_url', 'https://play.google.com/store');
+        Setting::set('app_app_store_url', 'https://www.apple.com/app-store');
+        Setting::set('app_banner_title', 'Download Getembe Digital App Today');
+        Setting::set('app_banner_desc', 'Download Getembe Digital App today for live news updates, breaking notifications, and seamless live streaming.');
 
         // 9. Seed Stream Schedules
         $defaultTvSchedule = [

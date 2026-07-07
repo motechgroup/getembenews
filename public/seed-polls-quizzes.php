@@ -49,4 +49,9 @@ $demoQuizzes = [
 ];
 Setting::set('simulated_quizzes', json_encode($demoQuizzes));
 
-echo "✓ Demo polls and quizzes have been successfully seeded!";
+Setting::set('app_play_store_url', 'https://play.google.com/store');
+Setting::set('app_app_store_url', 'https://www.apple.com/app-store');
+Setting::set('app_banner_title', 'Download Getembe Digital App Today');
+Setting::set('app_banner_desc', 'Download Getembe Digital App today for live news updates, breaking notifications, and seamless live streaming.');
+
+echo "✓ Demo polls, quizzes and app download configuration have been successfully seeded!";

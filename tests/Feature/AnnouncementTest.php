@@ -172,6 +172,8 @@ class AnnouncementTest extends TestCase
             ->set('facebook_ads_code', '<script>facebook</script>')
             ->set('custom_ads_enabled', false)
             ->set('ad_top_link', 'https://example.com')
+            ->set('ad_footer_link', 'https://example.com/footer')
+            ->set('ad_mobile_sticky_link', 'https://example.com/mobile')
             ->call('save');
 
         $this->assertTrue(Setting::get('adsense_enabled'));
@@ -181,5 +183,7 @@ class AnnouncementTest extends TestCase
         $this->assertEquals('<script>facebook</script>', Setting::get('facebook_ads_code'));
         $this->assertFalse(Setting::get('custom_ads_enabled'));
         $this->assertEquals('https://example.com', Setting::get('ad_top_link'));
+        $this->assertEquals('https://example.com/footer', Setting::get('ad_footer_link'));
+        $this->assertEquals('https://example.com/mobile', Setting::get('ad_mobile_sticky_link'));
     }
 }

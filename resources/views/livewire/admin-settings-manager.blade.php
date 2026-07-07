@@ -170,9 +170,15 @@ state([
     'ad_sidebar_link' => fn() => Setting::get('ad_sidebar_link', ''),
     'ad_inline_image' => fn() => Setting::get('ad_inline_image', ''),
     'ad_inline_link' => fn() => Setting::get('ad_inline_link', ''),
+    'ad_footer_image' => fn() => Setting::get('ad_footer_image', ''),
+    'ad_footer_link' => fn() => Setting::get('ad_footer_link', ''),
+    'ad_mobile_sticky_image' => fn() => Setting::get('ad_mobile_sticky_image', ''),
+    'ad_mobile_sticky_link' => fn() => Setting::get('ad_mobile_sticky_link', ''),
     'uploadedTopAd' => null,
     'uploadedSidebarAd' => null,
     'uploadedInlineAd' => null,
+    'uploadedFooterAd' => null,
+    'uploadedMobileStickyAd' => null,
 
     // Dynamic Lists inputs / States
     'newRoleName' => '',
@@ -702,6 +708,20 @@ $save = function () use ($logAction) {
         $this->uploadedInlineAd = null;
     }
 
+    if ($this->uploadedFooterAd) {
+        $this->validate(['uploadedFooterAd' => 'image|max:2048']);
+        $path = $this->uploadedFooterAd->store('ads', 'public');
+        $this->ad_footer_image = asset('storage/' . $path);
+        $this->uploadedFooterAd = null;
+    }
+
+    if ($this->uploadedMobileStickyAd) {
+        $this->validate(['uploadedMobileStickyAd' => 'image|max:2048']);
+        $path = $this->uploadedMobileStickyAd->store('ads', 'public');
+        $this->ad_mobile_sticky_image = asset('storage/' . $path);
+        $this->uploadedMobileStickyAd = null;
+    }
+
     $fields = [
         'site_name', 'site_logo', 'brand_color', 'favicon',
         'website', 'facebook', 'twitter', 'instagram', 'linkedin', 'whatsapp', 'youtube', 'tiktok', 'snapchat', 'telegram', 'pinterest', 'threads', 'other_social_links',
@@ -727,7 +747,9 @@ $save = function () use ($logAction) {
         'custom_ads_enabled',
         'ad_top_image', 'ad_top_link',
         'ad_sidebar_image', 'ad_sidebar_link',
-        'ad_inline_image', 'ad_inline_link'
+        'ad_inline_image', 'ad_inline_link',
+        'ad_footer_image', 'ad_footer_link',
+        'ad_mobile_sticky_image', 'ad_mobile_sticky_link'
     ];
 
     foreach ($fields as $field) {
@@ -1559,6 +1581,48 @@ $getSystemInfo = function () {
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Destination Redirect Link</label>
                                     <input type="url" wire:model="ad_inline_link" placeholder="https://example.com/promo" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-355 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer Banner Ad -->
+                        <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                            <span class="text-[10px] font-black text-[#C8102E] uppercase tracking-wider block">Bottom Footer Banner (728x90)</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Upload Banner Image</label>
+                                    <div class="flex flex-col space-y-2">
+                                        @if($ad_footer_image)
+                                            <img src="{{ $ad_footer_image }}" class="max-h-16 object-contain rounded border border-gray-250 bg-white">
+                                        @endif
+                                        <input type="file" wire:model="uploadedFooterAd" accept="image/*">
+                                        <input type="url" wire:model="ad_footer_image" placeholder="Or enter Image URL" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-350 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Destination Redirect Link</label>
+                                    <input type="url" wire:model="ad_footer_link" placeholder="https://example.com/promo" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-355 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Sticky Bottom Ad -->
+                        <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                            <span class="text-[10px] font-black text-[#C8102E] uppercase tracking-wider block">Mobile Sticky Bottom Banner (320x50)</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Upload Banner Image</label>
+                                    <div class="flex flex-col space-y-2">
+                                        @if($ad_mobile_sticky_image)
+                                            <img src="{{ $ad_mobile_sticky_image }}" class="max-h-12 object-contain rounded border border-gray-250 bg-white">
+                                        @endif
+                                        <input type="file" wire:model="uploadedMobileStickyAd" accept="image/*">
+                                        <input type="url" wire:model="ad_mobile_sticky_image" placeholder="Or enter Image URL" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-350 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Destination Redirect Link</label>
+                                    <input type="url" wire:model="ad_mobile_sticky_link" placeholder="https://example.com/promo" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-355 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                                 </div>
                             </div>
                         </div>

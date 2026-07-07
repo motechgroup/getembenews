@@ -364,6 +364,29 @@
         {{ $slot }}
     </main>
 
+    <!-- Bottom Footer Banner Advertisement Spot -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 my-8">
+        @include('partials.render-ad', ['location' => 'footer'])
+    </div>
+
+    <!-- Mobile Sticky Bottom Advertisement Spot -->
+    @php
+        $mobileStickyAd = \App\Models\Setting::get('ad_mobile_sticky_image');
+        $mobileStickyLink = \App\Models\Setting::get('ad_mobile_sticky_link');
+        $adsenseEnabled = \App\Models\Setting::get('adsense_enabled', false);
+        $facebookAdsEnabled = \App\Models\Setting::get('facebook_ads_enabled', false);
+    @endphp
+    @if(($mobileStickyAd && \App\Models\Setting::get('custom_ads_enabled', true)) || ($adsenseEnabled && \App\Models\Setting::get('adsense_code')) || ($facebookAdsEnabled && \App\Models\Setting::get('facebook_ads_code')))
+        <div class="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/95 dark:bg-gray-950/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 shadow-xl py-1 px-4 flex justify-between items-center" x-data="{ open: true }" x-show="open">
+            <div class="flex-grow flex justify-center">
+                @include('partials.render-ad', ['location' => 'mobile_sticky'])
+            </div>
+            <button @click="open = false" class="text-gray-450 hover:text-gray-700 dark:hover:text-white text-xs font-bold font-sans ml-2 select-none border border-gray-300 dark:border-gray-700 px-1.5 py-0.5 rounded">
+                ✕
+            </button>
+        </div>
+    @endif
+
     <!-- Footer -->
     <footer class="py-12 px-4 sm:px-6 border-t-4 transition-colors" style="background-color: {{ $footerBgColor }}; color: {{ $footerTextColor }}; border-top-color: {{ $brandColor }};">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">

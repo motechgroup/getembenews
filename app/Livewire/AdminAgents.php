@@ -21,12 +21,17 @@ class AdminAgents extends Component
 
     public $isFormOpen = false;
 
+    protected $messages = [
+        'pin.regex' => 'The PIN must consist of exactly 4 digits.',
+        'pin.size' => 'The PIN must be exactly 4 characters.',
+    ];
+
     protected function rules()
     {
         return [
             'name' => 'required|string|max:255',
             'location' => 'required|string|max:255',
-            'pin' => 'required|string|size:4|unique:agents,pin,' . $this->agentId,
+            'pin' => 'required|string|size:4|regex:/^[0-9]{4}$/|unique:agents,pin,' . $this->agentId,
             'commission_percentage' => 'required|integer|min:0|max:100',
         ];
     }

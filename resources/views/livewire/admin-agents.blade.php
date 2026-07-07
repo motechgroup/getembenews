@@ -87,6 +87,7 @@
                 <thead>
                     <tr class="bg-gray-50 dark:bg-gray-850 text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
                         <th class="py-3.5 px-4">Agent Name</th>
+                        <th class="py-3.5 px-4 text-center">Security PIN</th>
                         <th class="py-3.5 px-4 text-center">Location</th>
                         <th class="py-3.5 px-4 text-center">Commission Rate</th>
                         <th class="py-3.5 px-4 text-center">Announcements Submitted</th>
@@ -100,7 +101,10 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-850/50 transition">
                             <td class="py-4 px-4">
                                 <div class="font-bold text-gray-900 dark:text-white">{{ $agent->name }}</div>
-                                <div class="text-[9px] text-gray-400">PIN: <span class="font-mono font-bold">{{ $agent->pin }}</span> &bull; Agent ID: {{ $agent->id }}</div>
+                                <div class="text-[9px] text-gray-400">Agent ID: {{ $agent->id }}</div>
+                            </td>
+                            <td class="py-4 px-4 text-center font-mono font-bold text-[#cc6c3b]">
+                                {{ $agent->pin }}
                             </td>
                             <td class="py-4 px-4 text-center">
                                 {{ $agent->location }}

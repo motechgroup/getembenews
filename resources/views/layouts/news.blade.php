@@ -15,22 +15,28 @@
     </script>
 
     <!-- SEO Metadata -->
-    <title>{{ isset($title) ? $title : 'Getembe News - Fast, Reliable News & Analysis' }}</title>
-    <meta name="description" content="{{ isset($metaDescription) ? $metaDescription : 'Getembe News is your leading source for politics, business, technology, sports, opinion, and global news.' }}">
+    @php
+        $siteName = \App\Models\Setting::get('site_name', 'Getembe News');
+        $parts = explode(' ', trim($siteName), 2);
+        $firstWord = $parts[0] ?? 'Getembe';
+        $secondWord = $parts[1] ?? 'News';
+    @endphp
+    <title>{{ isset($title) ? $title : $siteName . ' - Fast, Reliable News & Analysis' }}</title>
+    <meta name="description" content="{{ isset($metaDescription) ? $metaDescription : $siteName . ' is your leading source for politics, business, technology, sports, opinion, and global news.' }}">
     <link rel="canonical" href="{{ isset($metaUrl) ? $metaUrl : url()->current() }}">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ isset($metaUrl) ? $metaUrl : url()->current() }}">
-    <meta property="og:title" content="{{ isset($title) ? $title : 'Getembe News' }}">
-    <meta property="og:description" content="{{ isset($metaDescription) ? $metaDescription : 'Getembe News is your leading source for politics, business, technology, sports, and global news.' }}">
+    <meta property="og:title" content="{{ isset($title) ? $title : $siteName }}">
+    <meta property="og:description" content="{{ isset($metaDescription) ? $metaDescription : $siteName . ' is your leading source for politics, business, technology, sports, and global news.' }}">
     <meta property="og:image" content="{{ isset($metaImage) ? $metaImage : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600&h=400' }}">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="{{ isset($metaUrl) ? $metaUrl : url()->current() }}">
-    <meta property="twitter:title" content="{{ isset($title) ? $title : 'Getembe News' }}">
-    <meta property="twitter:description" content="{{ isset($metaDescription) ? $metaDescription : 'Getembe News is your leading source for politics, business, technology, sports, and global news.' }}">
+    <meta property="twitter:title" content="{{ isset($title) ? $title : $siteName }}">
+    <meta property="twitter:description" content="{{ isset($metaDescription) ? $metaDescription : $siteName . ' is your leading source for politics, business, technology, sports, and global news.' }}">
     <meta property="twitter:image" content="{{ isset($metaImage) ? $metaImage : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600&h=400' }}">
 
     <!-- Fonts -->
@@ -79,11 +85,11 @@
                 <a href="/" class="flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-sm">
                     <!-- Left: Orange -->
                     <div class="bg-[#cc6c3b] px-3.5 py-1.5 text-white font-sans font-black tracking-tight text-xs sm:text-sm uppercase">
-                        Getembe
+                        {{ $firstWord }}
                     </div>
                     <!-- Right: Dark Gray/Black -->
                     <div class="bg-gray-900 px-3.5 py-1.5 text-white font-sans font-black tracking-tight text-xs sm:text-sm uppercase border-l border-gray-800 dark:border-gray-700">
-                        Digital
+                        {{ $secondWord }}
                     </div>
                 </a>
             </div>
@@ -281,14 +287,13 @@
     <!-- Footer -->
     <footer class="bg-gray-900 dark:bg-gray-950 text-gray-300 border-t-4 border-[#C8102E] py-12 px-4 sm:px-6">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-            <!-- Brand Column -->
             <div class="space-y-4">
                 <div class="flex items-center space-x-3">
-                    <span class="bg-[#C8102E] text-white font-extrabold text-2xl px-2 py-0.5 rounded tracking-tighter">G</span>
-                    <span class="font-serif font-black text-xl tracking-tight text-white">GETEMBE <span class="text-[#C8102E]">NEWS</span></span>
+                    <span class="bg-[#C8102E] text-white font-extrabold text-2xl px-2 py-0.5 rounded tracking-tighter">{{ substr($firstWord, 0, 1) }}</span>
+                    <span class="font-serif font-black text-xl tracking-tight text-white">{{ $firstWord }} <span class="text-[#C8102E]">{{ $secondWord }}</span></span>
                 </div>
                 <p class="text-xs text-gray-400 leading-relaxed">
-                    Getembe News is a modern digital platform dedicated to bringing you timely, accurate, and independent news coverage from Kisii County, Kenya, and across the globe.
+                    {{ $siteName }} is a modern digital platform dedicated to bringing you timely, accurate, and independent news coverage from Kisii County, Kenya, and across the globe.
                 </p>
                 <div class="flex space-x-4 pt-2">
                     <!-- Social icons (SVG placeholders) -->
@@ -311,7 +316,7 @@
 
             <!-- Useful Links -->
             <div>
-                <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">Getembe News</h4>
+                <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">{{ $siteName }}</h4>
                 <ul class="space-y-2 text-xs text-gray-400">
                     @php
                         $defaultFooter = [
@@ -340,7 +345,7 @@
         </div>
 
         <div class="max-w-7xl mx-auto border-t border-gray-800 mt-10 pt-6 text-center text-xs text-gray-500">
-            &copy; {{ date('Y') }} Getembe News. All rights reserved. Built for speed, accessibility and integrity.
+            &copy; {{ date('Y') }} {{ $siteName }}. All rights reserved. Built for speed, accessibility and integrity.
         </div>
     </footer>
 

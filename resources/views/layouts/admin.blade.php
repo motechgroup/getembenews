@@ -14,7 +14,13 @@
         }
     </script>
 
-    <title>{{ $title ?? 'Admin Dashboard - Getembe News' }}</title>
+    @php
+        $siteName = \App\Models\Setting::get('site_name', 'Getembe News');
+        $parts = explode(' ', trim($siteName), 2);
+        $firstWord = $parts[0] ?? 'Getembe';
+        $secondWord = $parts[1] ?? 'News';
+    @endphp
+    <title>{{ $title ?? 'Admin Dashboard - ' . $siteName }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -31,8 +37,8 @@
         <!-- Sidebar Brand Header -->
         <div class="h-16 px-6 border-b border-gray-800 flex items-center justify-between">
             <a href="/" class="flex items-center space-x-2">
-                <span class="bg-[#C8102E] text-white font-extrabold text-lg px-1.5 py-0.5 rounded tracking-tighter">G</span>
-                <span class="font-serif font-black text-sm tracking-tight text-white">GETEMBE <span class="text-[#C8102E]">NEWS</span></span>
+                <span class="bg-[#C8102E] text-white font-extrabold text-lg px-1.5 py-0.5 rounded tracking-tighter">{{ substr($firstWord, 0, 1) }}</span>
+                <span class="font-serif font-black text-sm tracking-tight text-white">{{ $firstWord }} <span class="text-[#C8102E]">{{ $secondWord }}</span></span>
             </a>
             <span class="text-[9px] bg-gray-800 text-gray-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">ADMIN</span>
         </div>
@@ -359,7 +365,7 @@
         <!-- Top Navigation / Search Bar / Theme toggling -->
         <header class="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6">
             <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Getembe News Management Panel
+                {{ $siteName }} Management Panel
             </div>
             
             <!-- Dark mode toggle -->

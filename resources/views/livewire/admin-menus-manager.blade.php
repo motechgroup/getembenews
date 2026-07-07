@@ -23,11 +23,13 @@ $loadMenu = function () {
     $key = $this->activeMenu . '_menu';
     // Default fallback configurations
     $defaultHeader = [
-        ['label' => 'Home', 'url' => '/'],
+        ['label' => 'News', 'url' => '/'],
+        ['label' => 'Counties', 'url' => '#counties'],
         ['label' => 'Politics', 'url' => '/politics'],
         ['label' => 'Business', 'url' => '/business'],
-        ['label' => 'Technology', 'url' => '/technology'],
+        ['label' => 'Entertainment', 'url' => '/entertainment'],
         ['label' => 'Sports', 'url' => '/sports'],
+        ['label' => 'Video', 'url' => '/live-tv'],
     ];
 
     $defaultFooter = [

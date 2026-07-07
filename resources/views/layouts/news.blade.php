@@ -46,64 +46,116 @@
 
     <!-- Main Al Jazeera-style Header -->
     <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-850 sticky top-0 z-50 transition-colors duration-200" x-data="{ mobileMenuOpen: false }">
-        <div class="max-w-7xl mx-auto flex items-center justify-between h-14 px-4 sm:px-6">
-            <!-- Left Side: Logo Emblem -->
+        <!-- Top Info Bar (Black background) -->
+        <div class="bg-gray-950 text-gray-400 text-[10px] sm:text-xs py-2 px-4 sm:px-6 border-b border-gray-900">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <!-- Left: Email & Phone -->
+                <div class="flex items-center space-x-4">
+                    <a href="mailto:info@getembetv.co.ke" class="flex items-center space-x-1 hover:text-white transition">
+                        <svg class="h-3.5 w-3.5 text-[#cc6c3b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span class="font-bold text-gray-300">info@getembetv.co.ke</span>
+                    </a>
+                    <a href="tel:+254143567165" class="flex items-center space-x-1 hover:text-white transition">
+                        <svg class="h-3.5 w-3.5 text-[#cc6c3b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        <span class="font-bold text-gray-300">+254143567165</span>
+                    </a>
+                </div>
+                <!-- Right: Announcements | Contact Us -->
+                <div class="flex items-center space-x-3 uppercase tracking-wider font-bold text-[9px] sm:text-[10px]">
+                    <span class="hover:text-white transition cursor-pointer text-gray-300">Announcements</span>
+                    <span class="text-gray-800">|</span>
+                    <a href="/contact" class="hover:text-white transition text-gray-300">Contact Us</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-6">
+            <!-- Left Side: Logo Emblem (Getembe Digital) -->
             <div class="flex items-center space-x-6 h-full shrink-0">
-                <a href="/" class="flex items-center h-full group">
-                    <!-- Gold Calligraphic background emblem block -->
-                    <div class="bg-[#FF7900] h-14 w-12 flex items-center justify-center relative shadow-sm shrink-0">
-                        <span class="text-white font-black text-2xl tracking-tighter transform group-hover:scale-105 transition font-serif">G</span>
-                        <!-- Al Jazeera signature bottom triangle indent/accent -->
-                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-amber-500"></div>
+                <a href="/" class="flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-sm">
+                    <!-- Left: Orange -->
+                    <div class="bg-[#cc6c3b] px-3.5 py-1.5 text-white font-sans font-black tracking-tight text-xs sm:text-sm uppercase">
+                        Getembe
                     </div>
-                    <!-- Brand Typography -->
-                    <span class="font-serif font-black text-lg sm:text-xl tracking-tight text-gray-950 dark:text-white ml-3 transition duration-150 uppercase">
-                        GETEMBE <span class="text-[#FF7900]">NEWS</span>
-                    </span>
+                    <!-- Right: Dark Gray/Black -->
+                    <div class="bg-gray-900 px-3.5 py-1.5 text-white font-sans font-black tracking-tight text-xs sm:text-sm uppercase border-l border-gray-800 dark:border-gray-700">
+                        Digital
+                    </div>
                 </a>
             </div>
 
             <!-- Center Side: Desktop Navigation Links -->
-            <nav class="hidden lg:flex items-center space-x-6 h-full text-xs font-black tracking-wide text-gray-900 dark:text-gray-200">
-                @php
-                    $defaultHeader = [
-                        ['label' => 'Home', 'url' => '/'],
-                        ['label' => 'Politics', 'url' => '/politics'],
-                        ['label' => 'Business', 'url' => '/business'],
-                        ['label' => 'Technology', 'url' => '/technology'],
-                        ['label' => 'Sports', 'url' => '/sports'],
-                    ];
-                    $headerLinks = \App\Models\Setting::get('header_menu', $defaultHeader);
-                @endphp
-                @foreach($headerLinks as $link)
-                    <a href="{{ $link['url'] }}" class="hover:text-[#FF7900] dark:hover:text-[#FF7900] transition py-5 flex items-center space-x-0.5">
-                        <span>{{ $link['label'] }}</span>
-                    </a>
-                @endforeach
-            </nav>
+            <nav class="hidden lg:flex items-center space-x-5 h-full text-xs font-black tracking-wider text-gray-900 dark:text-gray-200">
+                <a href="/" class="hover:text-[#cc6c3b] dark:hover:text-[#cc6c3b] transition py-5">
+                    NEWS
+                </a>
+                
+                <!-- COUNTIES Dropdown -->
+                <div class="relative group py-5" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" @click.away="open = false">
+                    <button @click="open = !open" class="hover:text-[#cc6c3b] dark:hover:text-[#cc6c3b] transition flex items-center space-x-1 focus:outline-none font-black uppercase">
+                        <span>COUNTIES</span>
+                        <svg class="h-3 w-3 text-gray-400 group-hover:text-[#cc6c3b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <!-- Dropdown Menu -->
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="absolute left-0 mt-0 w-48 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg py-2 z-50"
+                         style="display: none;">
+                        <a href="/kisii" class="block px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#cc6c3b] transition">Kisii County</a>
+                        <a href="/nyamira" class="block px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#cc6c3b] transition">Nyamira County</a>
+                        <a href="/migori" class="block px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#cc6c3b] transition">Migori County</a>
+                        <a href="/kisumu" class="block px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#cc6c3b] transition">Kisumu County</a>
+                    </div>
+                </div>
 
-            <!-- Right Side Actions: Live, Search, Dark mode, Sign in/up -->
-            <div class="flex items-center space-x-4">
-                <!-- LIVE TV Badge -->
-                <a href="/live-tv" class="flex items-center space-x-1 text-xs font-black text-gray-900 dark:text-white hover:text-[#FF7900] transition uppercase tracking-wider group">
-                    <span class="relative flex h-2 w-2 shrink-0">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF7900] opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-[#FF7900]"></span>
-                    </span>
-                    <svg class="h-4 w-4 text-gray-550 dark:text-gray-400 group-hover:text-[#FF7900] transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/>
-                    </svg>
-                    <span class="hidden sm:inline">LIVE TV</span>
+                <a href="/politics" class="hover:text-[#cc6c3b] dark:hover:text-[#cc6c3b] transition py-5">
+                    POLITICS
+                </a>
+                <a href="/business" class="hover:text-[#cc6c3b] dark:hover:text-[#cc6c3b] transition py-5">
+                    BUSINESS
+                </a>
+                <a href="/entertainment" class="hover:text-[#cc6c3b] dark:hover:text-[#cc6c3b] transition py-5">
+                    ENTERTAINMENT
+                </a>
+                <a href="/sports" class="hover:text-[#cc6c3b] dark:hover:text-[#cc6c3b] transition py-5">
+                    SPORTS
+                </a>
+                <a href="/live-tv" class="hover:text-[#cc6c3b] dark:hover:text-[#cc6c3b] transition py-5">
+                    VIDEO
                 </a>
 
-                <!-- LIVE RADIO Badge -->
-                <a href="/live-radio" class="flex items-center space-x-1 text-xs font-black text-gray-900 dark:text-white hover:text-[#FF7900] transition uppercase tracking-wider group">
-                    <svg class="h-4 w-4 text-gray-550 dark:text-gray-400 group-hover:text-[#FF7900] transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <!-- TV link -->
+                <a href="/live-tv" class="hover:text-red-600 transition flex items-center space-x-1 py-5 text-red-500 font-extrabold tracking-wider">
+                    <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                    </svg>
+                    <span>TV</span>
+                </a>
+
+                <!-- RADIO link -->
+                <a href="/live-radio" class="hover:text-blue-600 transition flex items-center space-x-1 py-5 text-blue-500 font-extrabold tracking-wider">
+                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
                     </svg>
-                    <span class="hidden sm:inline">Radio</span>
+                    <span>RADIO</span>
                 </a>
+            </nav>
 
+            <!-- Right Side Actions -->
+            <div class="flex items-center space-x-4">
                 <!-- Mobile App Download Icons -->
                 <div class="hidden md:flex items-center space-x-2 border-l border-gray-200 dark:border-gray-800 pl-3.5 mr-1 shrink-0">
                     <a href="{{ \App\Models\Setting::get('app_play_store_url', 'https://play.google.com/store') }}" target="_blank" class="flex items-center justify-center w-7 h-7 rounded-full bg-gray-50 hover:bg-gray-150 dark:bg-gray-850 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition" title="Get Android App on Google Play">
@@ -118,23 +170,8 @@
                     </a>
                 </div>
 
-                <!-- Inline Search Form / Toggle -->
-                <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#FF7900] focus:outline-none transition">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </button>
-                    <!-- Expandable search bar -->
-                    <div x-show="open" @click.outside="open = false" x-transition class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 border border-gray-205 dark:border-gray-800 rounded-lg shadow-lg p-2 z-50" style="display: none;">
-                        <form action="/search" method="GET">
-                            <input type="text" name="q" placeholder="Search news..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md py-1.5 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-[#FF7900] dark:text-white">
-                        </form>
-                    </div>
-                </div>
-
                 <!-- Theme Toggle -->
-                <button @click="$store.theme.toggle()" class="p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#FF7900] focus:outline-none transition">
+                <button @click="$store.theme.toggle()" class="p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#cc6c3b] focus:outline-none transition">
                     <svg x-show="!$store.theme.darkMode" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                     </svg>
@@ -143,19 +180,34 @@
                     </svg>
                 </button>
 
-                <!-- Profile / Sign Up Button (Pill style) -->
+                <!-- Inline Search Form / Toggle -->
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#cc6c3b] focus:outline-none transition">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </button>
+                    <!-- Expandable search bar -->
+                    <div x-show="open" @click.outside="open = false" x-transition class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-900 border border-gray-205 dark:border-gray-800 rounded-lg shadow-lg p-2 z-50" style="display: none;">
+                        <form action="/search" method="GET">
+                            <input type="text" name="q" placeholder="Search news..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md py-1.5 px-3 text-xs focus:outline-none focus:ring-1 focus:ring-[#cc6c3b] dark:text-white">
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Sign In / Dashboard Button (Vibrant screenshot match) -->
                 @auth
-                    <a href="{{ route('dashboard') }}" class="bg-black hover:bg-gray-850 text-white dark:bg-white dark:text-black dark:hover:bg-gray-150 text-[10px] uppercase font-bold tracking-wider px-4 py-2 rounded-full transition shadow-sm">
+                    <a href="{{ route('dashboard') }}" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-5 py-2 rounded-lg transition shadow-sm shrink-0">
                         Dashboard
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="bg-black hover:bg-gray-850 text-white dark:bg-white dark:text-black dark:hover:bg-gray-150 text-[10px] uppercase font-bold tracking-wider px-4 py-2 rounded-full transition shadow-sm">
-                        Sign up
+                    <a href="{{ route('login') }}" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-5 py-2 rounded-lg transition shadow-sm shrink-0">
+                        Sign In
                     </a>
                 @endauth
 
                 <!-- Mobile Menu Toggle Button -->
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#FF7900] focus:outline-none transition">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#cc6c3b] focus:outline-none transition">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" x-show="!mobileMenuOpen"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" x-show="mobileMenuOpen" style="display: none;"/>
@@ -165,11 +217,33 @@
         </div>
 
         <!-- Mobile Dropdown Nav Menu -->
-        <div x-show="mobileMenuOpen" x-transition class="lg:hidden bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 py-3" style="display: none;">
+        <div x-show="mobileMenuOpen" x-transition class="lg:hidden bg-white dark:bg-gray-900 border-t border-gray-150 dark:border-gray-800 py-3" style="display: none;">
             <div class="px-4 space-y-1">
-                @foreach($headerLinks as $link)
-                    <a href="{{ $link['url'] }}" class="block px-3 py-2 rounded text-sm font-semibold text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#FF7900]">{{ $link['label'] }}</a>
-                @endforeach
+                <a href="/" class="block px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b]">NEWS</a>
+                
+                <!-- Counties submenu -->
+                <div x-data="{ open: false }" class="space-y-1">
+                    <button @click="open = !open" class="w-full text-left px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b] flex justify-between items-center focus:outline-none">
+                        <span>COUNTIES</span>
+                        <svg class="h-4 w-4 transform transition-transform" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div x-show="open" class="pl-4 space-y-1" style="display: none;">
+                        <a href="/kisii" class="block px-3 py-1.5 rounded text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#cc6c3b]">Kisii County</a>
+                        <a href="/nyamira" class="block px-3 py-1.5 rounded text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#cc6c3b]">Nyamira County</a>
+                        <a href="/migori" class="block px-3 py-1.5 rounded text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#cc6c3b]">Migori County</a>
+                        <a href="/kisumu" class="block px-3 py-1.5 rounded text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#cc6c3b]">Kisumu County</a>
+                    </div>
+                </div>
+
+                <a href="/politics" class="block px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b]">POLITICS</a>
+                <a href="/business" class="block px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b]">BUSINESS</a>
+                <a href="/entertainment" class="block px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b]">ENTERTAINMENT</a>
+                <a href="/sports" class="block px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b]">SPORTS</a>
+                <a href="/live-tv" class="block px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b]">VIDEO</a>
+                <a href="/live-tv" class="block px-3 py-2 rounded text-sm font-bold text-red-500 hover:bg-gray-100 dark:hover:bg-gray-855">TV</a>
+                <a href="/live-radio" class="block px-3 py-2 rounded text-sm font-bold text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-855">RADIO</a>
             </div>
         </div>
     </header>

@@ -18,6 +18,11 @@ class AnnouncementSubmit extends Component
     public $content = '';
     public $days_count = 1;
 
+    // Calculation states
+    public $rate = 5;
+    public $word_count = 0;
+    public $total_price = 0;
+
     // Checkout & M-Pesa
     public $phone_for_mpesa = '';
     public $showCheckoutModal = false;
@@ -34,37 +39,41 @@ class AnnouncementSubmit extends Component
         'days_count' => 'required|integer|min:1|max:30',
     ];
 
-    /**
-     * Get the rate per word depending on the selected media target.
-     */
-    public function getRateProperty()
+    public function mount()
     {
+        $this->updateCalculations();
+    }
+
+    public function updated($propertyName)
+    {
+        if (in_array($propertyName, ['content', 'media', 'days_count'])) {
+            $this->updateCalculations();
+        }
+    }
+
+    /**
+     * Calculate rate, word count and total price dynamically.
+     */
+    public function updateCalculations()
+    {
+        // 1. Get Rate
         if ($this->media === 'tv') {
-            return (int) Setting::get('announcement_rate_tv', 5);
+            $this->rate = (int) Setting::get('announcement_rate_tv', 5);
         } elseif ($this->media === 'radio') {
-            return (int) Setting::get('announcement_rate_radio', 3);
+            $this->rate = (int) Setting::get('announcement_rate_radio', 3);
         } else {
-            return (int) Setting::get('announcement_rate_both', 7);
+            $this->rate = (int) Setting::get('announcement_rate_both', 7);
         }
-    }
 
-    /**
-     * Calculate word count of the content.
-     */
-    public function getWordCountProperty()
-    {
+        // 2. Word Count
         if (empty(trim($this->content))) {
-            return 0;
+            $this->word_count = 0;
+        } else {
+            $this->word_count = count(array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($this->content)))));
         }
-        return count(array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($this->content)))));
-    }
 
-    /**
-     * Calculate total price.
-     */
-    public function getTotalPriceProperty()
-    {
-        return $this->word_count * $this->rate * (int) $this->days_count;
+        // 3. Total Price
+        $this->total_price = $this->word_count * $this->rate * (int) $this->days_count;
     }
 
     /**
@@ -129,6 +138,7 @@ class AnnouncementSubmit extends Component
             
             // Reset input values
             $this->reset(['visitor_name', 'visitor_email', 'visitor_phone', 'content', 'days_count']);
+            $this->updateCalculations();
         }
     }
 

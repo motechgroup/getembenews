@@ -59,9 +59,9 @@
                         <div class="space-y-1">
                             <label class="text-gray-700 dark:text-gray-300 uppercase tracking-wide text-[10px] font-bold">Media Target</label>
                             <select wire:model.live="media" class="w-full bg-gray-55 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-2.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#cc6c3b]">
-                                <option value="tv">TV Only (KSh {{ Setting::get('announcement_rate_tv', 5) }}/word)</option>
-                                <option value="radio">Radio Only (KSh {{ Setting::get('announcement_rate_radio', 3) }}/word)</option>
-                                <option value="both">Both TV & Radio (KSh {{ Setting::get('announcement_rate_both', 7) }}/word)</option>
+                                <option value="tv">TV Only (KSh {{ \App\Models\Setting::get('announcement_rate_tv', 5) }}/word)</option>
+                                <option value="radio">Radio Only (KSh {{ \App\Models\Setting::get('announcement_rate_radio', 3) }}/word)</option>
+                                <option value="both">Both TV & Radio (KSh {{ \App\Models\Setting::get('announcement_rate_both', 7) }}/word)</option>
                             </select>
                             @error('media') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
                         </div>

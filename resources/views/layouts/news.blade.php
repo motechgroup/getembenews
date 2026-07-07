@@ -41,14 +41,14 @@
     <meta property="og:url" content="{{ isset($metaUrl) ? $metaUrl : url()->current() }}">
     <meta property="og:title" content="{{ isset($title) ? $title : $siteName }}">
     <meta property="og:description" content="{{ isset($metaDescription) ? $metaDescription : $siteName . ' is your leading source for politics, business, technology, sports, and global news.' }}">
-    <meta property="og:image" content="{{ isset($metaImage) ? $metaImage : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600&h=400' }}">
+    <meta property="og:image" content="{{ isset($metaImage) ? (\Illuminate\Support\Str::startsWith($metaImage, 'http') ? $metaImage : asset($metaImage)) : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600&h=400' }}">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="{{ isset($metaUrl) ? $metaUrl : url()->current() }}">
     <meta property="twitter:title" content="{{ isset($title) ? $title : $siteName }}">
     <meta property="twitter:description" content="{{ isset($metaDescription) ? $metaDescription : $siteName . ' is your leading source for politics, business, technology, sports, and global news.' }}">
-    <meta property="twitter:image" content="{{ isset($metaImage) ? $metaImage : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600&h=400' }}">
+    <meta property="twitter:image" content="{{ isset($metaImage) ? (\Illuminate\Support\Str::startsWith($metaImage, 'http') ? $metaImage : asset($metaImage)) : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600&h=400' }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -194,6 +194,9 @@
                         <a href="{{ route('dashboard') }}" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-sm">
                             Dashboard
                         </a>
+                        <a href="{{ route('profile') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 font-bold text-xs px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700 shadow-sm uppercase tracking-wider">
+                            Profile
+                        </a>
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
                             <button type="submit" class="bg-gray-150 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 font-bold text-xs px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700 shadow-sm uppercase tracking-wider">
@@ -246,8 +249,14 @@
                 <a href="/live-tv" class="block px-3 py-2 rounded text-sm font-bold text-red-500 hover:bg-gray-100 dark:hover:bg-gray-855">TV</a>
                 <a href="/live-radio" class="block px-3 py-2 rounded text-sm font-bold text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-855">RADIO</a>
                 @auth
-                    <div class="border-t border-gray-150 dark:border-gray-800 my-2 pt-2">
-                        <form method="POST" action="{{ route('logout') }}" class="block">
+                    <div class="border-t border-gray-150 dark:border-gray-800 my-2 pt-2 space-y-1">
+                        <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b] uppercase">
+                            Dashboard
+                        </a>
+                        <a href="{{ route('profile') }}" class="block px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b] uppercase">
+                            Profile
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="block pt-1">
                             @csrf
                             <button type="submit" class="w-full text-left px-3 py-2 rounded text-sm font-bold text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 transition uppercase">
                                 Sign Out

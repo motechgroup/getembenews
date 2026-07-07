@@ -21,19 +21,22 @@
 
                 <div class="space-y-2 border-t border-gray-100 dark:border-gray-800 pt-4">
                     <h3 class="text-sm font-bold uppercase tracking-wider text-[#C8102E]">Phone & Hotlines</h3>
-                    <p class="text-xs text-gray-655 dark:text-gray-400 leading-relaxed">
-                        General Inquiries: {{ \App\Models\Setting::get('contact_phone', '+254712345678') }}<br>
-                        Editorial Hotline: {{ \App\Models\Setting::get('contact_editorial_phone', '+254789012345') }}
+                    <p class="text-xs text-gray-650 dark:text-gray-400 leading-relaxed">
+                        {{ \App\Models\Setting::get('contact_phone', '+254712345678') }}
                     </p>
                 </div>
 
                 <div class="space-y-2 border-t border-gray-100 dark:border-gray-800 pt-4">
                     <h3 class="text-sm font-bold uppercase tracking-wider text-[#C8102E]">Email Desk</h3>
-                    <p class="text-xs text-gray-655 dark:text-gray-400 leading-relaxed font-mono">
-                        General: {{ \App\Models\Setting::get('contact_email', 'contact@getembenews.com') }}<br>
-                        News: {{ \App\Models\Setting::get('contact_news_email', 'news@getembenews.com') }}<br>
-                        Tips: {{ \App\Models\Setting::get('contact_tips_email', 'tips@getembenews.com') }}<br>
-                        Ads: {{ \App\Models\Setting::get('contact_ads_email', 'ads@getembenews.com') }}
+                    <p class="text-xs text-gray-650 dark:text-gray-400 leading-relaxed font-mono">
+                        {{ \App\Models\Setting::get('contact_email', 'contact@getembenews.com') }}
+                    </p>
+                </div>
+
+                <div class="space-y-2 border-t border-gray-100 dark:border-gray-800 pt-4">
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-[#C8102E]">Open Hours</h3>
+                    <p class="text-xs text-gray-650 dark:text-gray-400 leading-relaxed whitespace-pre-line">
+                        {{ \App\Models\Setting::get('contact_open_hours', "Monday - Friday: 8:00 AM - 5:00 PM\nSaturday: 8:00 AM - 1:00 PM\nSunday: Closed") }}
                     </p>
                 </div>
 

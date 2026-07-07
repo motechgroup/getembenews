@@ -202,9 +202,17 @@
 
                 <!-- Sign In / Dashboard Button (Vibrant screenshot match) -->
                 @auth
-                    <a href="{{ route('dashboard') }}" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-5 py-2 rounded-lg transition shadow-sm shrink-0">
-                        Dashboard
-                    </a>
+                    <div class="flex items-center space-x-2 shrink-0">
+                        <a href="{{ route('dashboard') }}" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-sm">
+                            Dashboard
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                            @csrf
+                            <button type="submit" class="bg-gray-150 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 font-bold text-xs px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700 shadow-sm uppercase tracking-wider">
+                                Sign Out
+                            </button>
+                        </form>
+                    </div>
                 @else
                     <a href="{{ route('login') }}" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-5 py-2 rounded-lg transition shadow-sm shrink-0">
                         Sign In
@@ -249,6 +257,16 @@
                 @endforeach
                 <a href="/live-tv" class="block px-3 py-2 rounded text-sm font-bold text-red-500 hover:bg-gray-100 dark:hover:bg-gray-855">TV</a>
                 <a href="/live-radio" class="block px-3 py-2 rounded text-sm font-bold text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-855">RADIO</a>
+                @auth
+                    <div class="border-t border-gray-150 dark:border-gray-800 my-2 pt-2">
+                        <form method="POST" action="{{ route('logout') }}" class="block">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-3 py-2 rounded text-sm font-bold text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 transition uppercase">
+                                Sign Out
+                            </button>
+                        </form>
+                    </div>
+                @endauth
             </div>
         </div>
     </header>

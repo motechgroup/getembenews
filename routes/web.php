@@ -8,100 +8,104 @@ use App\Models\Advertisement;
 use App\Models\Category;
 
 Route::get('/', function () {
-    $now = now();
-    
-    $baseQuery = Article::where('status', 'published')
-        ->whereNotNull('published_at')
-        ->where('published_at', '<=', $now)
-        ->orderBy('published_at', 'desc');
+    $homepageData = \Illuminate\Support\Facades\Cache::remember('homepage_data_v1', 60, function () {
+        $now = now();
+        
+        $baseQuery = Article::where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', $now)
+            ->orderBy('published_at', 'desc');
 
-    $featuredArticle = (clone $baseQuery)->where('is_featured', true)->first() ?? (clone $baseQuery)->first();
-    $featuredId = $featuredArticle ? $featuredArticle->id : 0;
+        $featuredArticle = (clone $baseQuery)->where('is_featured', true)->first() ?? (clone $baseQuery)->first();
+        $featuredId = $featuredArticle ? $featuredArticle->id : 0;
 
-    $topStories = (clone $baseQuery)
-        ->where('id', '!=', $featuredId)
-        ->take(3)
-        ->get();
+        $topStories = (clone $baseQuery)
+            ->where('id', '!=', $featuredId)
+            ->take(3)
+            ->get();
 
-    $latestArticles = (clone $baseQuery)
-        ->take(6)
-        ->get();
+        $latestArticles = (clone $baseQuery)
+            ->take(6)
+            ->get();
 
-    $trendingArticles = (clone $baseQuery)
-        ->orderBy('views_count', 'desc')
-        ->take(5)
-        ->get();
+        $trendingArticles = (clone $baseQuery)
+            ->orderBy('views_count', 'desc')
+            ->take(5)
+            ->get();
 
-    // Specific category feeds
-    $politicsArticles = (clone $baseQuery)
-        ->forCategory('politics')
-        ->take(4)
-        ->get();
+        // Specific category feeds
+        $politicsArticles = (clone $baseQuery)
+            ->forCategory('politics')
+            ->take(4)
+            ->get();
 
-    $businessArticles = (clone $baseQuery)
-        ->forCategory('business')
-        ->take(4)
-        ->get();
+        $businessArticles = (clone $baseQuery)
+            ->forCategory('business')
+            ->take(4)
+            ->get();
 
-    $techArticles = (clone $baseQuery)
-        ->forCategory('technology')
-        ->take(4)
-        ->get();
+        $techArticles = (clone $baseQuery)
+            ->forCategory('technology')
+            ->take(4)
+            ->get();
 
-    $sportsArticles = (clone $baseQuery)
-        ->forCategory('sports')
-        ->take(4)
-        ->get();
+        $sportsArticles = (clone $baseQuery)
+            ->forCategory('sports')
+            ->take(4)
+            ->get();
 
-    $featuredVideo = Video::published()->where('is_featured', true)->first() ?? Video::published()->first();
-    $latestVideos = Video::published()
-        ->where('id', '!=', $featuredVideo ? $featuredVideo->id : 0)
-        ->take(3)
-        ->get();
+        $featuredVideo = Video::published()->where('is_featured', true)->first() ?? Video::published()->first();
+        $latestVideos = Video::published()
+            ->where('id', '!=', $featuredVideo ? $featuredVideo->id : 0)
+            ->take(3)
+            ->get();
 
-    $topAd = Advertisement::active()->location('top')->first();
-    $sidebarAd = Advertisement::active()->location('sidebar')->first();
-    $layout = \App\Models\Setting::get('theme_layout', 'standard');
+        $topAd = Advertisement::active()->location('top')->first();
+        $sidebarAd = Advertisement::active()->location('sidebar')->first();
+        $layout = \App\Models\Setting::get('theme_layout', 'standard');
 
-    // Dynamic Category Blocks for Section 5 (Managed by Admin)
-    $homepageCategoriesSlugsString = \App\Models\Setting::get('homepage_categories', 'politics,business,technology,sports');
-    $selectedCategorySlugs = array_filter(array_map('trim', explode(',', $homepageCategoriesSlugsString)));
-    
-    $categoryBlocks = [];
-    if (!empty($selectedCategorySlugs)) {
-        $homepageCategories = Category::whereIn('slug', $selectedCategorySlugs)
-            ->get()
-            ->sortBy(function ($cat) use ($selectedCategorySlugs) {
-                return array_search($cat->slug, $selectedCategorySlugs);
-            });
+        // Dynamic Category Blocks for Section 5 (Managed by Admin)
+        $homepageCategoriesSlugsString = \App\Models\Setting::get('homepage_categories', 'politics,business,technology,sports');
+        $selectedCategorySlugs = array_filter(array_map('trim', explode(',', $homepageCategoriesSlugsString)));
+        
+        $categoryBlocks = [];
+        if (!empty($selectedCategorySlugs)) {
+            $homepageCategories = Category::whereIn('slug', $selectedCategorySlugs)
+                ->get()
+                ->sortBy(function ($cat) use ($selectedCategorySlugs) {
+                    return array_search($cat->slug, $selectedCategorySlugs);
+                });
 
-        foreach ($homepageCategories as $cat) {
-            $categoryBlocks[] = [
-                'category' => $cat,
-                'articles' => (clone $baseQuery)
-                    ->forCategory($cat->id)
-                    ->take(5)
-                    ->get()
-            ];
+            foreach ($homepageCategories as $cat) {
+                $categoryBlocks[] = [
+                    'category' => $cat,
+                    'articles' => (clone $baseQuery)
+                        ->forCategory($cat->id)
+                        ->take(5)
+                        ->get()
+                ];
+            }
         }
-    }
 
-    return view('welcome', compact(
-        'featuredArticle',
-        'topStories',
-        'latestArticles',
-        'trendingArticles',
-        'politicsArticles',
-        'businessArticles',
-        'techArticles',
-        'sportsArticles',
-        'featuredVideo',
-        'latestVideos',
-        'topAd',
-        'sidebarAd',
-        'layout',
-        'categoryBlocks'
-    ));
+        return [
+            'featuredArticle' => $featuredArticle,
+            'topStories' => $topStories,
+            'latestArticles' => $latestArticles,
+            'trendingArticles' => $trendingArticles,
+            'politicsArticles' => $politicsArticles,
+            'businessArticles' => $businessArticles,
+            'techArticles' => $techArticles,
+            'sportsArticles' => $sportsArticles,
+            'featuredVideo' => $featuredVideo,
+            'latestVideos' => $latestVideos,
+            'topAd' => $topAd,
+            'sidebarAd' => $sidebarAd,
+            'layout' => $layout,
+            'categoryBlocks' => $categoryBlocks,
+        ];
+    });
+
+    return view('welcome', $homepageData);
 });
 
 use App\Http\Controllers\ArticleController;

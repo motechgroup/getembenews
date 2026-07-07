@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
+
 class Setting extends Model
 {
     use HasFactory;
@@ -19,8 +21,11 @@ class Setting extends Model
             return static::$cachedSettings[$key];
         }
 
-        $setting = static::where('key', $key)->first();
-        $value = $setting ? $setting->value : $default;
+        $cacheKey = 'setting_v1_' . $key;
+        $value = Cache::remember($cacheKey, 3600, function () use ($key, $default) {
+            $setting = static::where('key', $key)->first();
+            return $setting ? $setting->value : $default;
+        });
 
         // Only decode JSON if the expected default is an array
         if (is_array($default)) {
@@ -41,7 +46,10 @@ class Setting extends Model
     {
         $dbValue = (is_array($value) || is_object($value)) ? json_encode($value) : $value;
         $setting = static::updateOrCreate(['key' => $key], ['value' => $dbValue]);
+        
+        Cache::forget('setting_v1_' . $key);
         static::$cachedSettings[$key] = $value;
+        
         return $setting;
     }
 }

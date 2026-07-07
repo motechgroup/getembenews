@@ -10,6 +10,15 @@ rules(['email' => 'required|email|unique:newsletters,email']);
 $subscribe = function () {
     $this->validate();
 
+    // Rate Limit: 5 newsletter subscriptions per IP per minute
+    $ip = request()->ip();
+    if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts('newsletter-subscribe:' . $ip, 5)) {
+        $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn('newsletter-subscribe:' . $ip);
+        $this->addError('email', "Too many requests. Please try again in {$seconds} seconds.");
+        return;
+    }
+    \Illuminate\Support\Facades\RateLimiter::hit('newsletter-subscribe:' . $ip, 60);
+
     Newsletter::create([
         'email' => $this->email,
         'is_active' => true

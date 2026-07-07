@@ -94,6 +94,15 @@ class AnnouncementSubmit extends Component
     {
         $this->validate();
 
+        // Rate Limiting: 3 submissions per IP per minute
+        $ip = request()->ip();
+        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts('announcement-submit:' . $ip, 3)) {
+            $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn('announcement-submit:' . $ip);
+            $this->addError('content', "Too many announcements submitted. Please wait {$seconds} seconds.");
+            return;
+        }
+        \Illuminate\Support\Facades\RateLimiter::hit('announcement-submit:' . $ip, 60);
+
         $selectedAgentId = null;
         if ($this->submitter_type === 'agent') {
             $agent = \App\Models\Agent::where('pin', $this->agent_pin)->first();
@@ -142,6 +151,15 @@ class AnnouncementSubmit extends Component
         $this->validate([
             'phone_for_mpesa' => 'required|string|min:9|max:15'
         ]);
+
+        // Rate Limiting: 3 M-Pesa push attempts per IP per minute
+        $ip = request()->ip();
+        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts('mpesa-push:' . $ip, 3)) {
+            $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn('mpesa-push:' . $ip);
+            $this->addError('phone_for_mpesa', "Too many payment attempts. Please wait {$seconds} seconds.");
+            return;
+        }
+        \Illuminate\Support\Facades\RateLimiter::hit('mpesa-push:' . $ip, 60);
 
         $this->mpesa_status = 'sending';
 

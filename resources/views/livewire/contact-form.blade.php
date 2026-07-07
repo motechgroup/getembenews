@@ -14,6 +14,15 @@ rules([
 $submit = function () {
     $this->validate();
 
+    // Rate Limit: 3 contact messages per IP per minute
+    $ip = request()->ip();
+    if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts('contact-submit:' . $ip, 3)) {
+        $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn('contact-submit:' . $ip);
+        $this->addError('message', "Too many messages sent. Please try again in {$seconds} seconds.");
+        return;
+    }
+    \Illuminate\Support\Facades\RateLimiter::hit('contact-submit:' . $ip, 60);
+
     \App\Models\ContactMessage::create([
         'name' => $this->name,
         'email' => $this->email,

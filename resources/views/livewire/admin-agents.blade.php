@@ -99,8 +99,8 @@
                 <tbody class="divide-y divide-gray-150 dark:divide-gray-800 font-semibold text-gray-700 dark:text-gray-300">
                     @forelse($agents as $agent)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-850/50 transition">
-                            <td class="py-4 px-4">
-                                <div class="font-bold text-gray-900 dark:text-white">{{ $agent->name }}</div>
+                            <td class="py-4 px-4 cursor-pointer" wire:click="viewDetails({{ $agent->id }})">
+                                <div class="font-bold text-gray-900 dark:text-white hover:text-[#cc6c3b] transition hover:underline">{{ $agent->name }}</div>
                                 <div class="text-[9px] text-gray-400">Agent ID: {{ $agent->id }}</div>
                             </td>
                             <td class="py-4 px-4 text-center font-mono font-bold text-[#cc6c3b]">
@@ -150,4 +150,83 @@
             </div>
         @endif
     </div>
+
+    <!-- Details Panel / Modal -->
+    @if($isDetailsOpen && $selectedAgentForDetails)
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm space-y-6">
+            <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-3">
+                <div>
+                    <h2 class="text-sm font-black uppercase text-gray-900 dark:text-white tracking-wider">
+                        Agent Performance Profile: {{ $selectedAgentForDetails->name }}
+                    </h2>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">Location: {{ $selectedAgentForDetails->location }} &bull; PIN: {{ $selectedAgentForDetails->pin }}</p>
+                </div>
+                <button type="button" wire:click="closeDetails()" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold px-3 py-1.5 rounded-lg transition text-xs uppercase tracking-wider">
+                    Close Profile
+                </button>
+            </div>
+
+            <!-- Stats grid inside profile -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center font-bold">
+                <div class="bg-gray-55 dark:bg-gray-850 p-4 rounded-lg border border-gray-100 dark:border-gray-800">
+                    <div class="text-[9px] uppercase font-bold text-gray-400">Announcements Submitted</div>
+                    <div class="text-xl font-black text-gray-900 dark:text-white mt-1">{{ $selectedAgentForDetails->total_announcements }}</div>
+                </div>
+                <div class="bg-gray-55 dark:bg-gray-850 p-4 rounded-lg border border-gray-100 dark:border-gray-800">
+                    <div class="text-[9px] uppercase font-bold text-gray-400">Total Revenue Generated</div>
+                    <div class="text-xl font-black text-[#cc6c3b] mt-1">KSh {{ number_format($selectedAgentForDetails->total_revenue) }}</div>
+                </div>
+                <div class="bg-gray-55 dark:bg-gray-850 p-4 rounded-lg border border-gray-100 dark:border-gray-800">
+                    <div class="text-[9px] uppercase font-bold text-gray-400">Total Commission Earned</div>
+                    <div class="text-xl font-black text-green-700 dark:text-green-455 mt-1">KSh {{ number_format($selectedAgentForDetails->total_commission) }}</div>
+                </div>
+            </div>
+
+            <!-- Announcements log -->
+            <div class="space-y-3 font-semibold">
+                <h3 class="text-xs font-bold uppercase text-gray-900 dark:text-white tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">
+                    Submitted Announcements History
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-[10px]">
+                        <thead>
+                            <tr class="bg-gray-50 dark:bg-gray-850 text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
+                                <th class="py-2 px-3">Date</th>
+                                <th class="py-2 px-3">Visitor Info</th>
+                                <th class="py-2 px-3 text-center">Type / Target</th>
+                                <th class="py-2 px-3 text-center">Amount</th>
+                                <th class="py-2 px-3 text-center">Commission</th>
+                                <th class="py-2 px-3 text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-150 dark:divide-gray-800 font-semibold text-gray-700 dark:text-gray-300">
+                            @forelse($selectedAgentForDetails->announcements()->latest()->get() as $ann)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-850/50">
+                                    <td class="py-3 px-3 text-gray-400 font-mono">{{ $ann->created_at->format('M d, Y H:i') }}</td>
+                                    <td class="py-3 px-3">
+                                        <div class="font-bold text-gray-900 dark:text-white">{{ $ann->visitor_name }}</div>
+                                        <div class="text-[9px] text-gray-400 font-mono">{{ $ann->visitor_phone }}</div>
+                                    </td>
+                                    <td class="py-3 px-3 text-center uppercase font-bold">{{ $ann->type }} / {{ $ann->media }}</td>
+                                    <td class="py-3 px-3 text-center font-bold text-gray-900 dark:text-white">KSh {{ number_format($ann->total_amount) }}</td>
+                                    <td class="py-3 px-3 text-center font-black text-green-700 dark:text-green-455">KSh {{ number_format($ann->commission_amount) }}</td>
+                                    <td class="py-3 px-3 text-right">
+                                        <span class="px-2 py-0.5 rounded text-[8px] font-black uppercase {{ $ann->payment_status === 'paid' ? 'bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400' : 'bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400' }}">
+                                            {{ $ann->payment_status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center py-6 text-gray-400 font-bold">
+                                        No announcements submitted by this agent yet.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

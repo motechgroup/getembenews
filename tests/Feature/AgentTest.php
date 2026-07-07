@@ -170,4 +170,53 @@ class AgentTest extends TestCase
         $component->assertHasErrors(['agent_pin']);
         $component->assertSet('showCheckoutModal', false);
     }
+
+    public function test_admin_can_view_agent_details(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $agent = Agent::create([
+            'name' => 'Samuel Mogaka',
+            'location' => 'Kisii Town',
+            'pin' => '2468',
+            'commission_percentage' => 20,
+        ]);
+
+        $component = Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminAgents::class)
+            ->call('viewDetails', $agent->id)
+            ->assertSet('isDetailsOpen', true)
+            ->assertSet('selectedAgentForDetails.id', $agent->id);
+
+        $component->call('closeDetails')
+            ->assertSet('isDetailsOpen', false)
+            ->assertSet('selectedAgentForDetails', null);
+    }
+
+    public function test_agent_pin_must_be_numeric_and_exactly_4_digits(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        // Test non-numeric PIN fails validation
+        Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminAgents::class)
+            ->call('openForm')
+            ->set('name', 'Samuel Mogaka')
+            ->set('location', 'Kisii Town')
+            ->set('pin', 'abcd') // non-numeric
+            ->set('commission_percentage', 15)
+            ->call('saveAgent')
+            ->assertHasErrors(['pin']);
+
+        // Test length !== 4 fails validation
+        Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminAgents::class)
+            ->call('openForm')
+            ->set('name', 'Samuel Mogaka')
+            ->set('location', 'Kisii Town')
+            ->set('pin', '123') // 3 digits
+            ->set('commission_percentage', 15)
+            ->call('saveAgent')
+            ->assertHasErrors(['pin']);
+    }
 }

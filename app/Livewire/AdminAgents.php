@@ -21,6 +21,10 @@ class AdminAgents extends Component
 
     public $isFormOpen = false;
 
+    // Details state
+    public $selectedAgentForDetails = null;
+    public $isDetailsOpen = false;
+
     protected $messages = [
         'pin.regex' => 'The PIN must consist of exactly 4 digits.',
         'pin.size' => 'The PIN must be exactly 4 characters.',
@@ -98,7 +102,23 @@ class AdminAgents extends Component
         $agent = Agent::findOrFail($id);
         $agent->delete();
 
+        if ($this->selectedAgentForDetails && $this->selectedAgentForDetails->id === $id) {
+            $this->closeDetails();
+        }
+
         session()->flash('message', 'Agent deleted successfully.');
+    }
+
+    public function viewDetails($id)
+    {
+        $this->selectedAgentForDetails = Agent::findOrFail($id);
+        $this->isDetailsOpen = true;
+    }
+
+    public function closeDetails()
+    {
+        $this->isDetailsOpen = false;
+        $this->selectedAgentForDetails = null;
     }
 
     public function render()

@@ -652,5 +652,17 @@ class DatabaseSeeder extends Seeder
             ]
         ];
         Setting::set('simulated_quizzes', json_encode($demoQuizzes));
+
+        // 12. Seed Agents
+        \App\Models\Agent::create([
+            'name' => 'Agent Mogaka',
+            'location' => 'Kisii Town',
+            'commission_percentage' => 15,
+        ]);
+        \App\Models\Agent::create([
+            'name' => 'Agent Nyabuto',
+            'location' => 'Nyamira',
+            'commission_percentage' => 10,
+        ]);
     }
 }

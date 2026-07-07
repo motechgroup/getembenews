@@ -84,6 +84,11 @@
                                     <div class="text-[10px] text-gray-400 font-medium">Email: {{ $ann->visitor_email }}</div>
                                 @endif
                                 <div class="text-[10px] text-gray-400 font-mono">{{ $ann->visitor_phone }}</div>
+                                @if($ann->agent)
+                                    <div class="text-[10px] text-purple-700 dark:text-purple-400 font-bold mt-1">
+                                        Agent: {{ $ann->agent->name }} (Comm: KSh {{ number_format($ann->commission_amount) }})
+                                    </div>
+                                @endif
                             </td>
 
                             <!-- Type / Media -->

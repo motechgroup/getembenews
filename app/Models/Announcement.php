@@ -23,6 +23,8 @@ class Announcement extends Model
         'payment_status',
         'payment_reference',
         'is_approved',
+        'agent_id',
+        'commission_amount',
     ];
 
     protected $casts = [
@@ -31,6 +33,8 @@ class Announcement extends Model
         'days_count' => 'integer',
         'rate_per_word' => 'integer',
         'total_amount' => 'integer',
+        'agent_id' => 'integer',
+        'commission_amount' => 'integer',
     ];
 
     /**
@@ -47,5 +51,13 @@ class Announcement extends Model
     public function scopePaid($query)
     {
         return $query->where('payment_status', 'paid');
+    }
+
+    /**
+     * Relationship: The agent who submitted this announcement.
+     */
+    public function agent()
+    {
+        return $this->belongsTo(Agent::class);
     }
 }

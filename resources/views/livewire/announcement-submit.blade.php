@@ -39,6 +39,36 @@
                         </div>
                     </div>
 
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-gray-700 dark:text-gray-300 uppercase tracking-wide text-[10px] font-bold block mb-1">Submitted By</label>
+                            <div class="flex items-center space-x-4 py-2">
+                                <label class="inline-flex items-center text-gray-900 dark:text-white cursor-pointer">
+                                    <input type="radio" wire:model.live="submitter_type" value="self" class="form-radio text-[#cc6c3b] focus:ring-[#cc6c3b]">
+                                    <span class="ml-2">Self</span>
+                                </label>
+                                <label class="inline-flex items-center text-gray-900 dark:text-white cursor-pointer">
+                                    <input type="radio" wire:model.live="submitter_type" value="agent" class="form-radio text-[#cc6c3b] focus:ring-[#cc6c3b]">
+                                    <span class="ml-2">Agent</span>
+                                </label>
+                            </div>
+                            @error('submitter_type') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
+                        </div>
+
+                        @if($submitter_type === 'agent')
+                            <div class="space-y-1">
+                                <label class="text-gray-700 dark:text-gray-300 uppercase tracking-wide text-[10px] font-bold">Select Agent Name</label>
+                                <select wire:model="agent_id" required class="w-full bg-gray-55 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-2.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#cc6c3b]">
+                                    <option value="">-- Choose Agent --</option>
+                                    @foreach($agents as $agent)
+                                        <option value="{{ $agent->id }}">{{ $agent->name }} ({{ $agent->location }})</option>
+                                    @endforeach
+                                </select>
+                                @error('agent_id') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
+                            </div>
+                        @endif
+                    </div>
+
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="space-y-1">
                             <label class="text-gray-700 dark:text-gray-300 uppercase tracking-wide text-[10px] font-bold">Announcement Type</label>

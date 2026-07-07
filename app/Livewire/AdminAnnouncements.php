@@ -38,9 +38,19 @@ class AdminAnnouncements extends Component
     public function markAsPaid($id)
     {
         $announcement = Announcement::findOrFail($id);
+
+        $commissionAmount = 0;
+        if ($announcement->agent_id) {
+            $agent = \App\Models\Agent::find($announcement->agent_id);
+            if ($agent) {
+                $commissionAmount = (int) round(($announcement->total_amount * $agent->commission_percentage) / 100);
+            }
+        }
+
         $announcement->update([
             'payment_status' => 'paid',
-            'payment_reference' => $announcement->payment_reference ?? 'MANUAL-' . strtoupper(uniqid())
+            'payment_reference' => $announcement->payment_reference ?? 'MANUAL-' . strtoupper(uniqid()),
+            'commission_amount' => $commissionAmount,
         ]);
 
         session()->flash('message', 'Announcement marked as Paid.');

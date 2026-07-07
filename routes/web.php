@@ -141,6 +141,7 @@ Route::middleware(['auth', 'can:access-admin'])->prefix('admin')->group(function
     Route::view('/users', 'admin.users')->middleware('can:user management')->name('admin.users');
     Route::view('/messages', 'admin.messages')->middleware('can:contact message management')->name('admin.messages');
     Route::get('/announcements', \App\Livewire\AdminAnnouncements::class)->middleware('can:announcement management')->name('admin.announcements');
+    Route::get('/agents', \App\Livewire\AdminAgents::class)->middleware('can:announcement management')->name('admin.agents');
     Route::get('/settings/{tab?}', function ($tab = 'identity') {
         return view('admin.settings', compact('tab'));
     })->name('admin.settings');

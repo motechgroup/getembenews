@@ -17,6 +17,8 @@ class AnnouncementSubmit extends Component
     public $media = 'tv'; // tv, radio, both
     public $content = '';
     public $days_count = 1;
+    public $submitter_type = 'self'; // self, agent
+    public $agent_id = '';
 
     // Calculation states
     public $rate = 5;
@@ -37,6 +39,8 @@ class AnnouncementSubmit extends Component
         'media' => 'required|in:tv,radio,both',
         'content' => 'required|string|min:5',
         'days_count' => 'required|integer|min:1|max:30',
+        'submitter_type' => 'required|in:self,agent',
+        'agent_id' => 'required_if:submitter_type,agent|nullable|exists:agents,id',
     ];
 
     public function mount()
@@ -96,6 +100,7 @@ class AnnouncementSubmit extends Component
             'total_amount' => $this->total_price,
             'payment_status' => 'pending',
             'is_approved' => false,
+            'agent_id' => $this->submitter_type === 'agent' && $this->agent_id ? (int) $this->agent_id : null,
         ]);
 
         // Notify admin via ContactMessage log
@@ -137,9 +142,19 @@ class AnnouncementSubmit extends Component
         $announcement = Announcement::find($this->currentAnnouncementId);
         if ($announcement) {
             $ref = 'MPESA-STK-' . strtoupper(Str::random(10));
+
+            $commissionAmount = 0;
+            if ($announcement->agent_id) {
+                $agent = \App\Models\Agent::find($announcement->agent_id);
+                if ($agent) {
+                    $commissionAmount = (int) round(($announcement->total_amount * $agent->commission_percentage) / 100);
+                }
+            }
+
             $announcement->update([
                 'payment_status' => 'paid',
                 'payment_reference' => $ref,
+                'commission_amount' => $commissionAmount,
             ]);
 
             // Notify admin of payment success
@@ -153,7 +168,7 @@ class AnnouncementSubmit extends Component
             $this->mpesa_status = 'success';
             
             // Reset input values
-            $this->reset(['visitor_name', 'visitor_email', 'visitor_phone', 'content', 'days_count']);
+            $this->reset(['visitor_name', 'visitor_email', 'visitor_phone', 'content', 'days_count', 'submitter_type', 'agent_id']);
             $this->updateCalculations();
         }
     }
@@ -161,9 +176,11 @@ class AnnouncementSubmit extends Component
     public function render()
     {
         $publishedAnnouncements = Announcement::approved()->paid()->latest()->get();
+        $agents = \App\Models\Agent::orderBy('name', 'asc')->get();
 
         return view('livewire.announcement-submit', [
             'announcements' => $publishedAnnouncements,
+            'agents' => $agents,
         ])->layout('layouts.news');
     }
 }

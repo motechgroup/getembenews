@@ -101,9 +101,30 @@ class AnnouncementTest extends TestCase
             'order' => 10,
         ]);
 
+        $component = Livewire::test('admin-menus-manager')
+            ->set('selectedCategorySlug', 'education');
+            
+        $menuItems = $component->get('menuItems');
+        // The last item in menuItems should be the education category
+        $lastItem = end($menuItems);
+        $this->assertEquals('Education News', $lastItem['label']);
+        $this->assertEquals('/education', $lastItem['url']);
+    }
+
+    public function test_admin_menus_manager_can_save_menu_configuration(): void
+    {
         Livewire::test('admin-menus-manager')
-            ->call('selectCategory', 'education')
-            ->assertSet('newLabel', 'Education News')
-            ->assertSet('newUrl', '/education');
+            ->set('menuItems', [
+                ['label' => 'Custom Link', 'url' => '/custom']
+            ])
+            ->call('saveMenu');
+
+        $this->assertDatabaseHas('settings', [
+            'key' => 'header_menu',
+            'value' => json_encode([['label' => 'Custom Link', 'url' => '/custom']])
+        ]);
+        
+        $retrieved = \App\Models\Setting::get('header_menu');
+        $this->assertEquals([['label' => 'Custom Link', 'url' => '/custom']], $retrieved);
     }
 }

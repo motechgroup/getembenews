@@ -10,6 +10,7 @@ state([
     // New item inputs
     'newLabel' => '',
     'newUrl' => '',
+    'selectedCategorySlug' => '',
     
     'saved' => false,
 ]);
@@ -79,13 +80,16 @@ $reorderItems = function ($fromIndex, $toIndex) {
     array_splice($this->menuItems, $toIndex, 0, [$item]);
 };
 
-$selectCategory = function ($slug) {
-    if (!$slug) return;
-    $category = \App\Models\Category::where('slug', $slug)->first();
+$updatedSelectedCategorySlug = function ($value) {
+    if (!$value) return;
+    $category = \App\Models\Category::where('slug', $value)->first();
     if ($category) {
-        $this->newLabel = $category->name;
-        $this->newUrl = '/' . $category->slug;
+        $this->menuItems[] = [
+            'label' => $category->name,
+            'url' => '/' . $category->slug,
+        ];
     }
+    $this->selectedCategorySlug = '';
 };
 
 $saveMenu = function () {
@@ -171,7 +175,7 @@ $saveMenu = function () {
             <form wire:submit.prevent="addItem" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 shadow-sm space-y-4">
                 <div class="space-y-1">
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Quick-Select Category Link</label>
-                    <select wire:change="selectCategory($event.target.value)" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none font-bold">
+                    <select wire:model.live="selectedCategorySlug" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none font-bold">
                         <option value="">-- Choose Category --</option>
                         @foreach(\App\Models\Category::all() as $category)
                             <option value="{{ $category->slug }}">{{ $category->name }}</option>

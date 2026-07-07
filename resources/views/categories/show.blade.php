@@ -18,6 +18,7 @@
         </div>
 
         @php
+            $sidebarAd = \App\Models\Advertisement::active()->location('sidebar')->first();
             $items = collect($articles->items());
             $spotlight = $items->first();
             $centerFeatured = $items->get(1);
@@ -139,40 +140,76 @@
 
             </div>
 
-            <!-- Bottom Section: Remaining Articles Grid -->
-            @if($remaining->isNotEmpty())
-                <div class="space-y-6 pt-6">
+            <!-- Bottom Section: Main Feed & Sidebar Widgets -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-8 border-t border-gray-150 dark:border-gray-850">
+                <!-- Left Main Area: More articles -->
+                <div class="lg:col-span-2 space-y-6">
                     <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white pb-2 inline-block">
                         More from {{ $category->name }}
                     </h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        @foreach($remaining as $article)
-                            <article class="group space-y-3">
-                                <div class="aspect-video overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-800">
-                                    <img src="{{ $article->featured_image }}" alt="{{ $article->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
-                                </div>
-                                <div class="space-y-1.5">
-                                    <div class="flex items-center space-x-2 text-[10px] text-gray-400 font-semibold">
-                                        <span>{{ $article->published_at->diffForHumans() }}</span>
-                                        <span>&bull;</span>
-                                        <span>{{ $article->read_time }} min read</span>
+
+                    @if($remaining->isNotEmpty())
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            @foreach($remaining as $article)
+                                <article class="group space-y-3">
+                                    <div class="aspect-video overflow-hidden rounded-lg bg-gray-105 dark:bg-gray-850 border border-gray-250 dark:border-gray-800 relative">
+                                        <img src="{{ $article->featured_image }}" alt="{{ $article->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
                                     </div>
-                                    <h2 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-2">
-                                        <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
-                                    </h2>
-                                    <p class="text-xs text-gray-650 dark:text-gray-400 line-clamp-2 leading-relaxed">
-                                        {{ $article->subtitle }}
-                                    </p>
-                                </div>
-                            </article>
-                        @endforeach
-                    </div>
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center space-x-2 text-[10px] text-gray-400 font-semibold">
+                                            <span>{{ $article->published_at->diffForHumans() }}</span>
+                                            <span>&bull;</span>
+                                            <span>{{ $article->read_time }} min read</span>
+                                        </div>
+                                        <h2 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-2">
+                                            <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
+                                        </h2>
+                                        <p class="text-xs text-gray-650 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                                            {{ $article->subtitle }}
+                                        </p>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-12 bg-gray-50 dark:bg-gray-950 rounded border border-gray-150 dark:border-gray-850 text-xs text-gray-400">
+                            No additional articles in this category.
+                        </div>
+                    @endif
                 </div>
-            @endif
+
+                <!-- Right Area: Ads & Necessary Widgets -->
+                <div class="lg:col-span-1 space-y-8">
+                    <!-- Sidebar Ad -->
+                    <div class="bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg p-4 text-center">
+                        <span class="text-[9px] text-gray-400 dark:text-gray-550 uppercase tracking-widest font-semibold block mb-3">Advertisement</span>
+                        @if($sidebarAd)
+                            <a href="{{ $sidebarAd->destination_url }}" target="_blank" class="block group">
+                                <img src="{{ $sidebarAd->image_url }}" alt="{{ $sidebarAd->title }}" class="mx-auto rounded shadow-sm hover:opacity-95 transition">
+                            </a>
+                        @else
+                            <!-- Premium Fallback Ad promoting dynamic content sponsorship -->
+                            <a href="/contact" class="block w-full relative group">
+                                <div class="relative bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-lg overflow-hidden min-h-[180px] flex flex-col justify-between p-5 text-left">
+                                    <div class="flex justify-center">
+                                        <span class="bg-yellow-500 text-black font-extrabold text-[8px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">Sponsor Getembe</span>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <h4 class="text-xs font-black text-white leading-tight">Your Banner Here</h4>
+                                        <p class="text-[9px] text-gray-400 leading-snug">Place your ad here and reach Kisii's largest local digital news audience. Click to learn more.</p>
+                                    </div>
+                                </div>
+                            </a>
+                        @endif
+                    </div>
+
+                    <!-- Necessary Widgets (Poll & Quiz) -->
+                    @include('partials.sidebar-widgets')
+                </div>
+            </div>
 
             <!-- Pagination Links -->
-            <div class="pt-8 border-t border-gray-150 dark:border-gray-850">
+            <div class="pt-8 border-t border-gray-150 dark:border-gray-855">
                 {{ $articles->links() }}
             </div>
         @else

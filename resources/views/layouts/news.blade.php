@@ -21,6 +21,10 @@
         $firstWord = $parts[0] ?? 'Getembe';
         $secondWord = $parts[1] ?? 'News';
 
+        $brandColor = \App\Models\Setting::get('brand_color', '#C8102E');
+        $footerBgColor = \App\Models\Setting::get('footer_bg_color', '#111827');
+        $footerTextColor = \App\Models\Setting::get('footer_text_color', '#9CA3AF');
+
         $defaultHeader = [
             ['label' => 'News', 'url' => '/'],
             ['label' => 'Counties', 'url' => '#counties'],
@@ -338,12 +342,12 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 dark:bg-gray-950 text-gray-300 border-t-4 border-[#C8102E] py-12 px-4 sm:px-6">
+    <footer class="py-12 px-4 sm:px-6 border-t-4 transition-colors" style="background-color: {{ $footerBgColor }}; color: {{ $footerTextColor }}; border-top-color: {{ $brandColor }};">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
             <div class="space-y-4">
                 <div class="flex items-center space-x-3">
-                    <span class="bg-[#C8102E] text-white font-extrabold text-2xl px-2 py-0.5 rounded tracking-tighter">{{ substr($firstWord, 0, 1) }}</span>
-                    <span class="font-serif font-black text-xl tracking-tight text-white">{{ $firstWord }} <span class="text-[#C8102E]">{{ $secondWord }}</span></span>
+                    <span class="text-white font-extrabold text-2xl px-2 py-0.5 rounded tracking-tighter" style="background-color: {{ $brandColor }};">{{ substr($firstWord, 0, 1) }}</span>
+                    <span class="font-serif font-black text-xl tracking-tight text-white">{{ $firstWord }} <span style="color: {{ $brandColor }};">{{ $secondWord }}</span></span>
                 </div>
                 <p class="text-xs text-gray-400 leading-relaxed">
                     {{ $siteName }} is a modern digital platform dedicated to bringing you timely, accurate, and independent news coverage from Kisii County, Kenya, and across the globe.

@@ -22,6 +22,14 @@ class Setting extends Model
         $setting = static::where('key', $key)->first();
         $value = $setting ? $setting->value : $default;
 
+        // Automatically decode JSON arrays or objects
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_object($decoded))) {
+                $value = $decoded;
+            }
+        }
+
         static::$cachedSettings[$key] = $value;
 
         return $value;
@@ -29,7 +37,8 @@ class Setting extends Model
 
     public static function set(string $key, $value): self
     {
-        $setting = static::updateOrCreate(['key' => $key], ['value' => $value]);
+        $dbValue = (is_array($value) || is_object($value)) ? json_encode($value) : $value;
+        $setting = static::updateOrCreate(['key' => $key], ['value' => $dbValue]);
         static::$cachedSettings[$key] = $value;
         return $setting;
     }

@@ -59,6 +59,29 @@
     <!-- Instrument Sans is compiled via Vite, but fallback to Inter -->
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|playfair-display:700&display=swap" rel="stylesheet" />
 
+    <!-- Dynamic Theme Engine -->
+    <style>
+        :root {
+            --brand-color: {{ $brandColor }};
+        }
+        .text-\[\#C8102E\] { color: var(--brand-color) !important; }
+        .bg-\[\#C8102E\] { background-color: var(--brand-color) !important; }
+        .border-\[\#C8102E\] { border-color: var(--brand-color) !important; }
+        
+        .hover\:text-\[\#C8102E\]:hover { color: var(--brand-color) !important; }
+        .hover\:bg-\[\#C8102E\]:hover { background-color: var(--brand-color) !important; }
+        .hover\:border-\[\#C8102E\]:hover { border-color: var(--brand-color) !important; }
+        
+        .group:hover .group-hover\:text-\[\#C8102E\] { color: var(--brand-color) !important; }
+        .group:hover .group-hover\:bg-\[\#C8102E\] { background-color: var(--brand-color) !important; }
+        .group:hover .group-hover\:border-\[\#C8102E\] { border-color: var(--brand-color) !important; }
+        
+        .border-l-\[\#C8102E\] { border-left-color: var(--brand-color) !important; }
+        .border-t-\[\#C8102E\] { border-top-color: var(--brand-color) !important; }
+        .border-b-\[\#C8102E\] { border-bottom-color: var(--brand-color) !important; }
+        .border-r-\[\#C8102E\] { border-right-color: var(--brand-color) !important; }
+    </style>
+
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles

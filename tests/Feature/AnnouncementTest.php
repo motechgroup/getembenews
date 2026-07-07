@@ -157,4 +157,29 @@ class AnnouncementTest extends TestCase
         $retrieved = \App\Models\Setting::get('header_menu');
         $this->assertEquals($expectedTree, $retrieved);
     }
+
+    public function test_admin_can_save_advertising_settings(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
+        Livewire::test('admin-settings-manager')
+            ->set('activeTab', 'advertising')
+            ->set('adsense_enabled', true)
+            ->set('adsense_client_id', 'ca-pub-12345')
+            ->set('adsense_code', '<script>adsense</script>')
+            ->set('facebook_ads_enabled', true)
+            ->set('facebook_ads_code', '<script>facebook</script>')
+            ->set('custom_ads_enabled', false)
+            ->set('ad_top_link', 'https://example.com')
+            ->call('save');
+
+        $this->assertTrue(Setting::get('adsense_enabled'));
+        $this->assertEquals('ca-pub-12345', Setting::get('adsense_client_id'));
+        $this->assertEquals('<script>adsense</script>', Setting::get('adsense_code'));
+        $this->assertTrue(Setting::get('facebook_ads_enabled'));
+        $this->assertEquals('<script>facebook</script>', Setting::get('facebook_ads_code'));
+        $this->assertFalse(Setting::get('custom_ads_enabled'));
+        $this->assertEquals('https://example.com', Setting::get('ad_top_link'));
+    }
 }

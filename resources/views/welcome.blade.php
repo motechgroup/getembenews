@@ -3,19 +3,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-10">
 
         <!-- Top Advertisement Banner -->
-        @if($topAd)
-            <div class="w-full text-center">
-                <a href="{{ $topAd->destination_url }}" target="_blank" class="inline-block relative group">
-                    <img src="{{ $topAd->image_url }}" alt="{{ $topAd->title }}" class="mx-auto rounded max-h-36 object-cover shadow-sm">
-                    <span class="absolute top-1 left-1 bg-black/60 text-white text-[9px] px-1 rounded uppercase tracking-wider font-semibold">ADVERTISEMENT</span>
-                </a>
-            </div>
-        @else
-            <!-- Standard Placeholder Ad to make layout look premium -->
-            <div class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-center py-6 rounded text-xs text-gray-400 font-medium tracking-wide">
-                ADVERTISEMENT BANNER (728x90)
-            </div>
-        @endif
+        @include('partials.render-ad', ['location' => 'top'])
 
         <!-- Hero Section: Layout Variants -->
         @if($layout === 'compact')
@@ -401,18 +389,7 @@
 
             <!-- Sidebar Advertisement -->
             <div class="space-y-4">
-                @if($sidebarAd)
-                    <div class="w-full text-center">
-                        <a href="{{ $sidebarAd->destination_url }}" target="_blank" class="inline-block relative group">
-                            <img src="{{ $sidebarAd->image_url }}" alt="{{ $sidebarAd->title }}" class="mx-auto rounded max-w-full shadow-sm">
-                            <span class="absolute top-1 left-1 bg-black/60 text-white text-[9px] px-1 rounded uppercase tracking-wider font-semibold">ADVERTISEMENT</span>
-                        </a>
-                    </div>
-                @else
-                    <div class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-center py-16 rounded text-xs text-gray-400 font-medium tracking-wide">
-                        SIDEBAR AD BANNER (300x250)
-                    </div>
-                @endif
+                @include('partials.render-ad', ['location' => 'sidebar'])
             </div>
         </div>
 

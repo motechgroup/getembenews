@@ -209,27 +209,7 @@
                 <!-- Right Area: Ads & Necessary Widgets -->
                 <div class="lg:col-span-1 space-y-8">
                     <!-- Sidebar Ad -->
-                    <div class="bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg p-4 text-center">
-                        <span class="text-[9px] text-gray-400 dark:text-gray-550 uppercase tracking-widest font-semibold block mb-3">Advertisement</span>
-                        @if($sidebarAd)
-                            <a href="{{ $sidebarAd->destination_url }}" target="_blank" class="block group">
-                                <img src="{{ $sidebarAd->image_url }}" alt="{{ $sidebarAd->title }}" class="mx-auto rounded shadow-sm hover:opacity-95 transition">
-                            </a>
-                        @else
-                            <!-- Premium Fallback Ad promoting dynamic content sponsorship -->
-                            <a href="/contact" class="block w-full relative group">
-                                <div class="relative bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-lg overflow-hidden min-h-[180px] flex flex-col justify-between p-5 text-left">
-                                    <div class="flex justify-center">
-                                        <span class="bg-yellow-500 text-black font-extrabold text-[8px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">Sponsor Getembe</span>
-                                    </div>
-                                    <div class="space-y-1">
-                                        <h4 class="text-xs font-black text-white leading-tight">Your Banner Here</h4>
-                                        <p class="text-[9px] text-gray-400 leading-snug">Place your ad here and reach Kisii's largest local digital news audience. Click to learn more.</p>
-                                    </div>
-                                </div>
-                            </a>
-                        @endif
-                    </div>
+                    @include('partials.render-ad', ['location' => 'sidebar'])
 
                     <!-- Necessary Widgets (Poll & Quiz) -->
                     @include('partials.sidebar-widgets')

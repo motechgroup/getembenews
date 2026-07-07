@@ -157,6 +157,23 @@ state([
     'notifications_in_app' => fn() => Setting::get('notifications_in_app', true),
     'notifications_email' => fn() => Setting::get('notifications_email', true),
 
+    // 16. Advertising Settings
+    'adsense_enabled' => fn() => Setting::get('adsense_enabled', false),
+    'adsense_client_id' => fn() => Setting::get('adsense_client_id', ''),
+    'adsense_code' => fn() => Setting::get('adsense_code', ''),
+    'facebook_ads_enabled' => fn() => Setting::get('facebook_ads_enabled', false),
+    'facebook_ads_code' => fn() => Setting::get('facebook_ads_code', ''),
+    'custom_ads_enabled' => fn() => Setting::get('custom_ads_enabled', true),
+    'ad_top_image' => fn() => Setting::get('ad_top_image', ''),
+    'ad_top_link' => fn() => Setting::get('ad_top_link', ''),
+    'ad_sidebar_image' => fn() => Setting::get('ad_sidebar_image', ''),
+    'ad_sidebar_link' => fn() => Setting::get('ad_sidebar_link', ''),
+    'ad_inline_image' => fn() => Setting::get('ad_inline_image', ''),
+    'ad_inline_link' => fn() => Setting::get('ad_inline_link', ''),
+    'uploadedTopAd' => null,
+    'uploadedSidebarAd' => null,
+    'uploadedInlineAd' => null,
+
     // Dynamic Lists inputs / States
     'newRoleName' => '',
     'newRoleSlug' => '',
@@ -664,6 +681,27 @@ $save = function () use ($logAction) {
         $this->uploadedFavicon = null;
     }
 
+    if ($this->uploadedTopAd) {
+        $this->validate(['uploadedTopAd' => 'image|max:2048']);
+        $path = $this->uploadedTopAd->store('ads', 'public');
+        $this->ad_top_image = asset('storage/' . $path);
+        $this->uploadedTopAd = null;
+    }
+
+    if ($this->uploadedSidebarAd) {
+        $this->validate(['uploadedSidebarAd' => 'image|max:2048']);
+        $path = $this->uploadedSidebarAd->store('ads', 'public');
+        $this->ad_sidebar_image = asset('storage/' . $path);
+        $this->uploadedSidebarAd = null;
+    }
+
+    if ($this->uploadedInlineAd) {
+        $this->validate(['uploadedInlineAd' => 'image|max:2048']);
+        $path = $this->uploadedInlineAd->store('ads', 'public');
+        $this->ad_inline_image = asset('storage/' . $path);
+        $this->uploadedInlineAd = null;
+    }
+
     $fields = [
         'site_name', 'site_logo', 'brand_color', 'favicon',
         'website', 'facebook', 'twitter', 'instagram', 'linkedin', 'whatsapp', 'youtube', 'tiktok', 'snapchat', 'telegram', 'pinterest', 'threads', 'other_social_links',
@@ -683,12 +721,20 @@ $save = function () use ($logAction) {
         'notifications_enabled', 'notifications_push', 'notifications_in_app', 'notifications_email',
         'live_tv_url', 'live_radio_url', 'weather_city', 'homepage_categories',
         'app_play_store_url', 'app_app_store_url', 'app_banner_title', 'app_banner_desc',
-        'tv_schedule', 'radio_schedule'
+        'tv_schedule', 'radio_schedule',
+        'adsense_enabled', 'adsense_client_id', 'adsense_code',
+        'facebook_ads_enabled', 'facebook_ads_code',
+        'custom_ads_enabled',
+        'ad_top_image', 'ad_top_link',
+        'ad_sidebar_image', 'ad_sidebar_link',
+        'ad_inline_image', 'ad_inline_link'
     ];
 
     foreach ($fields as $field) {
         Setting::set($field, $this->{$field});
     }
+
+    \Illuminate\Support\Facades\Cache::forget('homepage_data_v1');
 
     $logAction("Saved general website settings configurations");
     $this->dispatch('settings-saved');
@@ -1395,6 +1441,126 @@ $getSystemInfo = function () {
                         <div class="flex items-center">
                             <input type="checkbox" wire:model="cookie_moderation_enabled" id="cookie_moderation_enabled" class="rounded text-[#C8102E] border-gray-300">
                             <label for="cookie_moderation_enabled" class="ml-2 text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Cookie Moderation Enabled</label>
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save Settings</button>
+                    </div>
+                </div>
+
+                <!-- ADVERTISING & BANNER ADS TAB -->
+                <div x-show="activeTab === 'advertising'" class="space-y-6" style="display: none;">
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">Advertising Channels & Custom Banners</h3>
+                    
+                    <!-- Channel Toggles -->
+                    <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                        <h4 class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wide">Active Channels Selection</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-semibold">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" wire:model="custom_ads_enabled" class="rounded text-[#C8102E] border-gray-300">
+                                <span class="text-gray-700 dark:text-gray-300">Enable Custom Banners</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" wire:model="adsense_enabled" class="rounded text-[#C8102E] border-gray-300">
+                                <span class="text-gray-700 dark:text-gray-300">Enable Google AdSense</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" wire:model="facebook_ads_enabled" class="rounded text-[#C8102E] border-gray-300">
+                                <span class="text-gray-700 dark:text-gray-300">Enable Facebook Audience Ads</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Google AdSense Integrations -->
+                    <div class="space-y-4" x-show="adsense_enabled">
+                        <h4 class="text-xs font-bold text-[#C8102E] uppercase tracking-wide border-b border-gray-100 dark:border-gray-800 pb-1">Google AdSense Configurations</h4>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">AdSense Publisher/Client ID</label>
+                                <input type="text" wire:model="adsense_client_id" placeholder="ca-pub-XXXXXXXXXXXXXXXX" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">AdSense Injection/Script Code</label>
+                                <textarea wire:model="adsense_code" rows="4" placeholder="Paste your Google AdSense <ins> or <script> tags here..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs font-mono text-gray-900 dark:text-white"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Facebook Ads Integrations -->
+                    <div class="space-y-4" x-show="facebook_ads_enabled">
+                        <h4 class="text-xs font-bold text-[#FF7900] uppercase tracking-wide border-b border-gray-100 dark:border-gray-800 pb-1">Facebook Audience Network Configurations</h4>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Facebook Placement/Pixel Script Code</label>
+                            <textarea wire:model="facebook_ads_code" rows="4" placeholder="Paste your Facebook Audience Network ads script code here..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs font-mono text-gray-900 dark:text-white"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Custom Ad Banners -->
+                    <div class="space-y-6" x-show="custom_ads_enabled">
+                        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide border-b border-gray-100 dark:border-gray-800 pb-1">Custom Banners (Location Placements)</h4>
+                        
+                        <!-- Top Leaderboard Ad -->
+                        <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                            <span class="text-[10px] font-black text-[#C8102E] uppercase tracking-wider block">Top Header Leaderboard (728x90)</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Upload Banner Image</label>
+                                    <div class="flex flex-col space-y-2">
+                                        @if($ad_top_image)
+                                            <img src="{{ $ad_top_image }}" class="max-h-16 object-contain rounded border border-gray-250 bg-white">
+                                        @endif
+                                        <input type="file" wire:model="uploadedTopAd" accept="image/*">
+                                        <input type="url" wire:model="ad_top_image" placeholder="Or enter Image URL" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-350 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Destination Redirect Link</label>
+                                    <input type="url" wire:model="ad_top_link" placeholder="https://example.com/promo" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-350 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar Rectangle Ad -->
+                        <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                            <span class="text-[10px] font-black text-[#C8102E] uppercase tracking-wider block">Sidebar Rectangle (300x250)</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Upload Banner Image</label>
+                                    <div class="flex flex-col space-y-2">
+                                        @if($ad_sidebar_image)
+                                            <img src="{{ $ad_sidebar_image }}" class="max-h-16 object-contain rounded border border-gray-250 bg-white">
+                                        @endif
+                                        <input type="file" wire:model="uploadedSidebarAd" accept="image/*">
+                                        <input type="url" wire:model="ad_sidebar_image" placeholder="Or enter Image URL" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-350 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Destination Redirect Link</label>
+                                    <input type="url" wire:model="ad_sidebar_link" placeholder="https://example.com/promo" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-350 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inline Body Ad -->
+                        <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                            <span class="text-[10px] font-black text-[#C8102E] uppercase tracking-wider block">Inline Article Body (468x60)</span>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Upload Banner Image</label>
+                                    <div class="flex flex-col space-y-2">
+                                        @if($ad_inline_image)
+                                            <img src="{{ $ad_inline_image }}" class="max-h-16 object-contain rounded border border-gray-250 bg-white">
+                                        @endif
+                                        <input type="file" wire:model="uploadedInlineAd" accept="image/*">
+                                        <input type="url" wire:model="ad_inline_image" placeholder="Or enter Image URL" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-350 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Destination Redirect Link</label>
+                                    <input type="url" wire:model="ad_inline_link" placeholder="https://example.com/promo" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-355 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                </div>
+                            </div>
                         </div>
                     </div>
 

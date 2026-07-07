@@ -517,12 +517,15 @@
         </div>
 
         <!-- Section 5: Categories Grids (Al Jazeera Block Design) -->
+        @php
+            $sidebarAds = \App\Models\Advertisement::active()->location('sidebar')->get();
+        @endphp
         <div class="space-y-12">
-            @foreach($categoryBlocks as $block)
+            @foreach($categoryBlocks as $index => $block)
                 @if($block['articles']->isNotEmpty())
                     <div class="space-y-4">
                         <!-- Section Header -->
-                        <div class="flex items-center space-x-2.5 border-b-2 border-gray-150 dark:border-gray-850 pb-2">
+                        <div class="flex items-center space-x-2.5 border-b-2 border-gray-150 dark:border-gray-855 pb-2">
                             <span class="w-1.5 h-6 bg-[#FF7900] inline-block rounded-sm"></span>
                             <h2 class="text-lg font-serif font-black text-gray-900 dark:text-white uppercase tracking-tight flex items-center">
                                 <span>{{ $block['category']->name }}</span>
@@ -573,20 +576,85 @@
                                 @endforeach
                             </div>
 
-                            <!-- Right Column: Premium Al Jazeera-style Subscribe/Advertisement Block -->
+                            <!-- Right Column: Premium Dynamic / Placeholder Advertisements -->
+                            @php
+                                $dbAd = $sidebarAds->isNotEmpty() && isset($sidebarAds[$index]) ? $sidebarAds[$index] : null;
+                            @endphp
                             <div class="lg:col-span-1">
-                                <div class="bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg p-6 text-center space-y-4 flex flex-col justify-center items-center h-full min-h-[220px]">
-                                    <span class="text-[9px] text-gray-400 dark:text-gray-550 uppercase tracking-widest font-semibold">Advertisement</span>
-                                    <div class="space-y-1">
-                                        <div class="flex items-center justify-center space-x-1.5">
-                                            <span class="bg-[#FF7900] text-white font-extrabold text-lg px-2 py-0.5 rounded tracking-tighter">G</span>
-                                            <span class="font-serif font-black text-sm tracking-tight text-gray-900 dark:text-white">GETEMBE <span class="text-[#FF7900]">NEWS</span></span>
+                                @if($dbAd)
+                                    <a href="{{ $dbAd->destination_url }}" target="_blank" class="block w-full h-full relative group">
+                                        <div class="bg-gray-100 dark:bg-gray-955 border border-gray-250 dark:border-gray-850 rounded-lg overflow-hidden h-full min-h-[220px] flex items-center justify-center relative">
+                                            <img src="{{ $dbAd->image_url }}" alt="{{ $dbAd->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
+                                            <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
                                         </div>
-                                        <p class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider mt-2">Stay Ahead of the Headlines</p>
-                                        <p class="text-[10px] text-gray-550 dark:text-gray-400">Subscribe to our newsletter to receive the latest updates.</p>
-                                    </div>
-                                    <livewire:newsletter-form />
-                                </div>
+                                    </a>
+                                @else
+                                    @if($index % 4 === 0)
+                                        <!-- Ad Variation 0: Kisii County Tourism -->
+                                        <a href="/kisii" class="block w-full h-full relative group">
+                                            <div class="relative bg-gray-950 border border-gray-250 dark:border-gray-850 rounded-lg overflow-hidden h-full min-h-[220px] flex flex-col justify-end p-5">
+                                                <img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&q=80&w=400&h=300" alt="Visit Kisii" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-102 transition duration-500">
+                                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                                                <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
+                                                <div class="relative z-10 space-y-1">
+                                                    <span class="text-[9px] font-black text-yellow-500 uppercase tracking-widest">Explore Kenya</span>
+                                                    <h4 class="text-sm font-serif font-black text-white leading-tight">Visit Kisii County</h4>
+                                                    <p class="text-[10px] text-gray-300 leading-snug">Experience the legendary Soapstone hills, beautiful culture, and rich heritage of Southwestern Kenya.</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    @elseif($index % 4 === 1)
+                                        <!-- Ad Variation 1: Getembe News Mobile App -->
+                                        <a href="/contact" class="block w-full h-full relative group">
+                                            <div class="relative bg-gradient-to-br from-[#C8102E] to-red-950 border border-red-900 rounded-lg overflow-hidden h-full min-h-[220px] flex flex-col justify-between p-5">
+                                                <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
+                                                <div class="pt-2 flex justify-center">
+                                                    <div class="flex items-center space-x-1.5 bg-white/10 px-3 py-1 rounded-full text-white text-[9px] font-bold">
+                                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                        </svg>
+                                                        <span>Getembe News App</span>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-1">
+                                                    <h4 class="text-sm font-black text-white leading-tight">Read Anywhere, Anytime</h4>
+                                                    <p class="text-[10px] text-red-100 leading-snug">Read breaking stories on the go. Enable instant alerts to never miss news from Gusii region.</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    @elseif($index % 4 === 2)
+                                        <!-- Ad Variation 2: Advertise With Us -->
+                                        <a href="/contact" class="block w-full h-full relative group">
+                                            <div class="relative bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-lg overflow-hidden h-full min-h-[220px] flex flex-col justify-between p-5">
+                                                <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
+                                                <div class="pt-2 flex justify-center">
+                                                    <span class="bg-yellow-500 text-black font-extrabold text-[9px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">Grow Your Brand</span>
+                                                </div>
+                                                <div class="space-y-1">
+                                                    <h4 class="text-sm font-black text-white leading-tight">Advertise With Us</h4>
+                                                    <p class="text-[10px] text-gray-400 leading-snug">Reach over 1.2M active monthly visitors. Promote your business, services, or events across our digital network.</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    @else
+                                        <!-- Ad Variation 3: Getembe FM Radio -->
+                                        <a href="/live-radio" class="block w-full h-full relative group">
+                                            <div class="relative bg-gradient-to-br from-blue-900 via-indigo-950 to-gray-950 border border-indigo-900 rounded-lg overflow-hidden h-full min-h-[220px] flex flex-col justify-between p-5">
+                                                <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
+                                                <div class="pt-2 flex justify-center">
+                                                    <div class="flex items-center space-x-1.5 bg-blue-500/20 px-3 py-1 rounded-full text-blue-300 text-[9px] font-bold animate-pulse">
+                                                        <span class="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
+                                                        <span>Getembe FM Live</span>
+                                                    </div>
+                                                </div>
+                                                <div class="space-y-1">
+                                                    <h4 class="text-sm font-black text-white leading-tight">Listen to Getembe FM</h4>
+                                                    <p class="text-[10px] text-blue-100 leading-snug">Enjoy dynamic talk shows, local Gusii music, cultural updates, and comprehensive live news reports.</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    @endif
+                                @endif
                             </div>
                         </div>
                     </div>

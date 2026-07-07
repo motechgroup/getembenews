@@ -220,5 +220,8 @@
 
         </div>
 
+        <!-- App Download Promo Banner -->
+        @include('partials.app-download-banner')
+
     </div>
 </x-news-layout>

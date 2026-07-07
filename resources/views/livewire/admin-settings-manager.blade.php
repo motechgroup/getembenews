@@ -36,6 +36,12 @@ state([
     'live_tv_url' => fn() => Setting::get('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE'),
     'live_radio_url' => fn() => Setting::get('live_radio_url', 'http://stream.zeno.fm/f5r7x1t1zv8uv'),
 
+    // Mobile App Settings
+    'app_play_store_url' => fn() => Setting::get('app_play_store_url', 'https://play.google.com/store'),
+    'app_app_store_url' => fn() => Setting::get('app_app_store_url', 'https://www.apple.com/app-store'),
+    'app_banner_title' => fn() => Setting::get('app_banner_title', 'Download Getembe News Mobile App'),
+    'app_banner_desc' => fn() => Setting::get('app_banner_desc', 'Get fast, reliable, and breaking news alerts directly on your smartphone. Available now for Android and iOS devices.'),
+
     // 2. Social Links
     'website' => fn() => Setting::get('website', ''),
     'facebook' => fn() => Setting::get('facebook', ''),
@@ -669,6 +675,7 @@ $save = function () use ($logAction) {
         'google_client_id', 'google_client_secret', 'facebook_client_id', 'facebook_client_secret', 'github_client_id', 'github_client_secret', 'twitter_client_id', 'twitter_client_secret',
         'notifications_enabled', 'notifications_push', 'notifications_in_app', 'notifications_email',
         'live_tv_url', 'live_radio_url', 'weather_city', 'homepage_categories',
+        'app_play_store_url', 'app_app_store_url', 'app_banner_title', 'app_banner_desc',
         'tv_schedule', 'radio_schedule'
     ];
 
@@ -835,6 +842,33 @@ $getSystemInfo = function () {
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Live FM stream URL</label>
                             <input type="url" wire:model="live_radio_url" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                        </div>
+                    </div>
+
+                    <!-- Mobile App Downloads settings -->
+                    <div class="border-t border-gray-150 dark:border-gray-850 pt-4 space-y-4">
+                        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Mobile App Downloads & Banner Settings</h4>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Google Play Store Link</label>
+                                <input type="url" wire:model="app_play_store_url" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Apple App Store Link</label>
+                                <input type="url" wire:model="app_app_store_url" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">App Promo Banner Title</label>
+                                <input type="text" wire:model="app_banner_title" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">App Promo Banner Description</label>
+                                <textarea wire:model="app_banner_desc" rows="2" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white"></textarea>
+                            </div>
                         </div>
                     </div>
 

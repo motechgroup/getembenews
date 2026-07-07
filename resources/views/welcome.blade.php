@@ -119,6 +119,7 @@
                             @endforeach
                         </div>
                     </div>
+                    @include('partials.sidebar-widgets')
                 </div>
             </div>
 
@@ -211,6 +212,7 @@
                                 @endforeach
                             </div>
                         </div>
+                        @include('partials.sidebar-widgets')
                     </div>
                 </div>
             </div>
@@ -363,6 +365,7 @@
                             @endforeach
                         </div>
                     </div>
+                    @include('partials.sidebar-widgets')
                 </div>
 
         @endif
@@ -590,6 +593,9 @@
                 @endif
             @endforeach
         </div>
+
+        <!-- App Download Promo Banner -->
+        @include('partials.app-download-banner')
 
     </div>
 </x-news-layout>

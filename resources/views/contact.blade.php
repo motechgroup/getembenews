@@ -14,28 +14,26 @@
             <div class="space-y-6 lg:col-span-1">
                 <div class="space-y-2">
                     <h3 class="text-sm font-bold uppercase tracking-wider text-[#C8102E]">Our Newsroom</h3>
-                    <p class="text-xs text-gray-650 dark:text-gray-400 leading-relaxed">
-                        Getembe News Plaza, 3rd Floor<br>
-                        Hospital Road, Kisii Town<br>
-                        P.O. Box 450 - 40200<br>
-                        Kisii, Kenya
+                    <p class="text-xs text-gray-650 dark:text-gray-400 leading-relaxed whitespace-pre-line">
+                        {{ \App\Models\Setting::get('contact_address', "Getembe News Plaza, 3rd Floor\nHospital Road, Kisii Town\nP.O. Box 450 - 40200\nKisii, Kenya") }}
                     </p>
                 </div>
 
                 <div class="space-y-2 border-t border-gray-100 dark:border-gray-800 pt-4">
                     <h3 class="text-sm font-bold uppercase tracking-wider text-[#C8102E]">Phone & Hotlines</h3>
-                    <p class="text-xs text-gray-650 dark:text-gray-400 leading-relaxed">
-                        General Inquiries: +254 (0) 712 345 678<br>
-                        Editorial Hotline: +254 (0) 789 012 345
+                    <p class="text-xs text-gray-655 dark:text-gray-400 leading-relaxed">
+                        General Inquiries: {{ \App\Models\Setting::get('contact_phone', '+254712345678') }}<br>
+                        Editorial Hotline: {{ \App\Models\Setting::get('contact_editorial_phone', '+254789012345') }}
                     </p>
                 </div>
 
                 <div class="space-y-2 border-t border-gray-100 dark:border-gray-800 pt-4">
                     <h3 class="text-sm font-bold uppercase tracking-wider text-[#C8102E]">Email Desk</h3>
-                    <p class="text-xs text-gray-650 dark:text-gray-400 leading-relaxed font-mono">
-                        news@getembenews.com<br>
-                        tips@getembenews.com<br>
-                        ads@getembenews.com
+                    <p class="text-xs text-gray-655 dark:text-gray-400 leading-relaxed font-mono">
+                        General: {{ \App\Models\Setting::get('contact_email', 'contact@getembenews.com') }}<br>
+                        News: {{ \App\Models\Setting::get('contact_news_email', 'news@getembenews.com') }}<br>
+                        Tips: {{ \App\Models\Setting::get('contact_tips_email', 'tips@getembenews.com') }}<br>
+                        Ads: {{ \App\Models\Setting::get('contact_ads_email', 'ads@getembenews.com') }}
                     </p>
                 </div>
 

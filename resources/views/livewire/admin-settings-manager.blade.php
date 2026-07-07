@@ -60,6 +60,10 @@ state([
     // 3. Contact Settings
     'contact_email' => fn() => Setting::get('contact_email', 'contact@getembenews.com'),
     'contact_phone' => fn() => Setting::get('contact_phone', '+254712345678'),
+    'contact_editorial_phone' => fn() => Setting::get('contact_editorial_phone', '+254789012345'),
+    'contact_news_email' => fn() => Setting::get('contact_news_email', 'news@getembenews.com'),
+    'contact_tips_email' => fn() => Setting::get('contact_tips_email', 'tips@getembenews.com'),
+    'contact_ads_email' => fn() => Setting::get('contact_ads_email', 'ads@getembenews.com'),
     'contact_address' => fn() => Setting::get('contact_address', 'Kisii, Kenya'),
 
     // 4. Payment Settings
@@ -666,7 +670,7 @@ $save = function () use ($logAction) {
     $fields = [
         'site_name', 'site_logo', 'brand_color', 'favicon',
         'website', 'facebook', 'twitter', 'instagram', 'linkedin', 'whatsapp', 'youtube', 'tiktok', 'snapchat', 'telegram', 'pinterest', 'threads', 'other_social_links',
-        'contact_email', 'contact_phone', 'contact_address',
+        'contact_email', 'contact_phone', 'contact_editorial_phone', 'contact_news_email', 'contact_tips_email', 'contact_ads_email', 'contact_address',
         'payment_methods', 'payment_gateways', 'currency', 'currency_symbol',
         'announcement_rate_tv', 'announcement_rate_radio', 'announcement_rate_both',
         'language',
@@ -951,12 +955,28 @@ $getSystemInfo = function () {
                     <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">Contact Details</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Contact Email</label>
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">General Contact Email</label>
                             <input type="email" wire:model="contact_email" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Contact Phone</label>
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">General Contact Phone</label>
                             <input type="text" wire:model="contact_phone" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Editorial Phone Hotline</label>
+                            <input type="text" wire:model="contact_editorial_phone" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Newsroom Email</label>
+                            <input type="email" wire:model="contact_news_email" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Tips Email</label>
+                            <input type="email" wire:model="contact_tips_email" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Advertising Email</label>
+                            <input type="email" wire:model="contact_ads_email" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
                     </div>
                     <div class="space-y-1">

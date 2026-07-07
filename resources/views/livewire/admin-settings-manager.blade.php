@@ -160,9 +160,10 @@ state([
     'newApiKeyName' => '',
 
     // Stream Schedules
-    'tv_schedule' => fn() => Setting::get('tv_schedule', []),
-    'radio_schedule' => fn() => Setting::get('radio_schedule', []),
+    'tv_schedule' => [],
+    'radio_schedule' => [],
     'activeScheduleTab' => 'tv', // tv, radio
+    'activeScheduleDay' => 'monday', // monday, tuesday, etc.
 
     // Temp program inputs
     'newTvTime' => '',
@@ -176,6 +177,61 @@ state([
 
 mount(function ($activeTab = 'identity') {
     $this->activeTab = $activeTab;
+
+    $defaultTvFlat = [
+        ['time' => '06:00 - 09:00', 'title' => 'Getembe Morning Call', 'desc' => 'Breakfast news and newspaper review.', 'is_playing' => false],
+        ['time' => '09:00 - 12:00', 'title' => 'Business Daily', 'desc' => 'Economic trends, stock updates, and trade discussion.', 'is_playing' => false],
+        ['time' => '12:00 - 14:00', 'title' => 'News Hour Live', 'desc' => 'Midday headlines, market check, and regional briefs.', 'is_playing' => true],
+        ['time' => '14:00 - 16:00', 'title' => 'Health & Sports Highlights', 'desc' => 'Wellness insights and sporting roundups.', 'is_playing' => false],
+        ['time' => '16:00 - 19:00', 'title' => 'Regional News Express', 'desc' => 'Community spotlights and county assembly briefings.', 'is_playing' => false],
+        ['time' => '19:00 - 21:00', 'title' => 'Evening Prime Time News', 'desc' => 'Comprehensive summary of the day\'s major events.', 'is_playing' => false],
+        ['time' => '21:00 - 23:00', 'title' => 'Late Night Spotlight', 'desc' => 'Documentary film showcases and talkshows.', 'is_playing' => false]
+    ];
+
+    $defaultRadioFlat = [
+        ['time' => '06:00 - 10:00', 'title' => 'The Morning Drive', 'desc' => 'Kickstart the day with updates and music.', 'is_playing' => false],
+        ['time' => '10:00 - 13:00', 'title' => 'Midday Request Show', 'desc' => 'Listener choices, request lines, and interviews.', 'is_playing' => false],
+        ['time' => '13:00 - 16:00', 'title' => 'Getembe Express Drive', 'desc' => 'Mid-afternoon drive show with regional topics and guest experts.', 'is_playing' => true],
+        ['time' => '16:00 - 20:00', 'title' => 'Evening Jam & Sports', 'desc' => 'Local sports bulletins and afternoon reviews.', 'is_playing' => false],
+        ['time' => '20:00 - 00:00', 'title' => 'Late Night Soul Session', 'desc' => 'Slow jams, classic tracks, and quiet storm conversations.', 'is_playing' => false]
+    ];
+
+    $normalizeSchedule = function ($schedule, $defaultFlat) {
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        if (!is_array($schedule) || empty($schedule)) {
+            $grouped = [];
+            foreach ($days as $day) {
+                $grouped[$day] = $defaultFlat;
+            }
+            return $grouped;
+        }
+
+        $isGrouped = true;
+        foreach ($days as $day) {
+            if (!isset($schedule[$day])) {
+                $isGrouped = false;
+                break;
+            }
+        }
+
+        if ($isGrouped) {
+            return $schedule;
+        }
+
+        $grouped = [];
+        foreach ($days as $day) {
+            $grouped[$day] = $schedule;
+        }
+        return $grouped;
+    };
+
+    $this->tv_schedule = $normalizeSchedule(Setting::get('tv_schedule', []), $defaultTvFlat);
+    $this->radio_schedule = $normalizeSchedule(Setting::get('radio_schedule', []), $defaultRadioFlat);
+
+    $this->activeScheduleDay = strtolower(now()->format('l'));
+    if (!in_array($this->activeScheduleDay, ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])) {
+        $this->activeScheduleDay = 'monday';
+    }
 
     $permissionMap = [
         'identity' => 'settings management',
@@ -504,7 +560,11 @@ $restoreBackup = function ($id, $name) use ($logAction) {
 
 $addTvProgram = function () {
     if (!$this->newTvTime || !$this->newTvTitle) return;
-    $this->tv_schedule[] = [
+    $day = $this->activeScheduleDay;
+    if (!isset($this->tv_schedule[$day])) {
+        $this->tv_schedule[$day] = [];
+    }
+    $this->tv_schedule[$day][] = [
         'time' => $this->newTvTime,
         'title' => $this->newTvTitle,
         'desc' => $this->newTvDesc,
@@ -516,19 +576,27 @@ $addTvProgram = function () {
 };
 
 $removeTvProgram = function ($index) {
-    unset($this->tv_schedule[$index]);
-    $this->tv_schedule = array_values($this->tv_schedule);
+    $day = $this->activeScheduleDay;
+    unset($this->tv_schedule[$day][$index]);
+    $this->tv_schedule[$day] = array_values($this->tv_schedule[$day]);
 };
 
 $setTvPlaying = function ($index) {
-    foreach ($this->tv_schedule as $i => $item) {
-        $this->tv_schedule[$i]['is_playing'] = ($i === $index);
+    $day = $this->activeScheduleDay;
+    foreach ($this->tv_schedule as $d => $slots) {
+        foreach ($slots as $i => $item) {
+            $this->tv_schedule[$d][$i]['is_playing'] = ($d === $day && $i === $index);
+        }
     }
 };
 
 $addRadioProgram = function () {
     if (!$this->newRadioTime || !$this->newRadioTitle) return;
-    $this->radio_schedule[] = [
+    $day = $this->activeScheduleDay;
+    if (!isset($this->radio_schedule[$day])) {
+        $this->radio_schedule[$day] = [];
+    }
+    $this->radio_schedule[$day][] = [
         'time' => $this->newRadioTime,
         'title' => $this->newRadioTitle,
         'desc' => $this->newRadioDesc,
@@ -540,13 +608,17 @@ $addRadioProgram = function () {
 };
 
 $removeRadioProgram = function ($index) {
-    unset($this->radio_schedule[$index]);
-    $this->radio_schedule = array_values($this->radio_schedule);
+    $day = $this->activeScheduleDay;
+    unset($this->radio_schedule[$day][$index]);
+    $this->radio_schedule[$day] = array_values($this->radio_schedule[$day]);
 };
 
 $setRadioPlaying = function ($index) {
-    foreach ($this->radio_schedule as $i => $item) {
-        $this->radio_schedule[$i]['is_playing'] = ($i === $index);
+    $day = $this->activeScheduleDay;
+    foreach ($this->radio_schedule as $d => $slots) {
+        foreach ($slots as $i => $item) {
+            $this->radio_schedule[$d][$i]['is_playing'] = ($d === $day && $i === $index);
+        }
     }
 };
 
@@ -1689,7 +1761,6 @@ $getSystemInfo = function () {
                         </div>
                     </div>
                 </div>
-
                 <!-- STREAM SCHEDULES TAB -->
                 <div x-show="activeTab === 'schedules'" class="space-y-6" style="display: none;">
                     <div class="flex justify-between items-center border-b border-gray-150 dark:border-gray-855 pb-2">
@@ -1700,36 +1771,59 @@ $getSystemInfo = function () {
                         </div>
                     </div>
 
+                    <!-- Day selector tabs -->
+                    <div class="flex flex-wrap gap-1 bg-gray-100 dark:bg-gray-800/40 p-1 rounded-lg text-xs">
+                        @foreach(['monday' => 'Monday', 'tuesday' => 'Tuesday', 'wednesday' => 'Wednesday', 'thursday' => 'Thursday', 'friday' => 'Friday', 'saturday' => 'Saturday', 'sunday' => 'Sunday'] as $key => $name)
+                            <button type="button" wire:click="$set('activeScheduleDay', '{{ $key }}')" class="flex-grow sm:flex-none px-3 py-1.5 rounded-md font-bold transition-all {{ $activeScheduleDay === $key ? 'bg-[#C8102E] text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white' }}">
+                                {{ $name }}
+                            </button>
+                        @endforeach
+                    </div>
+
                     @if($activeScheduleTab === 'tv')
                         <!-- TV Schedule Manager -->
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <!-- Left: List -->
                             <div class="lg:col-span-2 space-y-3">
-                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">TV Program Slots</h4>
-                                <div class="space-y-2">
-                                    @forelse($tv_schedule as $index => $item)
-                                        <div class="p-4 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-lg flex justify-between items-start text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
-                                            <div class="space-y-1">
-                                                <div class="font-bold text-gray-900 dark:text-white">{{ $item['title'] }} <span class="font-mono text-gray-400 dark:text-gray-500 font-normal">({{ $item['time'] }})</span></div>
-                                                <div class="text-gray-500">{{ $item['desc'] }}</div>
-                                                @if($item['is_playing'] ?? false)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-850 dark:bg-red-950/20 dark:text-[#C8102E]">ON AIR</span>
-                                                @endif
+                                <h4 class="text-xs font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider">TV Program Slots ({{ ucfirst($activeScheduleDay) }})</h4>
+                                <div class="space-y-3">
+                                    @forelse(($tv_schedule[$activeScheduleDay] ?? []) as $index => $item)
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-lg flex flex-col gap-3 text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
+                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
+                                                <div>
+                                                    <label class="text-[9px] font-bold text-gray-450 uppercase block mb-0.5">Time</label>
+                                                    <input type="text" wire:model="tv_schedule.{{ $activeScheduleDay }}.{{ $index }}.time" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                                </div>
+                                                <div>
+                                                    <label class="text-[9px] font-bold text-gray-450 uppercase block mb-0.5">Title</label>
+                                                    <input type="text" wire:model="tv_schedule.{{ $activeScheduleDay }}.{{ $index }}.title" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                                </div>
+                                                <div>
+                                                    <label class="text-[9px] font-bold text-gray-450 uppercase block mb-0.5">Description</label>
+                                                    <input type="text" wire:model="tv_schedule.{{ $activeScheduleDay }}.{{ $index }}.desc" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                                </div>
                                             </div>
-                                            <div class="flex items-center space-x-3 text-[10px] font-bold shrink-0">
-                                                @if(!($item['is_playing'] ?? false))
-                                                    <button type="button" wire:click="setTvPlaying({{ $index }})" class="text-green-600 hover:underline">Set On-Air</button>
-                                                @endif
-                                                <button type="button" wire:click="removeTvProgram({{ $index }})" class="text-red-550 hover:underline">Remove</button>
+                                            <div class="flex items-center justify-between border-t border-gray-150 dark:border-gray-850 pt-2 text-[10px] font-bold">
+                                                <div>
+                                                    @if($item['is_playing'] ?? false)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-red-100 text-red-850 dark:bg-red-950/20 dark:text-[#C8102E]">ON AIR</span>
+                                                    @endif
+                                                </div>
+                                                <div class="flex items-center space-x-3">
+                                                    @if(!($item['is_playing'] ?? false))
+                                                        <button type="button" wire:click="setTvPlaying({{ $index }})" class="text-green-650 hover:underline">Set On-Air</button>
+                                                    @endif
+                                                    <button type="button" wire:click="removeTvProgram({{ $index }})" class="text-red-550 hover:underline">Remove</button>
+                                                </div>
                                             </div>
                                         </div>
                                     @empty
-                                        <p class="text-gray-400 text-center py-4">No TV slots scheduled.</p>
+                                        <p class="text-gray-400 text-center py-4">No TV slots scheduled for {{ ucfirst($activeScheduleDay) }}.</p>
                                     @endforelse
                                 </div>
                             </div>
                             <!-- Right: Add Form -->
-                            <div class="bg-gray-50 dark:bg-gray-955 p-4 border border-gray-200 dark:border-gray-850 rounded-lg space-y-3">
+                            <div class="bg-gray-50 dark:bg-gray-955 p-4 border border-gray-200 dark:border-gray-855 rounded-lg space-y-3 h-fit">
                                 <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Add TV Program Slot</h4>
                                 <div class="space-y-2">
                                     <div class="space-y-1">
@@ -1753,31 +1847,45 @@ $getSystemInfo = function () {
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <!-- Left: List -->
                             <div class="lg:col-span-2 space-y-3">
-                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Radio Program Slots</h4>
-                                <div class="space-y-2">
-                                    @forelse($radio_schedule as $index => $item)
-                                        <div class="p-4 bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg flex justify-between items-start text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
-                                            <div class="space-y-1">
-                                                <div class="font-bold text-gray-900 dark:text-white">{{ $item['title'] }} <span class="font-mono text-gray-450 dark:text-gray-500 font-normal">({{ $item['time'] }})</span></div>
-                                                <div class="text-gray-500">{{ $item['desc'] }}</div>
-                                                @if($item['is_playing'] ?? false)
-                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-855 dark:bg-red-950/20 dark:text-[#C8102E]">ON AIR</span>
-                                                @endif
+                                <h4 class="text-xs font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider">Radio Program Slots ({{ ucfirst($activeScheduleDay) }})</h4>
+                                <div class="space-y-3">
+                                    @forelse(($radio_schedule[$activeScheduleDay] ?? []) as $index => $item)
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg flex flex-col gap-3 text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
+                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
+                                                <div>
+                                                    <label class="text-[9px] font-bold text-gray-455 uppercase block mb-0.5">Time</label>
+                                                    <input type="text" wire:model="radio_schedule.{{ $activeScheduleDay }}.{{ $index }}.time" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                                </div>
+                                                <div>
+                                                    <label class="text-[9px] font-bold text-gray-455 uppercase block mb-0.5">Title</label>
+                                                    <input type="text" wire:model="radio_schedule.{{ $activeScheduleDay }}.{{ $index }}.title" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                                </div>
+                                                <div>
+                                                    <label class="text-[9px] font-bold text-gray-455 uppercase block mb-0.5">Description</label>
+                                                    <input type="text" wire:model="radio_schedule.{{ $activeScheduleDay }}.{{ $index }}.desc" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                                </div>
                                             </div>
-                                            <div class="flex items-center space-x-3 text-[10px] font-bold shrink-0">
-                                                @if(!($item['is_playing'] ?? false))
-                                                    <button type="button" wire:click="setRadioPlaying({{ $index }})" class="text-green-600 hover:underline">Set On-Air</button>
-                                                @endif
-                                                <button type="button" wire:click="removeRadioProgram({{ $index }})" class="text-red-555 hover:underline">Remove</button>
+                                            <div class="flex items-center justify-between border-t border-gray-150 dark:border-gray-850 pt-2 text-[10px] font-bold">
+                                                <div>
+                                                    @if($item['is_playing'] ?? false)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded bg-red-100 text-red-855 dark:bg-red-950/20 dark:text-[#C8102E]">ON AIR</span>
+                                                    @endif
+                                                </div>
+                                                <div class="flex items-center space-x-3">
+                                                    @if(!($item['is_playing'] ?? false))
+                                                        <button type="button" wire:click="setRadioPlaying({{ $index }})" class="text-green-655 hover:underline">Set On-Air</button>
+                                                    @endif
+                                                    <button type="button" wire:click="removeRadioProgram({{ $index }})" class="text-red-555 hover:underline">Remove</button>
+                                                </div>
                                             </div>
                                         </div>
                                     @empty
-                                        <p class="text-gray-400 text-center py-4">No Radio slots scheduled.</p>
+                                        <p class="text-gray-400 text-center py-4">No Radio slots scheduled for {{ ucfirst($activeScheduleDay) }}.</p>
                                     @endforelse
                                 </div>
                             </div>
                             <!-- Right: Add Form -->
-                            <div class="bg-gray-50 dark:bg-gray-955 p-4 border border-gray-200 dark:border-gray-850 rounded-lg space-y-3">
+                            <div class="bg-gray-50 dark:bg-gray-955 p-4 border border-gray-200 dark:border-gray-855 rounded-lg space-y-3 h-fit">
                                 <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Add Radio Program Slot</h4>
                                 <div class="space-y-2">
                                     <div class="space-y-1">

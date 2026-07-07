@@ -105,39 +105,69 @@
             </div>
 
             <!-- Schedule -->
-            <div class="bg-gray-950 border border-gray-800 rounded-2xl p-6 space-y-4">
-                <h3 class="text-sm font-black uppercase tracking-wider text-white border-b border-gray-800 pb-2">
-                    Show Schedule
-                </h3>
+            <div class="bg-gray-955 border border-gray-800 rounded-2xl p-6 space-y-4" x-data="{ activeDay: '{{ strtolower(now()->format('l')) }}' }">
+                <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+                    <h3 class="text-sm font-black uppercase tracking-wider text-white">
+                        Show Schedule
+                    </h3>
+                </div>
+
+                <!-- Day Navigation Tabs -->
+                <div class="flex border-b border-gray-800 pb-1.5 overflow-x-auto gap-3 scrollbar-none text-[10px] font-bold uppercase tracking-wider">
+                    @foreach(['monday' => 'Mon', 'tuesday' => 'Tue', 'wednesday' => 'Wed', 'thursday' => 'Thu', 'friday' => 'Fri', 'saturday' => 'Sat', 'sunday' => 'Sun'] as $key => $name)
+                        <button type="button" @click="activeDay = '{{ $key }}'" :class="activeDay === '{{ $key }}' ? 'text-[#C8102E] border-b border-[#C8102E] pb-1' : 'text-gray-500 hover:text-gray-300 pb-1'" class="shrink-0 transition focus:outline-none">
+                            {{ $name }}
+                        </button>
+                    @endforeach
+                </div>
                 
                 @php
-                    $defaultRadioSchedule = [
+                    $radioSchedule = \App\Models\Setting::get('radio_schedule', []);
+                    $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                    $defaultRadioFlat = [
                         ['time' => '06:00 - 10:00', 'title' => 'The Morning Drive', 'desc' => 'Kickstart the day with updates and music.', 'is_playing' => false],
                         ['time' => '10:00 - 13:00', 'title' => 'Midday Request Show', 'desc' => 'Listener choices, request lines, and interviews.', 'is_playing' => false],
                         ['time' => '13:00 - 16:00', 'title' => 'Getembe Express Drive', 'desc' => 'Mid-afternoon drive show with regional topics and guest experts.', 'is_playing' => true],
                         ['time' => '16:00 - 20:00', 'title' => 'Evening Jam & Sports', 'desc' => 'Local sports bulletins and afternoon reviews.', 'is_playing' => false],
                         ['time' => '20:00 - 00:00', 'title' => 'Late Night Soul Session', 'desc' => 'Slow jams, classic tracks, and quiet storm conversations.', 'is_playing' => false]
                     ];
-                    $radioSchedule = \App\Models\Setting::get('radio_schedule', $defaultRadioSchedule);
+                    if (!is_array($radioSchedule) || empty($radioSchedule)) {
+                        $radioSchedule = array_fill_keys($days, $defaultRadioFlat);
+                    } else {
+                        $isGrouped = true;
+                        foreach ($days as $day) {
+                            if (!isset($radioSchedule[$day])) {
+                                $isGrouped = false; break;
+                            }
+                        }
+                        if (!$isGrouped) {
+                            $radioSchedule = array_fill_keys($days, $radioSchedule);
+                        }
+                    }
                 @endphp
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    @forelse($radioSchedule as $item)
-                        <div class="flex items-start space-x-3 {{ ($item['is_playing'] ?? false) ? 'bg-red-950/20 border-l-2 border-[#C8102E] pl-2 py-1 col-span-full' : 'text-gray-400' }}">
-                            <span class="font-bold w-20 shrink-0 {{ ($item['is_playing'] ?? false) ? 'text-[#C8102E]' : 'text-gray-500' }}">{{ $item['time'] }}</span>
-                            <div>
-                                <h4 class="font-bold {{ ($item['is_playing'] ?? false) ? 'text-white flex items-center space-x-1.5' : 'text-gray-300' }}">
-                                    <span>{{ $item['title'] }}</span>
-                                    @if($item['is_playing'] ?? false)
-                                        <span class="inline-block w-1.5 h-1.5 bg-[#C8102E] rounded-full animate-pulse"></span>
-                                    @endif
-                                </h4>
-                                <p class="text-[11px] {{ ($item['is_playing'] ?? false) ? 'text-gray-400' : 'text-gray-500' }}">{{ $item['desc'] }}</p>
-                            </div>
+                <!-- Schedule List Containers by Day -->
+                <div class="text-xs">
+                    @foreach($days as $dayKey)
+                        <div x-show="activeDay === '{{ $dayKey }}'" class="grid grid-cols-1 md:grid-cols-2 gap-4" style="display: none;" x-cloak>
+                            @forelse(($radioSchedule[$dayKey] ?? []) as $item)
+                                <div class="flex items-start space-x-3 {{ ($item['is_playing'] ?? false) ? 'bg-red-950/20 border-l-2 border-[#C8102E] pl-2 py-1 col-span-full' : 'text-gray-400' }}">
+                                    <span class="font-bold w-20 shrink-0 {{ ($item['is_playing'] ?? false) ? 'text-[#C8102E]' : 'text-gray-500' }}">{{ $item['time'] }}</span>
+                                    <div>
+                                        <h4 class="font-bold {{ ($item['is_playing'] ?? false) ? 'text-white flex items-center space-x-1.5' : 'text-gray-300' }}">
+                                            <span>{{ $item['title'] }}</span>
+                                            @if($item['is_playing'] ?? false)
+                                                <span class="inline-block w-1.5 h-1.5 bg-[#C8102E] rounded-full animate-pulse"></span>
+                                            @endif
+                                        </h4>
+                                        <p class="text-[11px] {{ ($item['is_playing'] ?? false) ? 'text-gray-400' : 'text-gray-500' }}">{{ $item['desc'] }}</p>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="text-gray-550 text-center py-4 col-span-full">No programs scheduled for {{ ucfirst($dayKey) }}.</p>
+                            @endforelse
                         </div>
-                    @empty
-                        <p class="text-gray-500 text-center py-4 col-span-full">No programs scheduled for today.</p>
-                    @endforelse
+                    @endforeach
                 </div>
             </div>
 

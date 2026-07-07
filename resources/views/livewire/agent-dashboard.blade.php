@@ -7,8 +7,6 @@
                 <span class="bg-[#cc6c3b] text-white font-black text-[9px] uppercase px-2 py-0.5 rounded tracking-wide">
                     Agent Portal
                 </span>
-                <span class="text-gray-400">&bull;</span>
-                <span class="text-gray-500 font-mono">Agent ID: {{ $agent->id }}</span>
             </div>
             <h1 class="text-xl font-serif font-black text-gray-900 dark:text-white uppercase tracking-wider mt-1.5">
                 Welcome, {{ $agent->name }}
@@ -26,17 +24,11 @@
     </div>
 
     <!-- Performance Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 font-bold text-center">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 font-bold text-center">
         <!-- Announcements count -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm space-y-1">
             <div class="text-[9px] uppercase font-bold text-gray-400 tracking-wider">Paid Announcements Submitted</div>
             <div class="text-2xl font-black text-gray-900 dark:text-white">{{ $agent->total_announcements }}</div>
-        </div>
-
-        <!-- Revenue -->
-        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm space-y-1">
-            <div class="text-[9px] uppercase font-bold text-gray-400 tracking-wider">Total Revenue Generated</div>
-            <div class="text-2xl font-black text-[#cc6c3b]">KSh {{ number_format($agent->total_revenue) }}</div>
         </div>
 
         <!-- Commission -->

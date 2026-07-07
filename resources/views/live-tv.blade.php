@@ -47,66 +47,37 @@
                         Today's Schedule
                     </h3>
                     
+                    @php
+                        $defaultTvSchedule = [
+                            ['time' => '06:00 - 09:00', 'title' => 'Getembe Morning Call', 'desc' => 'Breakfast news and newspaper review.', 'is_playing' => false],
+                            ['time' => '09:00 - 12:00', 'title' => 'Business Daily', 'desc' => 'Economic trends, stock updates, and trade discussion.', 'is_playing' => false],
+                            ['time' => '12:00 - 14:00', 'title' => 'News Hour Live', 'desc' => 'Midday headlines, market check, and regional briefs.', 'is_playing' => true],
+                            ['time' => '14:00 - 16:00', 'title' => 'Health & Sports Highlights', 'desc' => 'Wellness insights and sporting roundups.', 'is_playing' => false],
+                            ['time' => '16:00 - 19:00', 'title' => 'Regional News Express', 'desc' => 'Community spotlights and county assembly briefings.', 'is_playing' => false],
+                            ['time' => '19:00 - 21:00', 'title' => 'Evening Prime Time News', 'desc' => 'Comprehensive summary of the day\'s major events.', 'is_playing' => false],
+                            ['time' => '21:00 - 23:00', 'title' => 'Late Night Spotlight', 'desc' => 'Documentary film showcases and talkshows.', 'is_playing' => false]
+                        ];
+                        $tvSchedule = \App\Models\Setting::get('tv_schedule', $defaultTvSchedule);
+                    @endphp
+
                     <!-- Schedule List -->
                     <div class="space-y-4 text-xs">
-                        <div class="flex items-start space-x-3 text-gray-400">
-                            <span class="font-bold w-24 shrink-0">06:00 - 09:00</span>
-                            <div>
-                                <h4 class="font-bold text-gray-300">Getembe Morning Call</h4>
-                                <p class="text-[11px] text-gray-500">Breakfast news and newspaper review.</p>
+                        @forelse($tvSchedule as $item)
+                            <div class="flex items-start space-x-3 {{ ($item['is_playing'] ?? false) ? 'bg-red-950/20 border-l-2 border-[#C8102E] pl-2 py-1' : 'text-gray-400' }}">
+                                <span class="font-bold w-24 shrink-0 {{ ($item['is_playing'] ?? false) ? 'text-[#C8102E]' : '' }}">{{ $item['time'] }}</span>
+                                <div>
+                                    <h4 class="font-bold {{ ($item['is_playing'] ?? false) ? 'text-white flex items-center space-x-1.5' : 'text-gray-300' }}">
+                                        <span>{{ $item['title'] }}</span>
+                                        @if($item['is_playing'] ?? false)
+                                            <span class="inline-block w-1.5 h-1.5 bg-[#C8102E] rounded-full animate-pulse"></span>
+                                        @endif
+                                    </h4>
+                                    <p class="text-[11px] {{ ($item['is_playing'] ?? false) ? 'text-gray-400' : 'text-gray-500' }}">{{ $item['desc'] }}</p>
+                                </div>
                             </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3 text-gray-400">
-                            <span class="font-bold w-24 shrink-0">09:00 - 12:00</span>
-                            <div>
-                                <h4 class="font-bold text-gray-300">Business Daily</h4>
-                                <p class="text-[11px] text-gray-500">Economic trends, stock updates, and trade discussion.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3 bg-red-950/20 border-l-2 border-[#C8102E] pl-2 py-1">
-                            <span class="font-bold w-24 shrink-0 text-[#C8102E]">12:00 - 14:00</span>
-                            <div>
-                                <h4 class="font-bold text-white flex items-center space-x-1.5">
-                                    <span>News Hour Live</span>
-                                    <span class="inline-block w-1.5 h-1.5 bg-[#C8102E] rounded-full animate-pulse"></span>
-                                </h4>
-                                <p class="text-[11px] text-gray-400">Midday headlines, market check, and regional briefs.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3 text-gray-400">
-                            <span class="font-bold w-24 shrink-0">14:00 - 16:00</span>
-                            <div>
-                                <h4 class="font-bold text-gray-300">Health & Sports Highlights</h4>
-                                <p class="text-[11px] text-gray-500">Wellness insights and sporting roundups.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3 text-gray-400">
-                            <span class="font-bold w-24 shrink-0">16:00 - 19:00</span>
-                            <div>
-                                <h4 class="font-bold text-gray-300">Regional News Express</h4>
-                                <p class="text-[11px] text-gray-500">Community spotlights and county assembly briefings.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3 text-gray-400">
-                            <span class="font-bold w-24 shrink-0">19:00 - 21:00</span>
-                            <div>
-                                <h4 class="font-bold text-gray-300">Evening Prime Time News</h4>
-                                <p class="text-[11px] text-gray-500">Comprehensive summary of the day\'s major events.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3 text-gray-400">
-                            <span class="font-bold w-24 shrink-0">21:00 - 23:00</span>
-                            <div>
-                                <h4 class="font-bold text-gray-300">Late Night Spotlight</h4>
-                                <p class="text-[11px] text-gray-500">Documentary film showcases and talkshows.</p>
-                            </div>
-                        </div>
+                        @empty
+                            <p class="text-gray-500 text-center py-4">No programs scheduled for today.</p>
+                        @endforelse
                     </div>
 
                 </div>

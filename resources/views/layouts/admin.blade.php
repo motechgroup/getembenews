@@ -147,6 +147,12 @@
                     </svg>
                     <span>Page Settings & Footer</span>
                 </a>
+                <a href="/admin/settings/schedules" class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition {{ request()->is('admin/settings/schedules*') ? 'bg-gray-800 text-white border-l-4 border-[#C8102E] pl-2' : '' }}">
+                    <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Stream Schedules</span>
+                </a>
                 @endcan
 
                 @can('email management')

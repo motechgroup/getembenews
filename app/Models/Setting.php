@@ -30,6 +30,11 @@ class Setting extends Model
             }
         }
 
+        // Fallback to default if caller expects an array but value is not an array
+        if (is_array($default) && !is_array($value)) {
+            $value = $default;
+        }
+
         static::$cachedSettings[$key] = $value;
 
         return $value;

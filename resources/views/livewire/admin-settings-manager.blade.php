@@ -113,7 +113,6 @@ state([
     'footer_bg_color' => fn() => Setting::get('footer_bg_color', '#111827'),
     'footer_text_color' => fn() => Setting::get('footer_text_color', '#D1D5DB'),
     'footer_logo' => fn() => Setting::get('footer_logo', ''),
-    'footer_menu' => fn() => Setting::get('footer_menu', 'Home, About, Contact, Privacy, Terms'),
     'footer_link_color' => fn() => Setting::get('footer_link_color', '#3B82F6'),
     'footer_link_hover_color' => fn() => Setting::get('footer_link_hover_color', '#2563EB'),
     'footer_link_active_color' => fn() => Setting::get('footer_link_active_color', '#1D4ED8'),
@@ -159,6 +158,20 @@ state([
     'newWebhookUrl' => '',
 
     'newApiKeyName' => '',
+
+    // Stream Schedules
+    'tv_schedule' => fn() => Setting::get('tv_schedule', []),
+    'radio_schedule' => fn() => Setting::get('radio_schedule', []),
+    'activeScheduleTab' => 'tv', // tv, radio
+
+    // Temp program inputs
+    'newTvTime' => '',
+    'newTvTitle' => '',
+    'newTvDesc' => '',
+
+    'newRadioTime' => '',
+    'newRadioTitle' => '',
+    'newRadioDesc' => '',
 ]);
 
 mount(function ($activeTab = 'identity') {
@@ -184,6 +197,7 @@ mount(function ($activeTab = 'identity') {
         'cache' => 'cache management',
         'backup' => 'backup management',
         'audit' => 'audit logs management',
+        'schedules' => 'settings management',
     ];
 
     if (isset($permissionMap[$activeTab])) {
@@ -488,6 +502,54 @@ $restoreBackup = function ($id, $name) use ($logAction) {
     session()->flash('backup_success', 'System restored successfully to backup point: ' . $name);
 };
 
+$addTvProgram = function () {
+    if (!$this->newTvTime || !$this->newTvTitle) return;
+    $this->tv_schedule[] = [
+        'time' => $this->newTvTime,
+        'title' => $this->newTvTitle,
+        'desc' => $this->newTvDesc,
+        'is_playing' => false
+    ];
+    $this->newTvTime = '';
+    $this->newTvTitle = '';
+    $this->newTvDesc = '';
+};
+
+$removeTvProgram = function ($index) {
+    unset($this->tv_schedule[$index]);
+    $this->tv_schedule = array_values($this->tv_schedule);
+};
+
+$setTvPlaying = function ($index) {
+    foreach ($this->tv_schedule as $i => $item) {
+        $this->tv_schedule[$i]['is_playing'] = ($i === $index);
+    }
+};
+
+$addRadioProgram = function () {
+    if (!$this->newRadioTime || !$this->newRadioTitle) return;
+    $this->radio_schedule[] = [
+        'time' => $this->newRadioTime,
+        'title' => $this->newRadioTitle,
+        'desc' => $this->newRadioDesc,
+        'is_playing' => false
+    ];
+    $this->newRadioTime = '';
+    $this->newRadioTitle = '';
+    $this->newRadioDesc = '';
+};
+
+$removeRadioProgram = function ($index) {
+    unset($this->radio_schedule[$index]);
+    $this->radio_schedule = array_values($this->radio_schedule);
+};
+
+$setRadioPlaying = function ($index) {
+    foreach ($this->radio_schedule as $i => $item) {
+        $this->radio_schedule[$i]['is_playing'] = ($i === $index);
+    }
+};
+
 // Save standard settings form
 $save = function () use ($logAction) {
     if ($this->uploadedLogo) {
@@ -520,10 +582,11 @@ $save = function () use ($logAction) {
         'smtp_server', 'smtp_port', 'smtp_username', 'smtp_password', 'smtp_encryption', 'smtp_auth_enabled', 'smtp_from_name', 'smtp_from_email', 'smtp_reply_to_email', 'smtp_reply_to_name',
         'fb_comments_widget', 'fb_comments_position', 'fb_comments_approval_required', 'fb_comments_moderation_enabled',
         'home_page', 'about_page', 'contact_page', 'privacy_page', 'terms_page',
-        'footer_copyright', 'footer_bg_color', 'footer_text_color', 'footer_logo', 'footer_menu', 'footer_link_color', 'footer_link_hover_color', 'footer_link_active_color', 'footer_link_visited_color',
+        'footer_copyright', 'footer_bg_color', 'footer_text_color', 'footer_logo', 'footer_link_color', 'footer_link_hover_color', 'footer_link_active_color', 'footer_link_visited_color',
         'google_login', 'facebook_login', 'twitter_login', 'github_login', 'linkedin_login', 'whatsapp_login', 'apple_login', 'pinterest_login', 'threads_login',
         'notifications_enabled', 'notifications_push', 'notifications_in_app', 'notifications_email',
-        'live_tv_url', 'live_radio_url', 'weather_city', 'homepage_categories'
+        'live_tv_url', 'live_radio_url', 'weather_city', 'homepage_categories',
+        'tv_schedule', 'radio_schedule'
     ];
 
     foreach ($fields as $field) {
@@ -820,9 +883,8 @@ $getSystemInfo = function () {
                             <input type="text" wire:model="footer_copyright" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
                     </div>
-                    <div class="space-y-1">
-                        <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Footer Custom Menu Items (Comma-separated)</label>
-                        <input type="text" wire:model="footer_menu" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                    <div class="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded text-xs text-blue-800 dark:text-blue-200">
+                        <strong>Note:</strong> Footer navigation menu links are managed separately under the <a href="/admin/menus" class="underline font-bold hover:text-blue-600">Navigation Menus Manager</a>.
                     </div>
 
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -1625,6 +1687,119 @@ $getSystemInfo = function () {
                                 <p class="text-gray-400 py-1">No restore actions logged in session.</p>
                             @endforelse
                         </div>
+                    </div>
+                </div>
+
+                <!-- STREAM SCHEDULES TAB -->
+                <div x-show="activeTab === 'schedules'" class="space-y-6" style="display: none;">
+                    <div class="flex justify-between items-center border-b border-gray-150 dark:border-gray-855 pb-2">
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Live TV & Radio Broadcast Schedules</h3>
+                        <div class="flex space-x-2 text-[10px] font-bold">
+                            <button type="button" wire:click="$set('activeScheduleTab', 'tv')" class="px-3 py-1 rounded {{ $activeScheduleTab === 'tv' ? 'bg-[#C8102E] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' }}">TV Schedule</button>
+                            <button type="button" wire:click="$set('activeScheduleTab', 'radio')" class="px-3 py-1 rounded {{ $activeScheduleTab === 'radio' ? 'bg-[#C8102E] text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300' }}">Radio Schedule</button>
+                        </div>
+                    </div>
+
+                    @if($activeScheduleTab === 'tv')
+                        <!-- TV Schedule Manager -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Left: List -->
+                            <div class="lg:col-span-2 space-y-3">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">TV Program Slots</h4>
+                                <div class="space-y-2">
+                                    @forelse($tv_schedule as $index => $item)
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-lg flex justify-between items-start text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
+                                            <div class="space-y-1">
+                                                <div class="font-bold text-gray-900 dark:text-white">{{ $item['title'] }} <span class="font-mono text-gray-400 dark:text-gray-500 font-normal">({{ $item['time'] }})</span></div>
+                                                <div class="text-gray-500">{{ $item['desc'] }}</div>
+                                                @if($item['is_playing'] ?? false)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-850 dark:bg-red-950/20 dark:text-[#C8102E]">ON AIR</span>
+                                                @endif
+                                            </div>
+                                            <div class="flex items-center space-x-3 text-[10px] font-bold shrink-0">
+                                                @if(!($item['is_playing'] ?? false))
+                                                    <button type="button" wire:click="setTvPlaying({{ $index }})" class="text-green-600 hover:underline">Set On-Air</button>
+                                                @endif
+                                                <button type="button" wire:click="removeTvProgram({{ $index }})" class="text-red-550 hover:underline">Remove</button>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <p class="text-gray-400 text-center py-4">No TV slots scheduled.</p>
+                                    @endforelse
+                                </div>
+                            </div>
+                            <!-- Right: Add Form -->
+                            <div class="bg-gray-50 dark:bg-gray-955 p-4 border border-gray-200 dark:border-gray-850 rounded-lg space-y-3">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Add TV Program Slot</h4>
+                                <div class="space-y-2">
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Time Slot (e.g. 12:00 - 14:00)</label>
+                                        <input type="text" wire:model="newTvTime" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Program Title</label>
+                                        <input type="text" wire:model="newTvTitle" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Short Description</label>
+                                        <textarea wire:model="newTvDesc" rows="2" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none"></textarea>
+                                    </div>
+                                    <button type="button" wire:click="addTvProgram" class="w-full bg-gray-900 hover:bg-gray-850 text-white font-bold text-[11px] py-1.5 rounded transition">Add Program</button>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <!-- Radio Schedule Manager -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Left: List -->
+                            <div class="lg:col-span-2 space-y-3">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Radio Program Slots</h4>
+                                <div class="space-y-2">
+                                    @forelse($radio_schedule as $index => $item)
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg flex justify-between items-start text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
+                                            <div class="space-y-1">
+                                                <div class="font-bold text-gray-900 dark:text-white">{{ $item['title'] }} <span class="font-mono text-gray-450 dark:text-gray-500 font-normal">({{ $item['time'] }})</span></div>
+                                                <div class="text-gray-500">{{ $item['desc'] }}</div>
+                                                @if($item['is_playing'] ?? false)
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-855 dark:bg-red-950/20 dark:text-[#C8102E]">ON AIR</span>
+                                                @endif
+                                            </div>
+                                            <div class="flex items-center space-x-3 text-[10px] font-bold shrink-0">
+                                                @if(!($item['is_playing'] ?? false))
+                                                    <button type="button" wire:click="setRadioPlaying({{ $index }})" class="text-green-600 hover:underline">Set On-Air</button>
+                                                @endif
+                                                <button type="button" wire:click="removeRadioProgram({{ $index }})" class="text-red-555 hover:underline">Remove</button>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <p class="text-gray-400 text-center py-4">No Radio slots scheduled.</p>
+                                    @endforelse
+                                </div>
+                            </div>
+                            <!-- Right: Add Form -->
+                            <div class="bg-gray-50 dark:bg-gray-955 p-4 border border-gray-200 dark:border-gray-850 rounded-lg space-y-3">
+                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Add Radio Program Slot</h4>
+                                <div class="space-y-2">
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Time Slot (e.g. 13:00 - 16:00)</label>
+                                        <input type="text" wire:model="newRadioTime" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Program Title</label>
+                                        <input type="text" wire:model="newRadioTitle" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-400">Short Description</label>
+                                        <textarea wire:model="newRadioDesc" rows="2" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none"></textarea>
+                                    </div>
+                                    <button type="button" wire:click="addRadioProgram" class="w-full bg-gray-900 hover:bg-gray-850 text-white font-bold text-[11px] py-1.5 rounded transition">Add Program</button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save Schedules</button>
                     </div>
                 </div>
 

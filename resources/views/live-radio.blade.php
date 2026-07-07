@@ -110,49 +110,34 @@
                     Show Schedule
                 </h3>
                 
+                @php
+                    $defaultRadioSchedule = [
+                        ['time' => '06:00 - 10:00', 'title' => 'The Morning Drive', 'desc' => 'Kickstart the day with updates and music.', 'is_playing' => false],
+                        ['time' => '10:00 - 13:00', 'title' => 'Midday Request Show', 'desc' => 'Listener choices, request lines, and interviews.', 'is_playing' => false],
+                        ['time' => '13:00 - 16:00', 'title' => 'Getembe Express Drive', 'desc' => 'Mid-afternoon drive show with regional topics and guest experts.', 'is_playing' => true],
+                        ['time' => '16:00 - 20:00', 'title' => 'Evening Jam & Sports', 'desc' => 'Local sports bulletins and afternoon reviews.', 'is_playing' => false],
+                        ['time' => '20:00 - 00:00', 'title' => 'Late Night Soul Session', 'desc' => 'Slow jams, classic tracks, and quiet storm conversations.', 'is_playing' => false]
+                    ];
+                    $radioSchedule = \App\Models\Setting::get('radio_schedule', $defaultRadioSchedule);
+                @endphp
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    <div class="flex items-start space-x-3 text-gray-400">
-                        <span class="font-bold w-20 shrink-0 text-gray-500">06:00 - 10:00</span>
-                        <div>
-                            <h4 class="font-bold text-gray-300">The Morning Drive</h4>
-                            <p class="text-[11px] text-gray-500">Kickstart the day with updates and music.</p>
+                    @forelse($radioSchedule as $item)
+                        <div class="flex items-start space-x-3 {{ ($item['is_playing'] ?? false) ? 'bg-red-950/20 border-l-2 border-[#C8102E] pl-2 py-1 col-span-full' : 'text-gray-400' }}">
+                            <span class="font-bold w-20 shrink-0 {{ ($item['is_playing'] ?? false) ? 'text-[#C8102E]' : 'text-gray-500' }}">{{ $item['time'] }}</span>
+                            <div>
+                                <h4 class="font-bold {{ ($item['is_playing'] ?? false) ? 'text-white flex items-center space-x-1.5' : 'text-gray-300' }}">
+                                    <span>{{ $item['title'] }}</span>
+                                    @if($item['is_playing'] ?? false)
+                                        <span class="inline-block w-1.5 h-1.5 bg-[#C8102E] rounded-full animate-pulse"></span>
+                                    @endif
+                                </h4>
+                                <p class="text-[11px] {{ ($item['is_playing'] ?? false) ? 'text-gray-400' : 'text-gray-500' }}">{{ $item['desc'] }}</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="flex items-start space-x-3 text-gray-400">
-                        <span class="font-bold w-20 shrink-0 text-gray-500">10:00 - 13:00</span>
-                        <div>
-                            <h4 class="font-bold text-gray-300">Midday Request Show</h4>
-                            <p class="text-[11px] text-gray-500">Listener choices, request lines, and interviews.</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-3 bg-red-950/20 border-l-2 border-[#C8102E] pl-2 py-1 col-span-full">
-                        <span class="font-bold w-20 shrink-0 text-[#C8102E]">13:00 - 16:00</span>
-                        <div>
-                            <h4 class="font-bold text-white flex items-center space-x-1.5">
-                                <span>Getembe Express Drive</span>
-                                <span class="inline-block w-1.5 h-1.5 bg-[#C8102E] rounded-full animate-pulse"></span>
-                            </h4>
-                            <p class="text-[11px] text-gray-400">Mid-afternoon drive show with regional topics and guest experts.</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-3 text-gray-400">
-                        <span class="font-bold w-20 shrink-0 text-gray-500">16:00 - 20:00</span>
-                        <div>
-                            <h4 class="font-bold text-gray-300">Evening Jam & Sports</h4>
-                            <p class="text-[11px] text-gray-500">Local sports bulletins and afternoon reviews.</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-start space-x-3 text-gray-400">
-                        <span class="font-bold w-20 shrink-0 text-gray-500">20:00 - 00:00</span>
-                        <div>
-                            <h4 class="font-bold text-gray-300">Late Night Soul Session</h4>
-                            <p class="text-[11px] text-gray-500">Slow jams, classic tracks, and quiet storm conversations.</p>
-                        </div>
-                    </div>
+                    @empty
+                        <p class="text-gray-500 text-center py-4 col-span-full">No programs scheduled for today.</p>
+                    @endforelse
                 </div>
             </div>
 

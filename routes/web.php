@@ -130,6 +130,8 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
+Route::get('/announcements', \App\Livewire\AnnouncementSubmit::class)->name('announcements');
+
 Route::middleware(['auth', 'can:access-admin'])->prefix('admin')->group(function () {
     Route::view('/', 'admin.dashboard')->name('admin.dashboard');
     Route::view('/articles', 'admin.articles')->middleware('can:article management')->name('admin.articles');
@@ -138,6 +140,7 @@ Route::middleware(['auth', 'can:access-admin'])->prefix('admin')->group(function
     Route::view('/comments', 'admin.comments')->middleware('can:comment management')->name('admin.comments');
     Route::view('/users', 'admin.users')->middleware('can:user management')->name('admin.users');
     Route::view('/messages', 'admin.messages')->middleware('can:contact message management')->name('admin.messages');
+    Route::get('/announcements', \App\Livewire\AdminAnnouncements::class)->middleware('can:payment management')->name('admin.announcements');
     Route::get('/settings/{tab?}', function ($tab = 'identity') {
         return view('admin.settings', compact('tab'));
     })->name('admin.settings');

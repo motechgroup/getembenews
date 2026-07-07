@@ -66,7 +66,7 @@
                 </div>
                 <!-- Right: Announcements | Contact Us -->
                 <div class="flex items-center space-x-3 uppercase tracking-wider font-bold text-[9px] sm:text-[10px]">
-                    <span class="hover:text-white transition cursor-pointer text-gray-300">Announcements</span>
+                    <a href="/announcements" class="hover:text-white transition text-gray-300">Announcements</a>
                     <span class="text-gray-800">|</span>
                     <a href="/contact" class="hover:text-white transition text-gray-300">Contact Us</a>
                 </div>

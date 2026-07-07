@@ -70,6 +70,11 @@ state([
     'currency' => fn() => Setting::get('currency', 'KES'),
     'currency_symbol' => fn() => Setting::get('currency_symbol', 'KSh'),
 
+    // Announcement word rates
+    'announcement_rate_tv' => fn() => Setting::get('announcement_rate_tv', '5'),
+    'announcement_rate_radio' => fn() => Setting::get('announcement_rate_radio', '3'),
+    'announcement_rate_both' => fn() => Setting::get('announcement_rate_both', '7'),
+
     // 6. Language Settings
     'language' => fn() => Setting::get('language', 'en'),
 
@@ -663,6 +668,7 @@ $save = function () use ($logAction) {
         'website', 'facebook', 'twitter', 'instagram', 'linkedin', 'whatsapp', 'youtube', 'tiktok', 'snapchat', 'telegram', 'pinterest', 'threads', 'other_social_links',
         'contact_email', 'contact_phone', 'contact_address',
         'payment_methods', 'payment_gateways', 'currency', 'currency_symbol',
+        'announcement_rate_tv', 'announcement_rate_radio', 'announcement_rate_both',
         'language',
         'meta_title', 'meta_description', 'meta_keywords', 'google_analytics_id', 'google_indexing_api', 'sitemap_frequency', 'robots_txt_enabled', 'robots_txt_content',
         'cookie_banner_enabled', 'cookie_position', 'cookie_approval_required', 'cookie_moderation_enabled',
@@ -1265,6 +1271,25 @@ $getSystemInfo = function () {
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Allowed Payment Methods (comma separated)</label>
                             <input type="text" wire:model="payment_methods" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        </div>
+                    </div>
+
+                    <!-- Announcements Pricing Rates -->
+                    <div class="border-t border-gray-150 dark:border-gray-800 pt-4 space-y-4">
+                        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Announcement Rate Config (per word)</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">TV Rate (KES)</label>
+                                <input type="number" wire:model="announcement_rate_tv" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Radio Rate (KES)</label>
+                                <input type="number" wire:model="announcement_rate_radio" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Combined TV & Radio Rate (KES)</label>
+                                <input type="number" wire:model="announcement_rate_both" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
                         </div>
                     </div>
 

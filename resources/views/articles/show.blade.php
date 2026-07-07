@@ -132,6 +132,9 @@
                     {!! $article->body !!}
                 </div>
 
+                <!-- Inline Article Body Advertisement -->
+                @include('partials.render-ad', ['location' => 'inline'])
+
                 <!-- Author Profile Card -->
                 <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-5 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-10">
                     <div class="w-16 h-16 rounded-full bg-gray-250 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-600 dark:text-gray-400 overflow-hidden shrink-0 border border-gray-250 dark:border-gray-750">
@@ -167,18 +170,7 @@
             <div class="space-y-8">
                 <!-- Sidebar Ad -->
                 <div class="space-y-4">
-                    @if($sidebarAd)
-                        <div class="w-full text-center">
-                            <a href="{{ $sidebarAd->destination_url }}" target="_blank" class="inline-block relative group">
-                                <img src="{{ $sidebarAd->image_url }}" alt="{{ $sidebarAd->title }}" class="mx-auto rounded max-w-full shadow-sm">
-                                <span class="absolute top-1 left-1 bg-black/60 text-white text-[9px] px-1 rounded uppercase tracking-wider font-semibold">ADVERTISEMENT</span>
-                            </a>
-                        </div>
-                    @else
-                        <div class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 text-center py-16 rounded text-xs text-gray-400 font-medium tracking-wide">
-                            SIDEBAR AD BANNER (300x250)
-                        </div>
-                    @endif
+                    @include('partials.render-ad', ['location' => 'sidebar'])
                 </div>
 
                 <!-- Related Articles -->

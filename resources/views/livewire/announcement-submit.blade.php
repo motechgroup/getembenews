@@ -57,14 +57,10 @@
 
                         @if($submitter_type === 'agent')
                             <div class="space-y-1">
-                                <label class="text-gray-700 dark:text-gray-300 uppercase tracking-wide text-[10px] font-bold">Select Agent Name</label>
-                                <select wire:model="agent_id" required class="w-full bg-gray-55 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-2.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#cc6c3b]">
-                                    <option value="">-- Choose Agent --</option>
-                                    @foreach($agents as $agent)
-                                        <option value="{{ $agent->id }}">{{ $agent->name }} ({{ $agent->location }})</option>
-                                    @endforeach
-                                </select>
-                                @error('agent_id') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
+                                <label class="text-gray-700 dark:text-gray-300 uppercase tracking-wide text-[10px] font-bold">Agent PIN Code</label>
+                                <input type="password" wire:model="agent_pin" required placeholder="Enter 4-digit Agent PIN" maxlength="4" 
+                                       class="w-full bg-gray-55 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-2.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#cc6c3b]">
+                                @error('agent_pin') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
                             </div>
                         @endif
                     </div>

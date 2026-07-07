@@ -16,15 +16,20 @@ class AdminAgents extends Component
     public $agentId = null;
     public $name = '';
     public $location = '';
+    public $pin = '';
     public $commission_percentage = 10;
 
     public $isFormOpen = false;
 
-    protected $rules = [
-        'name' => 'required|string|max:255',
-        'location' => 'required|string|max:255',
-        'commission_percentage' => 'required|integer|min:0|max:100',
-    ];
+    protected function rules()
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'location' => 'required|string|max:255',
+            'pin' => 'required|string|size:4|unique:agents,pin,' . $this->agentId,
+            'commission_percentage' => 'required|integer|min:0|max:100',
+        ];
+    }
 
     public function updatingSearch()
     {
@@ -40,10 +45,12 @@ class AdminAgents extends Component
             $agent = Agent::findOrFail($id);
             $this->name = $agent->name;
             $this->location = $agent->location;
+            $this->pin = $agent->pin;
             $this->commission_percentage = $agent->commission_percentage;
         } else {
             $this->name = '';
             $this->location = '';
+            $this->pin = '';
             $this->commission_percentage = 10;
         }
 
@@ -64,6 +71,7 @@ class AdminAgents extends Component
             $agent->update([
                 'name' => $this->name,
                 'location' => $this->location,
+                'pin' => $this->pin,
                 'commission_percentage' => (int) $this->commission_percentage,
             ]);
             session()->flash('message', 'Agent updated successfully.');
@@ -71,6 +79,7 @@ class AdminAgents extends Component
             Agent::create([
                 'name' => $this->name,
                 'location' => $this->location,
+                'pin' => $this->pin,
                 'commission_percentage' => (int) $this->commission_percentage,
             ]);
             session()->flash('message', 'Agent created successfully.');
@@ -94,7 +103,8 @@ class AdminAgents extends Component
         if (!empty($this->search)) {
             $query->where(function($q) {
                 $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('location', 'like', '%' . $this->search . '%');
+                  ->orWhere('location', 'like', '%' . $this->search . '%')
+                  ->orWhere('pin', 'like', '%' . $this->search . '%');
             });
         }
 

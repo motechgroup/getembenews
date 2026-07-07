@@ -18,7 +18,7 @@ class AnnouncementSubmit extends Component
     public $content = '';
     public $days_count = 1;
     public $submitter_type = 'self'; // self, agent
-    public $agent_id = '';
+    public $agent_pin = '';
 
     // Calculation states
     public $rate = 5;
@@ -40,7 +40,7 @@ class AnnouncementSubmit extends Component
         'content' => 'required|string|min:5',
         'days_count' => 'required|integer|min:1|max:30',
         'submitter_type' => 'required|in:self,agent',
-        'agent_id' => 'required_if:submitter_type,agent|nullable|exists:agents,id',
+        'agent_pin' => 'required_if:submitter_type,agent|nullable|string|size:4',
     ];
 
     public function mount()
@@ -87,6 +87,16 @@ class AnnouncementSubmit extends Component
     {
         $this->validate();
 
+        $selectedAgentId = null;
+        if ($this->submitter_type === 'agent') {
+            $agent = \App\Models\Agent::where('pin', $this->agent_pin)->first();
+            if (!$agent) {
+                $this->addError('agent_pin', 'Invalid Agent PIN code.');
+                return;
+            }
+            $selectedAgentId = $agent->id;
+        }
+
         $announcement = Announcement::create([
             'visitor_name' => $this->visitor_name,
             'visitor_email' => $this->visitor_email ?: null,
@@ -100,7 +110,7 @@ class AnnouncementSubmit extends Component
             'total_amount' => $this->total_price,
             'payment_status' => 'pending',
             'is_approved' => false,
-            'agent_id' => $this->submitter_type === 'agent' && $this->agent_id ? (int) $this->agent_id : null,
+            'agent_id' => $selectedAgentId,
         ]);
 
         // Notify admin via ContactMessage log
@@ -168,7 +178,7 @@ class AnnouncementSubmit extends Component
             $this->mpesa_status = 'success';
             
             // Reset input values
-            $this->reset(['visitor_name', 'visitor_email', 'visitor_phone', 'content', 'days_count', 'submitter_type', 'agent_id']);
+            $this->reset(['visitor_name', 'visitor_email', 'visitor_phone', 'content', 'days_count', 'submitter_type', 'agent_pin']);
             $this->updateCalculations();
         }
     }
@@ -176,11 +186,9 @@ class AnnouncementSubmit extends Component
     public function render()
     {
         $publishedAnnouncements = Announcement::approved()->paid()->latest()->get();
-        $agents = \App\Models\Agent::orderBy('name', 'asc')->get();
 
         return view('livewire.announcement-submit', [
             'announcements' => $publishedAnnouncements,
-            'agents' => $agents,
         ])->layout('layouts.news');
     }
 }

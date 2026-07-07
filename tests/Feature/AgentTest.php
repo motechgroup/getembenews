@@ -37,6 +37,7 @@ class AgentTest extends TestCase
             ->call('openForm')
             ->set('name', 'Samuel Mogaka')
             ->set('location', 'Kisii Town')
+            ->set('pin', '9999')
             ->set('commission_percentage', 15)
             ->call('saveAgent');
 
@@ -44,6 +45,7 @@ class AgentTest extends TestCase
         $this->assertDatabaseHas('agents', [
             'name' => 'Samuel Mogaka',
             'location' => 'Kisii Town',
+            'pin' => '9999',
             'commission_percentage' => 15,
         ]);
 
@@ -76,6 +78,7 @@ class AgentTest extends TestCase
         $agent = Agent::create([
             'name' => 'Samuel Mogaka',
             'location' => 'Kisii Town',
+            'pin' => '2468',
             'commission_percentage' => 20, // 20% commission
         ]);
 
@@ -87,7 +90,7 @@ class AgentTest extends TestCase
             ->set('days_count', 3)
             ->set('content', 'This is a test funeral announcement containing exactly eight words here.')
             ->set('submitter_type', 'agent')
-            ->set('agent_id', $agent->id);
+            ->set('agent_pin', '2468');
 
         $component->call('submitAnnouncement');
 
@@ -148,5 +151,23 @@ class AgentTest extends TestCase
         // 50 * 15 / 100 = 7.5. round(7.5) = 8.
         $this->assertEquals(8, $announcement->fresh()->commission_amount);
         $this->assertEquals('paid', $announcement->fresh()->payment_status);
+    }
+
+    public function test_announcement_submission_fails_with_invalid_agent_pin(): void
+    {
+        $component = Livewire::test(\App\Livewire\AnnouncementSubmit::class)
+            ->set('visitor_name', 'Emma Nyabera')
+            ->set('visitor_phone', '+254712345678')
+            ->set('type', 'funeral')
+            ->set('media', 'tv')
+            ->set('days_count', 3)
+            ->set('content', 'This is a test funeral announcement containing exactly eight words here.')
+            ->set('submitter_type', 'agent')
+            ->set('agent_pin', '9999'); // Invalid PIN
+
+        $component->call('submitAnnouncement');
+
+        $component->assertHasErrors(['agent_pin']);
+        $component->assertSet('showCheckoutModal', false);
     }
 }

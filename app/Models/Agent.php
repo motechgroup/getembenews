@@ -13,6 +13,7 @@ class Agent extends Model
         'name',
         'location',
         'commission_percentage',
+        'pin',
     ];
 
     protected $casts = [

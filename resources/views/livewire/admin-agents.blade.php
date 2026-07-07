@@ -30,7 +30,7 @@
                 {{ $agentId ? 'Edit Agent Account' : 'Create New Agent' }}
             </h3>
 
-            <form wire:submit.prevent="saveAgent" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <form wire:submit.prevent="saveAgent" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div class="space-y-1">
                     <label class="text-[10px] uppercase font-bold text-gray-500">Agent Name</label>
                     <input type="text" wire:model="name" required placeholder="e.g. Samuel Mogaka"
@@ -46,13 +46,20 @@
                 </div>
 
                 <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Agent PIN (4 digits)</label>
+                    <input type="text" wire:model="pin" required placeholder="e.g. 1234" maxlength="4"
+                           class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
+                    @error('pin') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="space-y-1">
                     <label class="text-[10px] uppercase font-bold text-gray-500">Commission Percentage (%)</label>
                     <input type="number" wire:model="commission_percentage" required min="0" max="100"
                            class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
                     @error('commission_percentage') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="sm:col-span-3 pt-4 flex space-x-2">
+                <div class="sm:col-span-4 pt-4 flex space-x-2">
                     <button type="submit" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold px-4 py-2 rounded-lg transition text-xs">
                         {{ $agentId ? 'Save Changes' : 'Create Agent' }}
                     </button>
@@ -68,7 +75,7 @@
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl shadow-sm">
         <div class="w-full font-semibold">
             <label class="text-[10px] uppercase font-bold text-gray-500">Search Agents</label>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by name or location..." 
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by name, location or PIN..." 
                    class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-350 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none mt-1">
         </div>
     </div>
@@ -93,7 +100,7 @@
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-850/50 transition">
                             <td class="py-4 px-4">
                                 <div class="font-bold text-gray-900 dark:text-white">{{ $agent->name }}</div>
-                                <div class="text-[9px] text-gray-400">Agent ID: {{ $agent->id }}</div>
+                                <div class="text-[9px] text-gray-400">PIN: <span class="font-mono font-bold">{{ $agent->pin }}</span> &bull; Agent ID: {{ $agent->id }}</div>
                             </td>
                             <td class="py-4 px-4 text-center">
                                 {{ $agent->location }}

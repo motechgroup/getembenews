@@ -170,6 +170,12 @@
                         </div>
                     @endforelse
                 </div>
+
+                @if($announcements->hasPages())
+                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+                        {{ $announcements->links() }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

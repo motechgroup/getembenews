@@ -6,9 +6,12 @@ use Livewire\Component;
 use App\Models\Announcement;
 use App\Models\Setting;
 use Illuminate\Support\Str;
+use Livewire\WithPagination;
 
 class AnnouncementSubmit extends Component
 {
+    use WithPagination;
+
     // Form Inputs
     public $visitor_name = '';
     public $visitor_email = '';
@@ -185,7 +188,7 @@ class AnnouncementSubmit extends Component
 
     public function render()
     {
-        $publishedAnnouncements = Announcement::approved()->paid()->latest()->get();
+        $publishedAnnouncements = Announcement::approved()->paid()->latest()->paginate(10);
 
         return view('livewire.announcement-submit', [
             'announcements' => $publishedAnnouncements,

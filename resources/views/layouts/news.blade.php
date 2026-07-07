@@ -108,7 +108,31 @@
             <!-- Center Side: Desktop Navigation Links -->
             <nav class="hidden lg:flex items-center space-x-5 h-full text-xs font-black tracking-wider text-gray-900 dark:text-gray-200">
                 @foreach($headerLinks as $link)
-                    @if(strtolower($link['label']) === 'counties' || strtolower($link['url']) === '#counties' || strtolower($link['url']) === 'counties')
+                    @if(!empty($link['children']))
+                        <!-- Dynamic Dropdown Menu -->
+                        <div class="relative group py-5" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" @click.away="open = false">
+                            <button @click="open = !open" class="hover:text-[#cc6c3b] dark:hover:text-[#cc6c3b] transition flex items-center space-x-1 focus:outline-none font-black uppercase">
+                                <span>{{ $link['label'] }}</span>
+                                <svg class="h-3 w-3 text-gray-400 group-hover:text-[#cc6c3b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div x-show="open" 
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="transform opacity-0 scale-95"
+                                 x-transition:enter-end="transform opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="transform opacity-100 scale-100"
+                                 x-transition:leave-end="transform opacity-0 scale-95"
+                                 class="absolute left-0 mt-0 w-48 bg-white dark:bg-gray-955 border border-gray-200 dark:border-gray-800 rounded-lg shadow-lg py-2 z-50"
+                                 style="display: none;">
+                                @foreach($link['children'] as $child)
+                                    <a href="{{ $child['url'] }}" class="block px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-[#cc6c3b] transition uppercase">{{ $child['label'] }}</a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @elseif(strtolower($link['label']) === 'counties' || strtolower($link['url']) === '#counties' || strtolower($link['url']) === 'counties')
                         <!-- COUNTIES Dropdown -->
                         <div class="relative group py-5" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" @click.away="open = false">
                             <button @click="open = !open" class="hover:text-[#cc6c3b] dark:hover:text-[#cc6c3b] transition flex items-center space-x-1 focus:outline-none font-black uppercase">
@@ -224,7 +248,22 @@
         <div x-show="mobileMenuOpen" x-transition class="lg:hidden bg-white dark:bg-gray-900 border-t border-gray-150 dark:border-gray-800 py-3" style="display: none;">
             <div class="px-4 space-y-1">
                 @foreach($headerLinks as $link)
-                    @if(strtolower($link['label']) === 'counties' || strtolower($link['url']) === '#counties' || strtolower($link['url']) === 'counties')
+                    @if(!empty($link['children']))
+                        <!-- Dynamic Mobile Submenu -->
+                        <div x-data="{ open: false }" class="space-y-1">
+                            <button @click="open = !open" class="w-full text-left px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b] flex justify-between items-center focus:outline-none uppercase">
+                                <span>{{ $link['label'] }}</span>
+                                <svg class="h-4 w-4 transform transition-transform" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+                            <div x-show="open" class="pl-4 space-y-1" style="display: none;">
+                                @foreach($link['children'] as $child)
+                                    <a href="{{ $child['url'] }}" class="block px-3 py-1.5 rounded text-xs font-bold text-gray-655 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#cc6c3b] uppercase">{{ $child['label'] }}</a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @elseif(strtolower($link['label']) === 'counties' || strtolower($link['url']) === '#counties' || strtolower($link['url']) === 'counties')
                         <!-- Counties submenu -->
                         <div x-data="{ open: false }" class="space-y-1">
                             <button @click="open = !open" class="w-full text-left px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b] flex justify-between items-center focus:outline-none uppercase">

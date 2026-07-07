@@ -40,7 +40,27 @@ $loadMenu = function () {
     ];
 
     $default = $this->activeMenu === 'header' ? $defaultHeader : $defaultFooter;
-    $this->menuItems = Setting::get($key, $default);
+    $items = Setting::get($key, $default);
+    
+    // Flatten tree structure with children into flat array with is_child properties
+    $flat = [];
+    foreach ($items as $item) {
+        $flat[] = [
+            'label' => $item['label'],
+            'url' => $item['url'],
+            'is_child' => !empty($item['is_child']) || false,
+        ];
+        if (!empty($item['children'])) {
+            foreach ($item['children'] as $child) {
+                $flat[] = [
+                    'label' => $child['label'],
+                    'url' => $child['url'],
+                    'is_child' => true,
+                ];
+            }
+        }
+    }
+    $this->menuItems = $flat;
 };
 
 $switchMenu = function ($menu) {
@@ -57,6 +77,7 @@ $addItem = function () {
     $this->menuItems[] = [
         'label' => $this->newLabel,
         'url' => $this->newUrl,
+        'is_child' => false,
     ];
 
     $this->newLabel = '';
@@ -87,14 +108,52 @@ $updatedSelectedCategorySlug = function ($value) {
         $this->menuItems[] = [
             'label' => $category->name,
             'url' => '/' . $category->slug,
+            'is_child' => false,
         ];
     }
     $this->selectedCategorySlug = '';
 };
 
+$indent = function ($index) {
+    if (isset($this->menuItems[$index])) {
+        $this->menuItems[$index]['is_child'] = true;
+    }
+};
+
+$outdent = function ($index) {
+    if (isset($this->menuItems[$index])) {
+        $this->menuItems[$index]['is_child'] = false;
+    }
+};
+
 $saveMenu = function () {
     $key = $this->activeMenu . '_menu';
-    Setting::set($key, $this->menuItems);
+    
+    // Construct nested tree from flattened list using is_child properties
+    $tree = [];
+    $currentParentIndex = -1;
+    
+    foreach ($this->menuItems as $item) {
+        $normalizedItem = [
+            'label' => $item['label'],
+            'url' => $item['url'],
+            'is_child' => !empty($item['is_child']),
+        ];
+        
+        if (!empty($item['is_child']) && $currentParentIndex >= 0) {
+            if (!isset($tree[$currentParentIndex]['children'])) {
+                $tree[$currentParentIndex]['children'] = [];
+            }
+            $tree[$currentParentIndex]['children'][] = $normalizedItem;
+        } else {
+            // Force top-level if is_child is true but it's the very first item
+            $normalizedItem['is_child'] = false;
+            $tree[] = $normalizedItem;
+            $currentParentIndex = count($tree) - 1;
+        }
+    }
+    
+    Setting::set($key, $tree);
     
     $this->saved = true;
     $this->dispatch('menu-saved');
@@ -137,7 +196,7 @@ $saveMenu = function () {
                          x-on:dragenter="dragOverIndex = {{ $index }}"
                          x-on:dragleave="if (dragOverIndex === {{ $index }}) dragOverIndex = null"
                          x-on:drop="$wire.reorderItems(draggedIndex, {{ $index }}); draggedIndex = null; dragOverIndex = null;"
-                         class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-950 rounded border border-gray-200 dark:border-gray-850 text-xs cursor-move hover:bg-gray-100 dark:hover:bg-gray-850 transition duration-150"
+                         class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-955 rounded border border-gray-200 dark:border-gray-850 text-xs cursor-move hover:bg-gray-100 dark:hover:bg-gray-850 transition duration-150 {{ !empty($item['is_child']) ? 'ml-8 sm:ml-12 border-l-4 border-l-[#C8102E] pl-4' : '' }}"
                          :class="dragOverIndex === {{ $index }} ? 'border-dashed border-2 border-[#C8102E] bg-red-50/10' : ''">
                         <div class="flex items-center space-x-4">
                             <!-- Drag Handle Icon -->
@@ -150,9 +209,22 @@ $saveMenu = function () {
                                 <span class="text-gray-450 dark:text-gray-550 ml-2 font-mono text-[10px]">({{ $item['url'] }})</span>
                             </div>
                         </div>
-                        <button type="button" wire:click="removeItem({{ $index }})" class="text-red-650 hover:text-red-800 font-bold">
-                            Remove
-                        </button>
+                        
+                        <div class="flex items-center space-x-3">
+                            @if(!empty($item['is_child']))
+                                <button type="button" wire:click="outdent({{ $index }})" class="text-gray-500 hover:text-gray-800 dark:hover:text-white font-bold text-[10px] bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded transition">
+                                    &larr; Make Top Level
+                                </button>
+                            @elseif($index > 0)
+                                <button type="button" wire:click="indent({{ $index }})" class="text-[#cc6c3b] hover:text-orange-700 font-bold text-[10px] bg-orange-55 dark:bg-orange-950/20 px-2 py-1 rounded transition">
+                                    Make Submenu &rarr;
+                                </button>
+                            @endif
+
+                            <button type="button" wire:click="removeItem({{ $index }})" class="text-red-650 hover:text-red-800 font-bold">
+                                Remove
+                            </button>
+                        </div>
                     </div>
                 @empty
                     <div class="text-center py-8 text-gray-400 text-xs">

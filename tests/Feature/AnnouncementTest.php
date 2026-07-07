@@ -115,16 +115,46 @@ class AnnouncementTest extends TestCase
     {
         Livewire::test('admin-menus-manager')
             ->set('menuItems', [
-                ['label' => 'Custom Link', 'url' => '/custom']
+                ['label' => 'Custom Link', 'url' => '/custom', 'is_child' => false]
             ])
             ->call('saveMenu');
 
         $this->assertDatabaseHas('settings', [
             'key' => 'header_menu',
-            'value' => json_encode([['label' => 'Custom Link', 'url' => '/custom']])
+            'value' => json_encode([['label' => 'Custom Link', 'url' => '/custom', 'is_child' => false]])
         ]);
         
         $retrieved = \App\Models\Setting::get('header_menu');
-        $this->assertEquals([['label' => 'Custom Link', 'url' => '/custom']], $retrieved);
+        $this->assertEquals([['label' => 'Custom Link', 'url' => '/custom', 'is_child' => false]], $retrieved);
+    }
+
+    public function test_admin_menus_manager_can_indent_and_nest_items(): void
+    {
+        Livewire::test('admin-menus-manager')
+            ->set('menuItems', [
+                ['label' => 'News', 'url' => '/', 'is_child' => false],
+                ['label' => 'Politics', 'url' => '/politics', 'is_child' => true],
+                ['label' => 'Sports', 'url' => '/sports', 'is_child' => false]
+            ])
+            ->call('saveMenu');
+
+        $expectedTree = [
+            [
+                'label' => 'News',
+                'url' => '/',
+                'is_child' => false,
+                'children' => [
+                    ['label' => 'Politics', 'url' => '/politics', 'is_child' => true]
+                ]
+            ],
+            [
+                'label' => 'Sports',
+                'url' => '/sports',
+                'is_child' => false
+            ]
+        ];
+
+        $retrieved = \App\Models\Setting::get('header_menu');
+        $this->assertEquals($expectedTree, $retrieved);
     }
 }

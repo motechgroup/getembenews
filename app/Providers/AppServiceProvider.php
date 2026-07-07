@@ -37,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
             'seo management',
             'cookie management',
             'payment management',
+            'announcement management',
             'currency management',
             'language management',
             'roles and permissions management',

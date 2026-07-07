@@ -73,4 +73,23 @@ class AnnouncementTest extends TestCase
             'subject' => 'Announcement Paid (Ref: ' . Announcement::find($announcementId)->payment_reference . ')',
         ]);
     }
+
+    public function test_manager_role_can_manage_announcements_but_nothing_else(): void
+    {
+        $manager = User::factory()->create([
+            'role' => 'manager'
+        ]);
+
+        // Manager can access admin announcements page
+        $response = $this->actingAs($manager)->get('/admin/announcements');
+        $response->assertOk();
+
+        // Manager cannot access settings page
+        $response = $this->actingAs($manager)->get('/admin/settings');
+        $response->assertForbidden();
+
+        // Manager cannot access users page
+        $response = $this->actingAs($manager)->get('/admin/users');
+        $response->assertForbidden();
+    }
 }

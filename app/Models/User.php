@@ -66,10 +66,15 @@ class User extends Authenticatable
         return in_array($this->role, ['user', 'subscriber']);
     }
 
+    public function isManager(): bool
+    {
+        return $this->role === 'manager';
+    }
+
     // Check if user has staff privileges
     public function isStaff(): bool
     {
-        return in_array($this->role, ['admin', 'editor', 'reporter', 'contributor', 'author']);
+        return in_array($this->role, ['admin', 'editor', 'reporter', 'contributor', 'author', 'manager']);
     }
 
     // Check dynamic permissions
@@ -105,6 +110,10 @@ class User extends Authenticatable
                     'webhooks management',
                     'api keys management',
                     'cache management',
+                    'announcement management',
+                ],
+                'manager' => [
+                    'announcement management',
                 ],
                 'author' => [
                     'content management',

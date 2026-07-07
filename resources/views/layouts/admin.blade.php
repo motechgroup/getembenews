@@ -125,7 +125,7 @@
                 </a>
                 @endcan
 
-                @can('payment management')
+                @can('announcement management')
                 <a href="/admin/announcements" class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition {{ request()->is('admin/announcements*') ? 'bg-gray-800 text-white border-l-4 border-[#C8102E] pl-2' : '' }} w-full justify-between">
                     <div class="flex items-center space-x-3">
                         <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

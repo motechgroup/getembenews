@@ -49,6 +49,7 @@ $loadMenu = function () {
             'label' => $item['label'],
             'url' => $item['url'],
             'is_child' => !empty($item['is_child']) || false,
+            'is_disabled' => !empty($item['is_disabled']) || false,
         ];
         if (!empty($item['children'])) {
             foreach ($item['children'] as $child) {
@@ -56,6 +57,7 @@ $loadMenu = function () {
                     'label' => $child['label'],
                     'url' => $child['url'],
                     'is_child' => true,
+                    'is_disabled' => !empty($child['is_disabled']) || false,
                 ];
             }
         }
@@ -78,6 +80,7 @@ $addItem = function () {
         'label' => $this->newLabel,
         'url' => $this->newUrl,
         'is_child' => false,
+        'is_disabled' => false,
     ];
 
     $this->newLabel = '';
@@ -109,6 +112,7 @@ $updatedSelectedCategorySlug = function ($value) {
             'label' => $category->name,
             'url' => '/' . $category->slug,
             'is_child' => false,
+            'is_disabled' => false,
         ];
     }
     $this->selectedCategorySlug = '';
@@ -126,19 +130,27 @@ $outdent = function ($index) {
     }
 };
 
+$toggleItem = function ($index) {
+    if (isset($this->menuItems[$index])) {
+        $this->menuItems[$index]['is_disabled'] = !($this->menuItems[$index]['is_disabled'] ?? false);
+    }
+};
+
 $saveMenu = function () {
     $key = $this->activeMenu . '_menu';
     
     // Construct nested tree from flattened list using is_child properties
     $tree = [];
     $currentParentIndex = -1;
-    
     foreach ($this->menuItems as $item) {
         $normalizedItem = [
             'label' => $item['label'],
             'url' => $item['url'],
             'is_child' => !empty($item['is_child']),
         ];
+        if (!empty($item['is_disabled'])) {
+            $normalizedItem['is_disabled'] = true;
+        }
         
         if (!empty($item['is_child']) && $currentParentIndex >= 0) {
             if (!isset($tree[$currentParentIndex]['children'])) {
@@ -211,6 +223,12 @@ $saveMenu = function () {
                         </div>
                         
                         <div class="flex items-center space-x-3">
+                            <button type="button" wire:click="toggleItem({{ $index }})" 
+                                    class="text-xs px-2.5 py-1 rounded font-bold transition flex items-center space-x-1.5 {{ !empty($item['is_disabled']) ? 'bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 hover:bg-red-200' : 'bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 hover:bg-green-200' }}">
+                                <span class="h-1.5 w-1.5 rounded-full {{ !empty($item['is_disabled']) ? 'bg-red-500' : 'bg-green-500' }}"></span>
+                                <span>{{ !empty($item['is_disabled']) ? 'Hidden' : 'Visible' }}</span>
+                            </button>
+
                             @if(!empty($item['is_child']))
                                 <button type="button" wire:click="outdent({{ $index }})" class="text-gray-500 hover:text-gray-800 dark:hover:text-white font-bold text-[10px] bg-gray-200 dark:bg-gray-800 px-2 py-1 rounded transition">
                                     &larr; Make Top Level

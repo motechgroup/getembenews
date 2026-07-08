@@ -34,25 +34,46 @@
             ['label' => 'Sports', 'url' => '/sports'],
             ['label' => 'Video', 'url' => '/live-tv'],
         ];
-        $headerLinks = \App\Models\Setting::get('header_menu', $defaultHeader);
+        $filterMenu = function($items) use (&$filterMenu) {
+            return array_values(array_filter(array_map(function($item) use ($filterMenu) {
+                if (!empty($item['is_disabled'])) {
+                    return null;
+                }
+                if (!empty($item['children'])) {
+                    $item['children'] = $filterMenu($item['children']);
+                }
+                return $item;
+            }, $items)));
+        };
+        $headerLinks = $filterMenu(\App\Models\Setting::get('header_menu', $defaultHeader));
     @endphp
     <title>{{ isset($title) ? $title : $siteName . ' - Fast, Reliable News & Analysis' }}</title>
     <meta name="description" content="{{ isset($metaDescription) ? $metaDescription : $siteName . ' is your leading source for politics, business, technology, sports, opinion, and global news.' }}">
-    <link rel="canonical" href="{{ isset($metaUrl) ? $metaUrl : url()->current() }}">
+    <link rel="canonical" href="{{ \App\Support\Seo::canonicalUrl() }}">
+
+    <!-- Smart Indexing Logic -->
+    @if(\App\Support\Seo::shouldIndex(get_defined_vars()))
+        <meta name="robots" content="index, follow">
+    @else
+        <meta name="robots" content="noindex, follow">
+    @endif
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ isset($metaUrl) ? $metaUrl : url()->current() }}">
+    <meta property="og:url" content="{{ \App\Support\Seo::canonicalUrl() }}">
     <meta property="og:title" content="{{ isset($title) ? $title : $siteName }}">
     <meta property="og:description" content="{{ isset($metaDescription) ? $metaDescription : $siteName . ' is your leading source for politics, business, technology, sports, and global news.' }}">
     <meta property="og:image" content="{{ isset($metaImage) ? (\Illuminate\Support\Str::startsWith($metaImage, 'http') ? $metaImage : asset($metaImage)) : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600&h=400' }}">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="{{ isset($metaUrl) ? $metaUrl : url()->current() }}">
+    <meta property="twitter:url" content="{{ \App\Support\Seo::canonicalUrl() }}">
     <meta property="twitter:title" content="{{ isset($title) ? $title : $siteName }}">
     <meta property="twitter:description" content="{{ isset($metaDescription) ? $metaDescription : $siteName . ' is your leading source for politics, business, technology, sports, and global news.' }}">
     <meta property="twitter:image" content="{{ isset($metaImage) ? (\Illuminate\Support\Str::startsWith($metaImage, 'http') ? $metaImage : asset($metaImage)) : 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600&h=400' }}">
+
+    <!-- JSON-LD Structured Data Schema -->
+    {!! \App\Support\Seo::generateSchema(get_defined_vars()) !!}
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -241,19 +262,29 @@
 
                 <!-- Sign In / Dashboard Button (Vibrant screenshot match) -->
                 @auth
-                    <div class="flex items-center space-x-2 shrink-0">
-                        <a href="{{ route('dashboard') }}" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-sm">
-                            Dashboard
-                        </a>
-                        <a href="{{ route('profile') }}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 font-bold text-xs px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700 shadow-sm uppercase tracking-wider">
-                            Profile
-                        </a>
-                        <form method="POST" action="{{ route('logout') }}" class="inline">
-                            @csrf
-                            <button type="submit" class="bg-gray-150 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 font-bold text-xs px-3 py-2 rounded-lg transition border border-gray-200 dark:border-gray-700 shadow-sm uppercase tracking-wider">
-                                Sign Out
-                            </button>
-                        </form>
+                    <div class="relative shrink-0" x-data="{ open: false }" @click.outside="open = false">
+                        <button @click="open = !open" type="button" class="bg-gray-105 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 font-bold text-xs px-4 py-2.5 rounded-lg transition border border-gray-200 dark:border-gray-700 shadow-sm flex items-center space-x-1.5 focus:outline-none uppercase tracking-wider">
+                            <span>Profile</span>
+                            <svg class="h-3.5 w-3.5 transform transition-transform" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        
+                        <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 py-1 z-50 focus:outline-none" style="display: none;">
+                            <a href="{{ route('dashboard') }}" class="block px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-305 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#cc6c3b] transition">
+                                📊 Dashboard
+                            </a>
+                            <a href="{{ route('profile') }}" class="block px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-350 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#cc6c3b] transition">
+                                ⚙️ Settings
+                            </a>
+                            <hr class="border-gray-100 dark:border-gray-800 my-1">
+                            <form method="POST" action="{{ route('logout') }}" class="block">
+                                @csrf
+                                <button type="submit" class="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition">
+                                    🚪 Sign Out
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 @else
                     <a href="{{ route('login') }}" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-5 py-2 rounded-lg transition shadow-sm shrink-0">
@@ -428,8 +459,9 @@
                             ['label' => 'About Us', 'url' => '/about'],
                             ['label' => 'Contact & Tips', 'url' => '/contact'],
                             ['label' => 'Privacy Policy', 'url' => '/privacy'],
+                            ['label' => 'Terms of Service', 'url' => '/terms'],
                         ];
-                        $footerLinks = \App\Models\Setting::get('footer_menu', $defaultFooter);
+                        $footerLinks = $filterMenu(\App\Models\Setting::get('footer_menu', $defaultFooter));
                     @endphp
                     @foreach($footerLinks as $link)
                         <li><a href="{{ $link['url'] }}" class="hover:text-white transition">{{ $link['label'] }}</a></li>
@@ -451,6 +483,8 @@
             &copy; {{ date('Y') }} {{ $siteName }}. All rights reserved. Built for speed, accessibility and integrity.
         </div>
     </footer>
+
+    <livewire:newsletter-popup />
 
     @livewireScripts
 </body>

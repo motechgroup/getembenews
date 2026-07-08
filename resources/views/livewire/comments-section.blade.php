@@ -18,7 +18,7 @@ $postComment = function () {
     Comment::create([
         'article_id' => $this->article->id,
         'user_id' => auth()->id(),
-        'body' => $this->body,
+        'body' => strip_tags($this->body),
         'status' => 'approved', // auto-approve for now
     ]);
 
@@ -97,7 +97,7 @@ $deleteComment = function ($id) {
                             </div>
                         </div>
                         <p class="text-xs text-gray-700 dark:text-gray-300 leading-relaxed pt-1">
-                            {{ $comment->body }}
+                            {!! \App\Support\Security::sanitizeUserContent($comment->body) !!}
                         </p>
                     </div>
                 </div>
@@ -125,7 +125,7 @@ $deleteComment = function ($id) {
                                         </div>
                                     </div>
                                     <p class="text-xs text-gray-700 dark:text-gray-300 leading-relaxed pt-1">
-                                        {{ $reply->body }}
+                                        {!! \App\Support\Security::sanitizeUserContent($reply->body) !!}
                                     </p>
                                 </div>
                             </div>

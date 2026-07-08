@@ -16,8 +16,7 @@ class ArticleController extends Controller
     {
         $article = Article::where('slug', $slug)->firstOrFail();
         
-        // Increment the view counter
-        $article->increment('views_count');
+        // Views count is now tracked securely via client-side behavioral verification endpoint
 
         // Fetch related articles (same category, excluding current)
         $relatedArticles = Article::published()
@@ -29,6 +28,50 @@ class ArticleController extends Controller
         $sidebarAd = Advertisement::active()->location('sidebar')->first();
 
         return view('articles.show', compact('article', 'relatedArticles', 'sidebarAd'));
+    }
+
+    /**
+     * Securely track and verify article views using anti-cheat signals.
+     */
+    public function trackView(Request $request, $id)
+    {
+        $article = Article::findOrFail($id);
+        
+        // 1. Replay & Signature check
+        $expectedHash = hash_hmac('sha256', $id . session()->getId(), config('app.key'));
+        if ($request->input('hash') !== $expectedHash) {
+            return response()->json(['error' => 'Invalid view signature'], 400);
+        }
+
+        // 2. Behavioral verification (anti-cheat)
+        $timeSpent = (int) $request->input('time_spent', 0);
+        $scrolled = (bool) $request->input('scrolled', false);
+        $interacted = (bool) $request->input('interacted', false);
+
+        if ($timeSpent < 10 || !$scrolled || !$interacted) {
+            return response()->json(['error' => 'Human verification checks failed'], 403);
+        }
+
+        // 3. Throttle view count: 1 view per IP per article per hour to prevent inflation bots
+        $ip = $request->ip();
+        $throttleKey = "article_view_throttle:{$id}:{$ip}";
+        if (\Illuminate\Support\Facades\Cache::has($throttleKey)) {
+            return response()->json(['status' => 'already_counted']);
+        }
+        
+        // Count the view
+        \Illuminate\Support\Facades\Cache::put($throttleKey, true, 3600); // 1 hour throttle
+        $article->increment('views_count');
+
+        // 4. Calculate simulated Author Reward / Earnings
+        $authorId = $article->user_id;
+        $rewardRate = (float) \App\Models\Setting::get('author_reward_rate', '0.10');
+        if ($rewardRate > 0) {
+            $earningsKey = "author_earnings:{$authorId}";
+            \Illuminate\Support\Facades\Cache::increment($earningsKey, $rewardRate);
+        }
+
+        return response()->json(['status' => 'success', 'views' => $article->views_count]);
     }
 
     /**

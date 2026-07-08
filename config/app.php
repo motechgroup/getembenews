@@ -52,7 +52,13 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', (function() {
+        if (isset($_SERVER['HTTP_HOST'])) {
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            return $protocol . '://' . $_SERVER['HTTP_HOST'];
+        }
+        return 'http://localhost';
+    })()),
 
     /*
     |--------------------------------------------------------------------------

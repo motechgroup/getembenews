@@ -1,10 +1,12 @@
 <?php
 
 use App\Models\User;
+use App\Support\Security;
+use App\Models\Setting;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 
@@ -14,19 +16,38 @@ new #[Layout('layouts.guest')] class extends Component
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public string $captchaToken = '';
 
     /**
      * Handle an incoming registration request.
      */
     public function register(): void
     {
+        // 1. Blacklist verification
+        if (Security::isBlacklisted($this->email)) {
+            throw ValidationException::withMessages([
+                'email' => 'This email address or domain is blocked from registration.',
+            ]);
+        }
+
+        // 2. Captcha verification
+        if (Setting::get('captcha_driver', 'none') !== 'none' && !Security::verifyCaptcha($this->captchaToken)) {
+            throw ValidationException::withMessages([
+                'captcha' => 'The captcha verification failed. Please try again.',
+            ]);
+        }
+
+        // 3. Standard and Dynamic validations
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'string', 'confirmed', Security::passwordRules()],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+
+        // Default role is subscriber for new signups
+        $validated['role'] = 'subscriber';
 
         event(new Registered($user = User::create($validated)));
 
@@ -37,6 +58,13 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
+    <!-- Load Captcha SDK if enabled -->
+    @if(Setting::get('captcha_driver', 'none') === 'recaptcha')
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    @elseif(Setting::get('captcha_driver', 'none') === 'turnstile')
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    @endif
+
     <form wire:submit="register">
         <!-- Name -->
         <div>
@@ -75,7 +103,24 @@ new #[Layout('layouts.guest')] class extends Component
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <!-- Captcha Display -->
+        @if(Setting::get('captcha_driver', 'none') !== 'none')
+            <div wire:ignore class="mt-4 flex justify-center">
+                @if(Setting::get('captcha_driver') === 'recaptcha')
+                    <div class="g-recaptcha" data-sitekey="{{ Setting::get('recaptcha_site_key') }}" data-callback="onRegisterCaptchaVerified"></div>
+                @elseif(Setting::get('captcha_driver') === 'turnstile')
+                    <div class="cf-turnstile" data-sitekey="{{ Setting::get('turnstile_site_key') }}" data-callback="onRegisterCaptchaVerified"></div>
+                @endif
+            </div>
+            <script>
+                function onRegisterCaptchaVerified(token) {
+                    @this.set('captchaToken', token);
+                }
+            </script>
+            <x-input-error :messages="$errors->get('captcha')" class="mt-2 text-center" />
+        @endif
+
+        <div class="flex items-center justify-end mt-6">
             <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}" wire:navigate>
                 {{ __('Already registered?') }}
             </a>

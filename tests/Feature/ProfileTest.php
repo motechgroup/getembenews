@@ -46,6 +46,31 @@ class ProfileTest extends TestCase
         $this->assertNull($user->email_verified_at);
     }
 
+    public function test_profile_picture_can_be_uploaded_locally(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $fakeFile = \Illuminate\Http\UploadedFile::fake()->image('avatar.png');
+
+        $component = Volt::test('profile.update-profile-information-form')
+            ->set('name', 'New Name')
+            ->set('email', 'new@example.com')
+            ->set('photoFile', $fakeFile)
+            ->call('updateProfileInformation');
+
+        $component->assertHasNoErrors();
+
+        $user->refresh();
+        $this->assertNotNull($user->photo_url);
+        $this->assertStringContainsString('/storage/profiles/', $user->photo_url);
+
+        $path = str_replace('/storage/', '', $user->photo_url);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($path);
+    }
+
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
     {
         $user = User::factory()->create();

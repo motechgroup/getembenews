@@ -24,6 +24,8 @@ $subscribe = function () {
         'is_active' => true
     ]);
 
+    \App\Support\Mailer::sendWelcome($this->email);
+
     $this->email = '';
     $this->subscribed = true;
 };

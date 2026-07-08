@@ -1,6 +1,6 @@
 <x-news-layout>
-    <x-slot name="title">{{ $category->name }} Articles - Getembe News</x-slot>
-    <x-slot name="metaDescription">{{ $category->description ?? 'Browse the latest articles in the ' . $category->name . ' category.' }}</x-slot>
+    <x-slot name="title">{{ $category->seo_title ?: $category->name . ' Articles - Getembe News' }}</x-slot>
+    <x-slot name="metaDescription">{{ $category->seo_description ?: ($category->description ?? 'Browse the latest articles in the ' . $category->name . ' category.') }}</x-slot>
 
     <!-- Main Container -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-10">

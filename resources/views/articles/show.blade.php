@@ -129,8 +129,162 @@
 
                 <!-- Article Body (Content-First Typography) -->
                 <div class="prose max-w-none dark:prose-invert prose-sm sm:prose-base leading-relaxed text-gray-800 dark:text-gray-200 space-y-4">
+                    @if($article->format === 'gallery' && !empty($article->format_meta['gallery']))
+                        <!-- Gallery Post Format Display -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+                            @foreach($article->format_meta['gallery'] as $imgUrl)
+                                @if(!empty($imgUrl))
+                                    <div class="group aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 relative shadow-sm hover:shadow-md transition">
+                                        <img src="{{ $imgUrl }}" alt="Gallery Image" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @if($article->format === 'video' && !empty($article->format_meta['video_url']))
+                        <!-- Video Post Format Display -->
+                        <div class="aspect-video w-full rounded-lg overflow-hidden bg-black border border-gray-200 dark:border-gray-800 mb-6">
+                            <iframe src="{{ $article->format_meta['video_url'] }}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                    @endif
+
+                    @if($article->format === 'audio' && !empty($article->format_meta['audio_url']))
+                        <!-- Audio Post Format Display -->
+                        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-lg p-4 mb-6 flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-full bg-[#C8102E] text-white flex items-center justify-center font-bold text-lg shadow-md animate-pulse">🔊</div>
+                            <div class="flex-grow space-y-1">
+                                <div class="text-xs font-bold text-gray-500 uppercase">Listen to Podcast / Audio Stream</div>
+                                <audio controls class="w-full h-8">
+                                    <source src="{{ $article->format_meta['audio_url'] }}" type="audio/mpeg">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($article->format === 'list' && !empty($article->format_meta['list']))
+                        <!-- Sorted List Post Format Display -->
+                        <div class="space-y-6 mb-6">
+                            @foreach($article->format_meta['list'] as $idx => $item)
+                                @if(!empty($item['title']))
+                                    <div class="border border-gray-200 dark:border-gray-800 rounded-lg p-4 bg-white dark:bg-gray-900 shadow-sm space-y-2">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="w-7 h-7 rounded-full bg-[#C8102E] text-white flex items-center justify-center font-black text-sm">{{ $idx + 1 }}</span>
+                                            <h3 class="text-base font-black text-gray-900 dark:text-white">{{ $item['title'] }}</h3>
+                                        </div>
+                                        @if(!empty($item['desc']))
+                                            <p class="text-sm text-gray-650 dark:text-gray-400 leading-relaxed pl-10">{{ $item['desc'] }}</p>
+                                        @endif
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @if($article->format === 'recipe' && !empty($article->format_meta['recipe']))
+                        <!-- Recipe Post Format Display -->
+                        <div class="bg-[#C8102E]/5 border border-[#C8102E]/20 rounded-lg p-4 mb-6 grid grid-cols-3 text-center gap-2">
+                            <div>
+                                <span class="block text-[10px] uppercase font-bold text-gray-450">Prep Time</span>
+                                <span class="text-sm font-bold text-gray-850 dark:text-white">{{ $article->format_meta['recipe']['prep_time'] ?? 'N/A' }} mins</span>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] uppercase font-bold text-gray-450">Cook Time</span>
+                                <span class="text-sm font-bold text-gray-850 dark:text-white">{{ $article->format_meta['recipe']['cook_time'] ?? 'N/A' }} mins</span>
+                            </div>
+                            <div>
+                                <span class="block text-[10px] uppercase font-bold text-gray-455">Yield</span>
+                                <span class="text-sm font-bold text-gray-850 dark:text-white">{{ $article->format_meta['recipe']['yield'] ?? 'N/A' }} servings</span>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if($article->format === 'event' && !empty($article->format_meta['event']))
+                        <!-- Event Post Format Display -->
+                        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-4 mb-6 space-y-2">
+                            <div class="text-xs font-bold text-gray-500 uppercase">Event Specifications</div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
+                                @if(!empty($article->format_meta['event']['event_date']))
+                                    <div class="flex items-center space-x-2">
+                                        <span>📅</span>
+                                        <span><strong>Date:</strong> {{ \Carbon\Carbon::parse($article->format_meta['event']['event_date'])->format('M d, Y @ h:i a') }}</span>
+                                    </div>
+                                @endif
+                                @if(!empty($article->format_meta['event']['venue']))
+                                    <div class="flex items-center space-x-2">
+                                        <span>📍</span>
+                                        <span><strong>Venue:</strong> {{ $article->format_meta['event']['venue'] }}</span>
+                                    </div>
+                                @endif
+                            </div>
+                            @if(!empty($article->format_meta['event']['ticket_url']))
+                                <div class="pt-2">
+                                    <a href="{{ $article->format_meta['event']['ticket_url'] }}" target="_blank"
+                                       class="inline-block bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">
+                                        Register / Buy Tickets
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
                     {!! $article->body !!}
                 </div>
+
+                @if($article->tags && count($article->tags) > 0)
+                    <!-- Tag Badges -->
+                    <div class="flex flex-wrap gap-2 pt-4">
+                        @foreach($article->tags as $tag)
+                            <a href="/tag/{{ $tag->slug }}" class="bg-gray-100 hover:bg-[#C8102E] hover:text-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] font-bold uppercase px-2.5 py-1 rounded transition duration-200">
+                                #{{ $tag->name }}
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if($article->downloads && count($article->downloads) > 0)
+                    <!-- Downloads Section -->
+                    <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide">Attachments & Resources</h4>
+                        <div class="flex flex-wrap gap-3">
+                            @foreach($article->downloads as $dl)
+                                @if(!empty($dl['label']) && !empty($dl['url']))
+                                    <a href="{{ $dl['url'] }}" download target="_blank"
+                                       class="inline-flex items-center space-x-2 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-[#C8102E] hover:to-red-700 text-white font-bold text-xs px-4 py-2.5 rounded-lg shadow-sm transition duration-300">
+                                        <span>💾</span>
+                                        <span>{{ $dl['label'] }}</span>
+                                    </a>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                @if($article->faq_items && count($article->faq_items) > 0)
+                    <!-- FAQ Section -->
+                    <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                        <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider flex items-center">
+                            <span class="mr-2">❓</span> Frequently Asked Questions
+                        </h3>
+                        <div class="space-y-3" x-data="{ activeFaq: null }">
+                            @foreach($article->faq_items as $index => $faq)
+                                @if(!empty($faq['question']) && !empty($faq['answer']))
+                                    <div class="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-gray-900 transition">
+                                        <button type="button" @click="activeFaq = (activeFaq === {{ $index }} ? null : {{ $index }})" 
+                                                class="w-full text-left p-4 font-bold text-xs sm:text-sm text-gray-900 dark:text-white flex justify-between items-center bg-gray-50 dark:bg-gray-950/20 hover:bg-gray-100/10 transition">
+                                            <span>{{ $faq['question'] }}</span>
+                                            <span class="text-xs transition transform duration-200" :class="activeFaq === {{ $index }} ? 'rotate-180' : ''">▼</span>
+                                        </button>
+                                        <div x-show="activeFaq === {{ $index }}" class="p-4 text-xs sm:text-sm text-gray-650 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 leading-relaxed">
+                                            {{ $faq['answer'] }}
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
 
                 <!-- Inline Article Body Advertisement -->
                 @include('partials.render-ad', ['location' => 'inline'])
@@ -216,4 +370,65 @@
         @include('partials.app-download-banner')
 
     </div>
+
+    <!-- Advanced Human Verification Anti-Cheat View Tracker -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let timeSpent = 0;
+            let scrolled = false;
+            let interacted = false;
+            let tracked = false;
+
+            // Track scroll activity
+            const handleScroll = () => {
+                scrolled = true;
+                window.removeEventListener('scroll', handleScroll);
+            };
+            window.addEventListener('scroll', handleScroll);
+
+            // Track other human interactions (mouse movement, click, press, touch)
+            const handleInteraction = () => {
+                interacted = true;
+                const events = ['mousemove', 'keydown', 'click', 'touchstart'];
+                events.forEach(e => document.removeEventListener(e, handleInteraction));
+            };
+            ['mousemove', 'keydown', 'click', 'touchstart'].forEach(e => {
+                document.addEventListener(e, handleInteraction);
+            });
+
+            // Start timer
+            const interval = setInterval(() => {
+                timeSpent++;
+                
+                // Once verified human behavior requirements are met (10 seconds, scroll, interaction)
+                if (timeSpent >= 10 && scrolled && interacted && !tracked) {
+                    tracked = true;
+                    clearInterval(interval);
+
+                    fetch('/articles/{{ $article->id }}/view', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            time_spent: timeSpent,
+                            scrolled: scrolled,
+                            interacted: interacted,
+                            hash: '{{ hash_hmac('sha256', $article->id . session()->getId(), config('app.key')) }}'
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            console.log('Verified view logged successfully. Current count: ' + data.views);
+                        } else {
+                            console.log('View tracking status: ' + (data.status || data.error));
+                        }
+                    })
+                    .catch(err => console.error('Error logging view:', err));
+                }
+            }, 1000);
+        });
+    </script>
 </x-news-layout>

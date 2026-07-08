@@ -3,14 +3,19 @@
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Volt\Component;
+use Livewire\WithFileUploads;
 
 new class extends Component
 {
+    use WithFileUploads;
+
     public string $name = '';
     public string $email = '';
     public string $photo_url = '';
+    public $photoFile;
     public string $bio = '';
     public string $website = '';
     public string $facebook = '';
@@ -40,20 +45,32 @@ new class extends Component
     {
         $user = Auth::user();
 
-        $validated = $this->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
-            'photo_url' => ['nullable', 'url', 'max:255'],
             'bio' => ['nullable', 'string', 'max:1000'],
             'website' => ['nullable', 'url', 'max:255'],
             'facebook' => ['nullable', 'url', 'max:255'],
             'twitter' => ['nullable', 'url', 'max:255'],
-        ]);
+        ];
+
+        if ($this->photoFile) {
+            $rules['photoFile'] = ['required', 'image', 'max:2048'];
+        } else {
+            $rules['photo_url'] = ['nullable', 'url', 'max:255'];
+        }
+
+        $validated = $this->validate($rules);
+
+        if ($this->photoFile) {
+            $path = $this->photoFile->store('profiles', 'public');
+            $this->photo_url = Storage::url($path);
+        }
 
         $user->fill([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'photo_url' => $validated['photo_url'],
+            'photo_url' => $this->photo_url,
             'bio' => $validated['bio'],
             'social_links' => [
                 'website' => $validated['website'] ?? '',
@@ -69,6 +86,7 @@ new class extends Component
         $user->save();
 
         $this->dispatch('profile-updated', name: $user->name);
+        $this->reset('photoFile');
     }
 
     /**
@@ -87,6 +105,47 @@ new class extends Component
         $user->sendEmailVerificationNotification();
 
         Session::flash('status', 'verification-link-sent');
+    }
+
+    /**
+     * Export all personal information for GDPR compliance.
+     */
+    public function exportPersonalData()
+    {
+        $user = Auth::user();
+        
+        $data = [
+            'profile' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'bio' => $user->bio,
+                'photo_url' => $user->photo_url,
+                'social_links' => $user->social_links,
+                'created_at' => $user->created_at->toIso8601String(),
+            ],
+            'saved_articles' => $user->savedArticles()->get()->map(function ($article) {
+                return [
+                    'title' => $article->title,
+                    'url' => url('/articles/' . $article->slug),
+                ];
+            })->toArray(),
+            'comments' => $user->comments()->get()->map(function ($comment) {
+                return [
+                    'article_title' => $comment->article->title ?? 'Deleted Article',
+                    'body' => $comment->body,
+                    'created_at' => $comment->created_at->toIso8601String(),
+                ];
+            })->toArray()
+        ];
+        
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        
+        return response()->streamDownload(function () use ($json) {
+            echo $json;
+        }, 'gdpr-data-export-' . $user->id . '.json', [
+            'Content-Type' => 'application/json',
+        ]);
     }
 }; ?>
 
@@ -133,9 +192,33 @@ new class extends Component
         </div>
 
         <div>
-            <x-input-label for="photo_url" :value="__('Profile Photo URL')" />
-            <x-text-input wire:model="photo_url" id="photo_url" name="photo_url" type="url" class="mt-1 block w-full text-sm" placeholder="https://example.com/photo.jpg" />
-            <x-input-error class="mt-2" :messages="$errors->get('photo_url')" />
+            <x-input-label for="photoFile" :value="__('Profile Picture')" />
+            
+            <div class="mt-2 flex items-center space-x-4">
+                <!-- Preview container -->
+                <div class="h-16 w-16 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-250 dark:border-gray-700">
+                    @if ($photoFile)
+                        <img src="{{ $photoFile->temporaryUrl() }}" class="h-full w-full object-cover">
+                    @elseif ($photo_url)
+                        <img src="{{ $photo_url }}" class="h-full w-full object-cover">
+                    @else
+                        <div class="h-full w-full flex items-center justify-center text-gray-400 dark:text-gray-605 font-bold uppercase text-xl">
+                            {{ strtoupper(substr($name, 0, 1)) }}
+                        </div>
+                    @endif
+                </div>
+
+                <!-- File upload input -->
+                <div class="space-y-1">
+                    <input type="file" wire:model="photoFile" id="photoFile" class="hidden" accept="image/*">
+                    <button type="button" onclick="document.getElementById('photoFile').click()" class="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md py-1.5 px-3 text-xs font-bold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                        Choose Local Photo
+                    </button>
+                    <p class="text-[10px] text-gray-500">JPG, PNG, WEBP or GIF. Max 2MB.</p>
+                </div>
+            </div>
+            
+            <x-input-error class="mt-2" :messages="$errors->get('photoFile')" />
         </div>
 
         <div>
@@ -170,4 +253,12 @@ new class extends Component
             </x-action-message>
         </div>
     </form>
+
+    <div class="mt-8 border-t border-gray-150 dark:border-gray-800 pt-6">
+        <h3 class="text-sm font-bold text-gray-900 dark:text-gray-150 uppercase tracking-wider mb-2">GDPR Data Portability</h3>
+        <p class="text-xs text-gray-500 mb-4">Request a download of all personal information and activity records stored on Getembe News.</p>
+        <x-secondary-button wire:click.prevent="exportPersonalData">
+            Download My Data (JSON)
+        </x-secondary-button>
+    </div>
 </section>

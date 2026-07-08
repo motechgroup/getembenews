@@ -111,6 +111,7 @@ Route::get('/', function () {
 use App\Http\Controllers\ArticleController;
 
 Route::get('/articles/{slug}', [ArticleController::class, 'show'])->name('articles.show');
+Route::post('/articles/{id}/view', [ArticleController::class, 'trackView'])->name('articles.track-view');
 Route::get('/search', [ArticleController::class, 'search'])->name('search');
 
 Route::get('/live-tv', function () {
@@ -150,15 +151,44 @@ Route::middleware(['auth', 'can:access-admin'])->prefix('admin')->group(function
     Route::get('/announcements', \App\Livewire\AdminAnnouncements::class)->middleware('can:announcement management')->name('admin.announcements');
     Route::get('/agents', \App\Livewire\AdminAgents::class)->middleware('can:announcement management')->name('admin.agents');
     Route::view('/advertisements', 'admin.advertisements')->middleware('can:settings management')->name('admin.advertisements');
+    Route::view('/media', 'admin.media')->middleware('can:settings management')->name('admin.media');
     Route::get('/settings/{tab?}', function ($tab = 'identity') {
         return view('admin.settings', compact('tab'));
     })->name('admin.settings');
 });
 
+use App\Http\Controllers\SeoSitemapController;
+
+Route::get('/sitemap.xml', [SeoSitemapController::class, 'sitemap'])->name('sitemap');
+Route::get('/news-sitemap.xml', [SeoSitemapController::class, 'newsSitemap'])->name('sitemap.news');
+Route::get('/feed/google-news', [SeoSitemapController::class, 'googleNewsFeed'])->name('feed.google-news');
+
 Route::view('/about', 'about')->name('about');
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/privacy', 'privacy')->name('privacy');
+Route::view('/terms', 'terms')->name('terms');
 
 require __DIR__.'/auth.php';
+
+Route::get('/gallery', function () {
+    $articles = \App\Models\Article::published()->where('format', 'gallery')->get();
+    return view('gallery', compact('articles'));
+})->name('gallery.show');
+
+Route::get('/tag/{slug}', function ($slug) {
+    $tag = \App\Models\Tag::where('slug', $slug)->firstOrFail();
+    $articles = $tag->articles()->published()->paginate(10);
+    return view('tag-archive', compact('tag', 'articles'));
+})->name('tag.archive');
+
+Route::get('/run-migrations', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        return 'Migrations and seeders completed successfully! You can now delete this route from routes/web.php.';
+    } catch (\Exception $e) {
+        return 'Error during migrations: ' . $e->getMessage();
+    }
+});
 
 Route::get('/{slug}', [ArticleController::class, 'category'])->name('category.show');

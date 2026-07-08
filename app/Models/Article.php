@@ -11,7 +11,8 @@ class Article extends Model
     protected $fillable = [
         'title', 'slug', 'subtitle', 'body', 'featured_image', 'user_id', 
         'category_id', 'status', 'is_featured', 'is_breaking', 'is_pinned', 
-        'published_at', 'seo_title', 'seo_description', 'read_time', 'views_count'
+        'published_at', 'seo_title', 'seo_description', 'read_time', 'views_count',
+        'format', 'format_meta', 'faq_items', 'downloads'
     ];
 
     protected function casts(): array
@@ -23,6 +24,9 @@ class Article extends Model
             'is_pinned' => 'boolean',
             'views_count' => 'integer',
             'read_time' => 'integer',
+            'format_meta' => 'array',
+            'faq_items' => 'array',
+            'downloads' => 'array',
         ];
     }
 
@@ -55,6 +59,11 @@ class Article extends Model
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'article_category');
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'article_tag');
     }
 
     // Scopes

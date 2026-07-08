@@ -4,6 +4,9 @@ use function Livewire\Volt\{state, mount, uses};
 use Livewire\WithFileUploads;
 use App\Models\Setting;
 use App\Models\Newsletter;
+use App\Models\BreakingNews;
+use App\Models\Article;
+use App\Models\Category;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -18,6 +21,14 @@ state([
     // File Upload Temporary States
     'uploadedLogo' => null,
     'uploadedFavicon' => null,
+
+    // Featured & Breaking News states
+    'breaking_title' => '',
+    'breaking_link' => '',
+    'breaking_priority' => 1,
+    'breaking_expires_at' => '',
+    'breaking_news_list' => fn() => BreakingNews::orderBy('created_at', 'desc')->get(),
+    'pinned_articles_list' => fn() => Article::where('is_pinned', true)->orWhere('is_featured', true)->get(),
 
     // 1. Site Identity & Theme Settings
     'site_name' => fn() => Setting::get('site_name', 'Getembe News'),
@@ -119,6 +130,9 @@ state([
     'contact_page' => fn() => Setting::get('contact_page', 'contact'),
     'privacy_page' => fn() => Setting::get('privacy_page', 'privacy'),
     'terms_page' => fn() => Setting::get('terms_page', 'terms'),
+    'privacy_content' => fn() => Setting::get('privacy_content', Setting::defaultPrivacyContent()),
+    'terms_content' => fn() => Setting::get('terms_content', Setting::defaultTermsContent()),
+    'podcast_category_enabled' => fn() => (bool) Setting::get('podcast_category_enabled', true),
 
     // 12. Footer Settings
     'footer_copyright' => fn() => Setting::get('footer_copyright', 'Getembe News. All rights reserved.'),
@@ -218,6 +232,32 @@ state([
     'newRadioTime' => '',
     'newRadioTitle' => '',
     'newRadioDesc' => '',
+
+    // Security & Privacy Settings States
+    'captcha_driver' => fn() => Setting::get('captcha_driver', 'none'),
+    'recaptcha_site_key' => fn() => Setting::get('recaptcha_site_key', ''),
+    'recaptcha_secret_key' => fn() => Setting::get('recaptcha_secret_key', ''),
+    'turnstile_site_key' => fn() => Setting::get('turnstile_site_key', ''),
+    'turnstile_secret_key' => fn() => Setting::get('turnstile_secret_key', ''),
+    'email_blacklist' => fn() => Setting::get('email_blacklist', ''),
+    'password_min_length' => fn() => Setting::get('password_min_length', 8),
+    'password_complexity_required' => fn() => Setting::get('password_complexity_required', false),
+    'login_max_attempts' => fn() => Setting::get('login_max_attempts', 5),
+    'login_lockout_duration' => fn() => Setting::get('login_lockout_duration', 900),
+    'seo_nofollow_links' => fn() => Setting::get('seo_nofollow_links', true),
+    'seo_strip_links' => fn() => Setting::get('seo_strip_links', false),
+    'author_reward_rate' => fn() => Setting::get('author_reward_rate', '0.10'),
+    'email_driver' => fn() => Setting::get('email_driver', 'smtp'),
+    'mailgun_domain' => fn() => Setting::get('mailgun_domain', ''),
+    'mailgun_secret' => fn() => Setting::get('mailgun_secret', ''),
+    'mailgun_endpoint' => fn() => Setting::get('mailgun_endpoint', 'api.mailgun.net'),
+    'brevo_username' => fn() => Setting::get('brevo_username', ''),
+    'brevo_api_key' => fn() => Setting::get('brevo_api_key', ''),
+    'newsletter_popup_enabled' => fn() => (bool) Setting::get('newsletter_popup_enabled', true),
+    'newsletter_popup_title' => fn() => Setting::get('newsletter_popup_title', 'Subscribe to our Newsletter'),
+    'newsletter_popup_description' => fn() => Setting::get('newsletter_popup_description', 'Get the latest breaking news alerts and regional updates delivered directly to your inbox.'),
+    'newsletter_popup_delay' => fn() => (int) Setting::get('newsletter_popup_delay', 3),
+    'uploaded_subscribers_file' => null,
 ]);
 
 mount(function ($activeTab = 'identity') {
@@ -299,6 +339,7 @@ mount(function ($activeTab = 'identity') {
         'backup' => 'backup management',
         'audit' => 'audit logs management',
         'schedules' => 'settings management',
+        'security' => 'settings management',
     ];
 
     if (isset($permissionMap[$activeTab])) {
@@ -734,7 +775,7 @@ $save = function () use ($logAction) {
         'theme_font', 'theme_layout', 'theme_color_secondary', 'theme_color_success', 'theme_color_warning',
         'smtp_server', 'smtp_port', 'smtp_username', 'smtp_password', 'smtp_encryption', 'smtp_auth_enabled', 'smtp_from_name', 'smtp_from_email', 'smtp_reply_to_email', 'smtp_reply_to_name',
         'fb_comments_widget', 'fb_comments_position', 'fb_comments_approval_required', 'fb_comments_moderation_enabled',
-        'home_page', 'about_page', 'contact_page', 'privacy_page', 'terms_page',
+        'home_page', 'about_page', 'contact_page', 'privacy_page', 'terms_page', 'privacy_content', 'terms_content', 'podcast_category_enabled',
         'footer_copyright', 'footer_bg_color', 'footer_text_color', 'footer_logo', 'footer_link_color', 'footer_link_hover_color', 'footer_link_active_color', 'footer_link_visited_color',
         'google_login', 'facebook_login', 'twitter_login', 'github_login', 'linkedin_login', 'whatsapp_login', 'apple_login', 'pinterest_login', 'threads_login',
         'google_client_id', 'google_client_secret', 'facebook_client_id', 'facebook_client_secret', 'github_client_id', 'github_client_secret', 'twitter_client_id', 'twitter_client_secret',
@@ -749,7 +790,12 @@ $save = function () use ($logAction) {
         'ad_sidebar_image', 'ad_sidebar_link',
         'ad_inline_image', 'ad_inline_link',
         'ad_footer_image', 'ad_footer_link',
-        'ad_mobile_sticky_image', 'ad_mobile_sticky_link'
+        'ad_mobile_sticky_image', 'ad_mobile_sticky_link',
+        'captcha_driver', 'recaptcha_site_key', 'recaptcha_secret_key', 'turnstile_site_key', 'turnstile_secret_key',
+        'email_blacklist', 'password_min_length', 'password_complexity_required', 'login_max_attempts', 'login_lockout_duration',
+        'seo_nofollow_links', 'seo_strip_links', 'author_reward_rate',
+        'email_driver', 'mailgun_domain', 'mailgun_secret', 'mailgun_endpoint', 'brevo_username', 'brevo_api_key',
+        'newsletter_popup_enabled', 'newsletter_popup_title', 'newsletter_popup_description', 'newsletter_popup_delay'
     ];
 
     foreach ($fields as $field) {
@@ -781,6 +827,179 @@ $getSystemInfo = function () {
         'Environment' => app()->environment(),
         'Database Version' => 'PostgreSQL (Supabase Ready)',
     ];
+};
+
+// 26. Newsletter Import/Export
+$exportSubscribers = function ($format = 'csv') {
+    $subscribers = Newsletter::all();
+
+    if ($format === 'json') {
+        $json = $subscribers->toJson(JSON_PRETTY_PRINT);
+        return response()->streamDownload(function () use ($json) {
+            echo $json;
+        }, 'subscribers-export-' . now()->format('YmdHis') . '.json', [
+            'Content-Type' => 'application/json',
+        ]);
+    }
+
+    $headers = [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => 'attachment; filename="subscribers-export-' . now()->format('YmdHis') . '.csv"',
+    ];
+
+    $callback = function () use ($subscribers) {
+        $file = fopen('php://output', 'w');
+        fputcsv($file, ['ID', 'Email', 'Active', 'Created At']);
+
+        foreach ($subscribers as $sub) {
+            fputcsv($file, [$sub->id, $sub->email, $sub->is_active ? 'Yes' : 'No', $sub->created_at->toIso8601String()]);
+        }
+
+        fclose($file);
+    };
+
+    return response()->streamDownload($callback, 'subscribers-export-' . now()->format('YmdHis') . '.csv', $headers);
+};
+
+$importSubscribers = function () use ($logAction) {
+    if (!$this->uploaded_subscribers_file) {
+        session()->flash('import_error', 'Please choose a file to upload first.');
+        return;
+    }
+
+    $path = $this->uploaded_subscribers_file->getRealPath();
+    $extension = $this->uploaded_subscribers_file->getClientOriginalExtension();
+
+    $imported = 0;
+    $duplicates = 0;
+    $invalid = 0;
+
+    try {
+        if (strtolower($extension) === 'json') {
+            $jsonContent = file_get_contents($path);
+            $data = json_decode($jsonContent, true);
+            
+            if (!is_array($data)) {
+                session()->flash('import_error', 'Invalid JSON array content.');
+                return;
+            }
+
+            foreach ($data as $item) {
+                $email = $item['email'] ?? $item['Email'] ?? null;
+                if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $email = strtolower(trim($email));
+                    $exists = Newsletter::where('email', $email)->exists();
+                    if (!$exists) {
+                        Newsletter::create(['email' => $email, 'is_active' => true]);
+                        $imported++;
+                    } else {
+                        $duplicates++;
+                    }
+                } else {
+                    $invalid++;
+                }
+            }
+        } else {
+            if (($handle = fopen($path, 'r')) !== false) {
+                $header = fgetcsv($handle);
+                $emailColIndex = -1;
+
+                if ($header) {
+                    foreach ($header as $index => $col) {
+                        if (Str::contains(strtolower($col), ['email', 'mail'])) {
+                            $emailColIndex = $index;
+                            break;
+                        }
+                    }
+                }
+
+                if ($emailColIndex === -1) {
+                    $emailColIndex = 0;
+                    rewind($handle);
+                }
+
+                while (($row = fgetcsv($handle)) !== false) {
+                    $email = $row[$emailColIndex] ?? null;
+                    if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        $email = strtolower(trim($email));
+                        $exists = Newsletter::where('email', $email)->exists();
+                        if (!$exists) {
+                            Newsletter::create(['email' => $email, 'is_active' => true]);
+                            $imported++;
+                        } else {
+                            $duplicates++;
+                        }
+                    } else {
+                        $invalid++;
+                    }
+                }
+                fclose($handle);
+            }
+        }
+
+        $this->uploaded_subscribers_file = null;
+        $logAction("Imported newsletter subscribers list: {$imported} success, {$duplicates} duplicates skipped.");
+        session()->flash('import_success', "Import completed. Success: {$imported}, Duplicates skipped: {$duplicates}, Invalid emails: {$invalid}");
+
+    } catch (\Exception $e) {
+        session()->flash('import_error', 'Failed to parse file: ' . $e->getMessage());
+    }
+};
+
+$triggerRssAggregation = function () use ($logAction) {
+    Artisan::call('rss:aggregate');
+    $logAction("Triggered manual RSS feeds aggregation check");
+    session()->flash('rss_aggregated_success', 'RSS feeds aggregation check ran successfully.');
+};
+
+$addBreakingNews = function () use ($logAction) {
+    $this->validate([
+        'breaking_title' => 'required|string|max:255',
+        'breaking_link' => 'nullable|url',
+        'breaking_priority' => 'required|integer|min:1',
+        'breaking_expires_at' => 'nullable|date',
+    ]);
+
+    BreakingNews::create([
+        'title' => $this->breaking_title,
+        'link' => $this->breaking_link ?: null,
+        'priority' => $this->breaking_priority,
+        'is_active' => true,
+        'expires_at' => $this->breaking_expires_at ?: null,
+    ]);
+
+    $logAction("Created new breaking news alert: " . $this->breaking_title);
+    $this->reset(['breaking_title', 'breaking_link', 'breaking_priority', 'breaking_expires_at']);
+    $this->breaking_news_list = BreakingNews::orderBy('created_at', 'desc')->get();
+    session()->flash('breaking_success', 'Breaking news alert added successfully.');
+};
+
+$toggleBreakingNews = function ($id) use ($logAction) {
+    $item = BreakingNews::findOrFail($id);
+    $item->is_active = !$item->is_active;
+    $item->save();
+
+    $logAction("Toggled breaking news alert status: " . $item->title);
+    $this->breaking_news_list = BreakingNews::orderBy('created_at', 'desc')->get();
+};
+
+$deleteBreakingNews = function ($id) use ($logAction) {
+    $item = BreakingNews::findOrFail($id);
+    $title = $item->title;
+    $item->delete();
+
+    $logAction("Deleted breaking news alert: " . $title);
+    $this->breaking_news_list = BreakingNews::orderBy('created_at', 'desc')->get();
+    session()->flash('breaking_success', 'Breaking news alert deleted.');
+};
+
+$toggleArticlePinned = function ($id, $field) use ($logAction) {
+    $article = Article::findOrFail($id);
+    $article->$field = !$article->$field;
+    $article->save();
+
+    $logAction("Toggled {$field} status on article: " . $article->title);
+    $this->pinned_articles_list = Article::where('is_pinned', true)->orWhere('is_featured', true)->get();
 };
 
 ?>
@@ -1113,6 +1332,36 @@ $getSystemInfo = function () {
                         </div>
                     </div>
 
+                    <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider pt-4 border-t border-gray-100 dark:border-gray-800">Legal Pages Content</h4>
+                    <div class="space-y-4 mt-4">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Privacy Policy Page Content (HTML allowed)</label>
+                            <textarea wire:model="privacy_content" rows="12" class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs text-gray-905 dark:text-white font-mono" placeholder="Write or paste your Privacy Policy HTML content here..."></textarea>
+                            @error('privacy_content') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Terms of Service Page Content (HTML allowed)</label>
+                            <textarea wire:model="terms_content" rows="12" class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs text-gray-905 dark:text-white font-mono" placeholder="Write or paste your Terms of Service HTML content here..."></textarea>
+                            @error('terms_content') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider pt-4 border-t border-gray-100 dark:border-gray-800">Podcast Integration Settings</h4>
+                    <div class="space-y-4 mt-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-55 dark:bg-gray-850 rounded-lg border border-gray-200 dark:border-gray-800 text-xs">
+                            <div>
+                                <p class="font-bold text-gray-900 dark:text-white">Enable Default Podcast Category</p>
+                                <p class="text-gray-400 mt-0.5">When enabled, any article in the Audio (Podcast) format will be automatically filed under the default "Podcast" category on save.</p>
+                            </div>
+                            <div>
+                                <button type="button" wire:click="$set('podcast_category_enabled', !{{ $podcast_category_enabled ? 'true' : 'false' }})" 
+                                        class="text-xs px-3.5 py-2 rounded font-bold transition {{ $podcast_category_enabled ? 'bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400 border border-green-200 dark:border-green-900/50 hover:bg-green-200' : 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400 border border-red-200 dark:border-red-900/50 hover:bg-red-200' }}">
+                                    {{ $podcast_category_enabled ? 'Enabled' : 'Disabled' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="pt-4">
                         <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save Settings</button>
                     </div>
@@ -1120,68 +1369,119 @@ $getSystemInfo = function () {
 
                 <!-- SMTP EMAIL TAB -->
                 <div x-show="activeTab === 'email'" class="space-y-4" style="display: none;">
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">SMTP Mail Server Config</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="sm:col-span-2 space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">SMTP Host Server</label>
-                            <input type="text" wire:model="smtp_server" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">Email Services & Integrations</h3>
+                    
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Delivery Method</label>
+                        <select wire:model="email_driver" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <option value="smtp">Standard SMTP Relay</option>
+                            <option value="mailgun">Mailgun API Integration</option>
+                            <option value="brevo">Brevo (Sendinblue) SMTP Relay</option>
+                        </select>
+                    </div>
+
+                    <!-- SMTP Fields -->
+                    <div x-show="email_driver === 'smtp'" class="space-y-4 pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="sm:col-span-2 space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">SMTP Host Server</label>
+                                <input type="text" wire:model="smtp_server" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">SMTP Port</label>
+                                <input type="number" wire:model="smtp_port" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">SMTP Port</label>
-                            <input type="number" wire:model="smtp_port" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">SMTP Username</label>
+                                <input type="text" wire:model="smtp_username" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">SMTP Password</label>
+                                <input type="password" wire:model="smtp_password" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">SMTP Encryption</label>
+                                <select wire:model="smtp_encryption" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    <option value="tls">TLS</option>
+                                    <option value="ssl">SSL</option>
+                                    <option value="none">None</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center pt-5">
+                                <input type="checkbox" wire:model="smtp_auth_enabled" id="smtp_auth_enabled" class="rounded text-[#C8102E] border-gray-300 dark:border-gray-700">
+                                <label for="smtp_auth_enabled" class="ml-2 text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Require SMTP Authentication</label>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">SMTP Username</label>
-                            <input type="text" wire:model="smtp_username" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                    <!-- Mailgun Fields -->
+                    <div x-show="email_driver === 'mailgun'" class="space-y-4 pt-2" x-cloak>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Mailgun Domain</label>
+                                <input type="text" wire:model="mailgun_domain" placeholder="mg.yourdomain.com" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Mailgun API Key</label>
+                                <input type="password" wire:model="mailgun_secret" placeholder="key-..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
                         </div>
                         <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">SMTP Password</label>
-                            <input type="password" wire:model="smtp_password" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">SMTP Encryption</label>
-                            <select wire:model="smtp_encryption" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
-                                <option value="tls">TLS</option>
-                                <option value="ssl">SSL</option>
-                                <option value="none">None</option>
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Mailgun API Endpoint</label>
+                            <select wire:model="mailgun_endpoint" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <option value="api.mailgun.net">US Region (api.mailgun.net)</option>
+                                <option value="api.eu.mailgun.net">EU Region (api.eu.mailgun.net)</option>
                             </select>
                         </div>
-                        <div class="flex items-center pt-5">
-                            <input type="checkbox" wire:model="smtp_auth_enabled" id="smtp_auth_enabled" class="rounded text-[#C8102E] border-gray-300 dark:border-gray-700">
-                            <label for="smtp_auth_enabled" class="ml-2 text-xs font-bold text-gray-700 dark:text-gray-300 cursor-pointer">Require SMTP Authentication</label>
+                    </div>
+
+                    <!-- Brevo Fields -->
+                    <div x-show="email_driver === 'brevo'" class="space-y-4 pt-2" x-cloak>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Brevo Username / Login Email</label>
+                                <input type="text" wire:model="brevo_username" placeholder="your-login-email@domain.com" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Brevo API Key (SMTP Password)</label>
+                                <input type="password" wire:model="brevo_api_key" placeholder="xkeysib-..." class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">From Name</label>
-                            <input type="text" wire:model="smtp_from_name" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                    <!-- Common Sender Info -->
+                    <div class="border-t border-gray-150 dark:border-gray-800 pt-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">From Name</label>
+                                <input type="text" wire:model="smtp_from_name" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">From Email Address</label>
+                                <input type="email" wire:model="smtp_from_email" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">From Email Address</label>
-                            <input type="email" wire:model="smtp_from_email" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
-                        </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Reply-To Name</label>
-                            <input type="text" wire:model="smtp_reply_to_name" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Reply-To Email</label>
-                            <input type="email" wire:model="smtp_reply_to_email" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Reply-To Name</label>
+                                <input type="text" wire:model="smtp_reply_to_name" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Reply-To Email</label>
+                                <input type="email" wire:model="smtp_reply_to_email" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
                         </div>
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save Settings</button>
+                        <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save Email Configurations</button>
                     </div>
                 </div>
 
@@ -1788,6 +2088,65 @@ $getSystemInfo = function () {
                         </div>
                     @endif
 
+                    @if (session()->has('import_success'))
+                        <div class="p-2.5 bg-green-900/10 border border-green-800 text-green-300 text-xs rounded">
+                            {{ session('import_success') }}
+                        </div>
+                    @endif
+
+                    @if (session()->has('import_error'))
+                        <div class="p-2.5 bg-red-900/10 border border-red-800 text-red-300 text-xs rounded">
+                            {{ session('import_error') }}
+                        </div>
+                    @endif
+
+                    <!-- Newsletter Popup Settings Group -->
+                    <div class="space-y-4 bg-gray-50 dark:bg-gray-950 p-4 border border-gray-250 dark:border-gray-850 rounded-lg">
+                        <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase">Newsletter Subscriber Signup Popup</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Popup Title</label>
+                                <input type="text" wire:model="newsletter_popup_title" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Trigger Delay (seconds)</label>
+                                <input type="number" wire:model="newsletter_popup_delay" min="0" max="60" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Popup Description</label>
+                            <input type="text" wire:model="newsletter_popup_description" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        </div>
+                        <div class="flex items-center pt-2">
+                            <input type="checkbox" wire:model="newsletter_popup_enabled" id="newsletter_popup_enabled" class="rounded text-[#C8102E] border-gray-300">
+                            <label for="newsletter_popup_enabled" class="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">Enable Subscriber Popup Widget</label>
+                        </div>
+                    </div>
+
+                    <!-- Import/Export Tools -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-950 p-4 border border-gray-250 dark:border-gray-850 rounded-lg">
+                        <div class="space-y-2">
+                            <h4 class="text-xs font-bold text-gray-750 dark:text-gray-250 uppercase">Import Subscribers List</h4>
+                            <p class="text-[10px] text-gray-500">Upload a CSV or JSON file containing subscriber emails. In CSVs, we match columns named "email".</p>
+                            
+                            <div class="flex items-center space-x-2 pt-1">
+                                <input type="file" wire:model="uploaded_subscribers_file" class="text-xs text-gray-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300 dark:file:bg-gray-800 dark:file:text-gray-300 cursor-pointer">
+                                <button type="button" wire:click="importSubscribers" class="bg-[#C8102E] hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded transition">Import File</button>
+                            </div>
+                            <div wire:loading wire:target="uploaded_subscribers_file" class="text-[10px] text-gray-400">Uploading file...</div>
+                        </div>
+
+                        <div class="space-y-2 border-l border-gray-200 dark:border-gray-800 pl-4">
+                            <h4 class="text-xs font-bold text-gray-750 dark:text-gray-250 uppercase">Export Subscribers List</h4>
+                            <p class="text-[10px] text-gray-500">Back up or migrate your active mailing list subscribers in either CSV or JSON formats.</p>
+                            
+                            <div class="flex space-x-2 pt-2">
+                                <button type="button" wire:click="exportSubscribers('csv')" class="bg-gray-800 hover:bg-gray-750 text-white text-xs font-bold px-3 py-1.5 rounded transition">Export CSV</button>
+                                <button type="button" wire:click="exportSubscribers('json')" class="bg-gray-800 hover:bg-gray-750 text-white text-xs font-bold px-3 py-1.5 rounded transition">Export JSON</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Notification Settings Group -->
                     <div class="space-y-4 bg-gray-50 dark:bg-gray-950 p-4 border border-gray-250 dark:border-gray-850 rounded-lg">
                         <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase">Notification & Push Configurations</h4>
@@ -1959,6 +2318,22 @@ $getSystemInfo = function () {
                             {{ session('rss_success') }}
                         </div>
                     @endif
+
+                    @if (session()->has('rss_aggregated_success'))
+                        <div class="p-2.5 bg-green-900/10 border border-green-800 text-green-300 text-xs rounded">
+                            {{ session('rss_aggregated_success') }}
+                        </div>
+                    @endif
+
+                    <div class="flex items-center justify-between bg-gray-50 dark:bg-gray-950 p-4 border border-gray-250 dark:border-gray-850 rounded-lg">
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-800 dark:text-gray-250 uppercase">Background Cron Job Aggregator</h4>
+                            <p class="text-[10px] text-gray-500 mt-1">Last aggregated: {{ Setting::get('rss_last_aggregated_at', 'Never') }}</p>
+                        </div>
+                        <button type="button" wire:click="triggerRssAggregation" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">
+                            Run Aggregation Now
+                        </button>
+                    </div>
 
                     <div class="bg-gray-50 dark:bg-gray-950 border border-gray-250 dark:border-gray-850 rounded-lg p-4 space-y-3">
                         <h4 class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase">Subscribe to external RSS feed channel</h4>
@@ -2309,6 +2684,111 @@ $getSystemInfo = function () {
                     </div>
                 </div>
 
+                <!-- SECURITY & PRIVACY TAB -->
+                <div x-show="activeTab === 'security'" class="space-y-6" style="display: none;">
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">Security & Privacy Controls</h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <!-- Captcha Settings -->
+                        <div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-lg border border-gray-100 dark:border-gray-850 space-y-4">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Human Verification (Captcha)</h4>
+                            
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-bold text-gray-400">Verification Driver</label>
+                                <select wire:model="captcha_driver" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                    <option value="none">Disabled (No Verification)</option>
+                                    <option value="recaptcha">Google reCAPTCHA v2</option>
+                                    <option value="turnstile">Cloudflare Turnstile</option>
+                                </select>
+                            </div>
+
+                            <div x-show="captcha_driver === 'recaptcha'" class="space-y-3" x-cloak>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">reCAPTCHA Site Key</label>
+                                    <input type="text" wire:model="recaptcha_site_key" placeholder="6L..." class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">reCAPTCHA Secret Key</label>
+                                    <input type="password" wire:model="recaptcha_secret_key" placeholder="6L..." class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                            </div>
+
+                            <div x-show="captcha_driver === 'turnstile'" class="space-y-3" x-cloak>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">Turnstile Site Key</label>
+                                    <input type="text" wire:model="turnstile_site_key" placeholder="0x..." class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">Turnstile Secret Key</label>
+                                    <input type="password" wire:model="turnstile_secret_key" placeholder="0x..." class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Brute-Force & Lockouts -->
+                        <div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-lg border border-gray-100 dark:border-gray-850 space-y-4">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Brute-Force Lockout Protection</h4>
+                            
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-bold text-gray-400">Max Failed Login Attempts</label>
+                                <input type="number" wire:model="login_max_attempts" min="3" max="20" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-bold text-gray-400">Lockout Duration (seconds)</label>
+                                <input type="number" wire:model="login_lockout_duration" min="60" max="86400" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                            </div>
+                        </div>
+
+                        <!-- Strict Password Rules -->
+                        <div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-lg border border-gray-100 dark:border-gray-850 space-y-4">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Password Complexity Rules</h4>
+                            
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-bold text-gray-400">Minimum Password Length</label>
+                                <input type="number" wire:model="password_min_length" min="6" max="30" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                            </div>
+
+                            <div class="flex items-center space-x-2 pt-2">
+                                <input type="checkbox" wire:model="password_complexity_required" id="password_complexity_required" class="rounded text-[#C8102E] focus:ring-[#C8102E] border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                <label for="password_complexity_required" class="text-xs font-semibold text-gray-750 dark:text-gray-300">Require complexity (mixed case, numbers, symbols)</label>
+                            </div>
+                        </div>
+
+                        <!-- Spam Protection & Rewards -->
+                        <div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-lg border border-gray-100 dark:border-gray-850 space-y-4">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">User Content & Author Rewards</h4>
+                            
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" wire:model="seo_nofollow_links" id="seo_nofollow_links" class="rounded text-[#C8102E] focus:ring-[#C8102E] border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                <label for="seo_nofollow_links" class="text-xs font-semibold text-gray-750 dark:text-gray-300">Apply "nofollow" to external links in comments</label>
+                            </div>
+
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" wire:model="seo_strip_links" id="seo_strip_links" class="rounded text-[#C8102E] focus:ring-[#C8102E] border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                <label for="seo_strip_links" class="text-xs font-semibold text-gray-750 dark:text-gray-300">Completely strip links from comment text</label>
+                            </div>
+
+                            <div class="space-y-1 pt-2">
+                                <label class="text-[11px] font-bold text-gray-400">Author Reward Rate (KES per valid view)</label>
+                                <input type="text" wire:model="author_reward_rate" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Blacklist System -->
+                    <div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-lg border border-gray-100 dark:border-gray-850 space-y-3">
+                        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Email Blacklist & Spam Filters</h4>
+                        <p class="text-[11px] text-gray-500">Provide comma-separated email addresses or wildcard domains (e.g., `attacker@spammer.com, *@junk.ru, *@botmail.net`) to block registration or contact tips.</p>
+                        
+                        <textarea wire:model="email_blacklist" rows="4" placeholder="*@badactors.com, *@spam.org, badperson@gmail.com" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-3 text-xs font-mono focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white"></textarea>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save Security Settings</button>
+                    </div>
+                </div>
+
                 <!-- AUDIT LOGS TAB -->
                 <div x-show="activeTab === 'audit'" class="space-y-4" style="display: none;">
                     <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-2">
@@ -2340,6 +2820,141 @@ $getSystemInfo = function () {
                                     @endforelse
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FEATURED LAYOUT & BREAKING ALERTS TAB -->
+                <div x-show="activeTab === 'featured'" class="space-y-6" style="display: none;" wire:ignore.self>
+                    <div class="border-b border-gray-100 dark:border-gray-800 pb-2">
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Homepage Slider & Pinned Content Controls</h3>
+                        <p class="text-[10px] text-gray-550 mt-1">Manage articles displaying in main sliders, hero blocks, and featured tickers.</p>
+                    </div>
+
+                    <!-- Pinned & Featured Sliders -->
+                    <div class="bg-gray-50 dark:bg-gray-950 border border-gray-250 dark:border-gray-850 rounded-lg p-4 space-y-4">
+                        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase">Slider & Featured Pinned Articles</h4>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-gray-100 dark:bg-gray-900 text-gray-400 font-bold border-b border-gray-250 dark:border-gray-850 text-[10px]">
+                                        <th class="p-3">Article Title</th>
+                                        <th class="p-3">Category</th>
+                                        <th class="p-3 text-center">Pinned (Hero)</th>
+                                        <th class="p-3 text-center">Featured (Grid)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-150 dark:divide-gray-850 text-gray-700 dark:text-gray-300">
+                                    @forelse($pinned_articles_list as $pinnedArt)
+                                        <tr class="hover:bg-gray-100/50 dark:hover:bg-gray-900/50">
+                                            <td class="p-3 font-semibold text-gray-900 dark:text-white">{{ $pinnedArt->title }}</td>
+                                            <td class="p-3 text-gray-500">{{ $pinnedArt->category->name ?? 'Uncategorized' }}</td>
+                                            <td class="p-3 text-center">
+                                                <button type="button" wire:click="toggleArticlePinned({{ $pinnedArt->id }}, 'is_pinned')" class="text-xs font-bold px-2 py-0.5 rounded {{ $pinnedArt->is_pinned ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700' }}">
+                                                    {{ $pinnedArt->is_pinned ? 'Pinned' : 'Pin' }}
+                                                </button>
+                                            </td>
+                                            <td class="p-3 text-center">
+                                                <button type="button" wire:click="toggleArticlePinned({{ $pinnedArt->id }}, 'is_featured')" class="text-xs font-bold px-2 py-0.5 rounded {{ $pinnedArt->is_featured ? 'bg-blue-100 text-blue-800' : 'bg-gray-200 text-gray-700' }}">
+                                                    {{ $pinnedArt->is_featured ? 'Featured' : 'Feature' }}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" class="p-8 text-center text-gray-400 font-sans">No currently pinned or featured articles. Pin them from the Articles section.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Breaking News Ticker Manager -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Add Breaking Alert Form -->
+                        <div class="bg-gray-50 dark:bg-gray-955 border border-gray-250 dark:border-gray-850 rounded-lg p-4 space-y-4 self-start">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase">Add Breaking Alert</h4>
+                            
+                            @if (session()->has('breaking_success'))
+                                <div class="p-2 bg-green-900/10 border border-green-800 text-green-300 text-[10px] rounded">
+                                    {{ session('breaking_success') }}
+                                </div>
+                            @endif
+
+                            <div class="space-y-3">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Alert Title / Headline</label>
+                                    <input type="text" wire:model="breaking_title" placeholder="e.g. Kisii County Assembly passes annual budget" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    @error('breaking_title') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Action link URL (Optional)</label>
+                                    <input type="url" wire:model="breaking_link" placeholder="e.g. https://getembenews.com/articles/budget" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    @error('breaking_link') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Display Priority</label>
+                                    <input type="number" wire:model="breaking_priority" min="1" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    @error('breaking_priority') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Expiration Date (Optional)</label>
+                                    <input type="date" wire:model="breaking_expires_at" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    @error('breaking_expires_at') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                                </div>
+
+                                <button type="button" wire:click="addBreakingNews" class="w-full bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs py-2 rounded transition">
+                                    Save Breaking Alert
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Active Alerts List -->
+                        <div class="lg:col-span-2 bg-gray-50 dark:bg-gray-955 border border-gray-250 dark:border-gray-855 rounded-lg p-4 space-y-4">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase">Breaking Ticker Queue</h4>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="bg-gray-100 dark:bg-gray-900 text-gray-400 font-bold border-b border-gray-250 dark:border-gray-855 text-[10px]">
+                                            <th class="p-3">Alert Headline</th>
+                                            <th class="p-3">Priority</th>
+                                            <th class="p-3">Status</th>
+                                            <th class="p-3 text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-150 dark:divide-gray-850">
+                                        @forelse($breaking_news_list as $alert)
+                                            <tr class="hover:bg-gray-100/50 dark:hover:bg-gray-900/50">
+                                                <td class="p-3 font-semibold text-gray-850 dark:text-gray-250">
+                                                    <div>{{ $alert->title }}</div>
+                                                    @if($alert->link)
+                                                        <div class="text-[9px] text-[#C8102E] hover:underline truncate max-w-xs font-mono"><a href="{{ $alert->link }}" target="_blank">{{ $alert->link }}</a></div>
+                                                    @endif
+                                                </td>
+                                                <td class="p-3 text-gray-550 font-bold">{{ $alert->priority }}</td>
+                                                <td class="p-3">
+                                                    <button type="button" wire:click="toggleBreakingNews({{ $alert->id }})" class="text-[10px] font-bold px-2 py-0.5 rounded uppercase {{ $alert->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                        {{ $alert->is_active ? 'Active' : 'Paused' }}
+                                                    </button>
+                                                </td>
+                                                <td class="p-3 text-right">
+                                                    <button type="button" wire:click="deleteBreakingNews({{ $alert->id }})" class="text-red-550 hover:underline font-bold text-[10px]">Remove</button>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="4" class="p-8 text-center text-gray-400 font-sans">No breaking alerts found in database.</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>

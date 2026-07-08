@@ -108,6 +108,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'install') {
             $envContent = file_get_contents($envFile);
             
             // Replace DB connection credentials
+            $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $detectedUrl = $protocol . '://' . $_SERVER['HTTP_HOST'];
+
             $replacements = [
                 'DB_CONNECTION' => 'mysql',
                 'DB_HOST' => $db_host,
@@ -116,7 +119,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'install') {
                 'DB_USERNAME' => $db_user,
                 'DB_PASSWORD' => $db_pass,
                 'APP_ENV' => 'production',
-                'APP_DEBUG' => 'false'
+                'APP_DEBUG' => 'false',
+                'APP_URL' => $detectedUrl
             ];
 
             $lines = explode("\n", $envContent);
@@ -191,6 +195,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'install') {
                 );
             }
             require_once $baseDir . '/vendor/autoload.php';
+
+            // Ensure necessary storage and bootstrap cache directories exist with correct permissions
+            $requiredDirs = [
+                $baseDir . '/storage/framework/cache/data',
+                $baseDir . '/storage/framework/sessions',
+                $baseDir . '/storage/framework/views',
+                $baseDir . '/storage/app/public',
+                $baseDir . '/bootstrap/cache',
+            ];
+            foreach ($requiredDirs as $dir) {
+                if (!file_exists($dir)) {
+                    @mkdir($dir, 0775, true);
+                }
+            }
 
             // Boot Laravel application kernel
             $app = require_once $baseDir . '/bootstrap/app.php';

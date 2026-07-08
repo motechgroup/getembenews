@@ -11,7 +11,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Force-load classes early to prevent incomplete class serialization issues with session/cache drivers
+        class_exists(\App\Models\Article::class);
+        class_exists(\App\Models\Category::class);
+        class_exists(\App\Models\Video::class);
+        class_exists(\App\Models\Advertisement::class);
     }
 
     /**

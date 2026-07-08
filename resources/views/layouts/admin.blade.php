@@ -28,6 +28,39 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- Trix Editor CDN -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/trix@2.0.8/dist/trix.css">
+    <script type="text/javascript" src="https://unpkg.com/trix@2.0.8/dist/trix.umd.min.js"></script>
+    <style>
+        trix-editor {
+            background-color: #ffffff;
+            color: #111827;
+        }
+        .dark trix-editor {
+            background-color: #111827 !important;
+            color: #e5e7eb !important;
+            border-color: #374151 !important;
+        }
+        trix-toolbar .trix-button-row {
+            background-color: #f3f4f6;
+            border-bottom: 1px solid #d1d5db;
+        }
+        .dark trix-toolbar .trix-button-row {
+            background-color: #1f2937 !important;
+            border-bottom-color: #374151 !important;
+        }
+        .dark trix-toolbar .trix-button {
+            background-color: #374151 !important;
+            color: #d1d5db !important;
+            border-color: #4b5563 !important;
+        }
+        .dark trix-toolbar .trix-button--active {
+            background-color: #4b5563 !important;
+            color: #ffffff !important;
+        }
+    </style>
+
     @livewireStyles
 </head>
 <body class="font-sans text-gray-900 bg-gray-50 dark:bg-gray-950 dark:text-gray-100 antialiased min-h-screen flex flex-col md:flex-row transition-colors duration-200">
@@ -72,6 +105,15 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
                     </svg>
                     <span>Manage Categories</span>
+                </a>
+                @endcan
+
+                @can('settings management')
+                <a href="/admin/media" class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition {{ request()->is('admin/media*') ? 'bg-gray-800 text-white border-l-4 border-[#C8102E] pl-2' : '' }}">
+                    <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Media Library</span>
                 </a>
                 @endcan
 
@@ -177,6 +219,12 @@
                     </svg>
                     <span>General settings</span>
                 </a>
+                <a href="/admin/settings/featured" class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition {{ request()->is('admin/settings/featured*') ? 'bg-gray-800 text-white border-l-4 border-[#C8102E] pl-2' : '' }}">
+                    <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.243.577 1.835l-3.97 2.883a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.971-2.883a1 1 0 00-1.176 0l-3.97 2.883c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118L2.98 9.963c-.783-.57-.38-1.835.577-1.835h4.907a1 1 0 00.95-.69l1.519-4.674z"/>
+                    </svg>
+                    <span>Featured & Homepage</span>
+                </a>
                 <a href="/admin/settings/socials" class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition {{ request()->is('admin/settings/socials*') ? 'bg-gray-800 text-white border-l-4 border-[#C8102E] pl-2' : '' }}">
                     <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
@@ -243,6 +291,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
                     </svg>
                     <span>Advertising & Banners</span>
+                </a>
+                <a href="/admin/settings/security" class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition {{ request()->is('admin/settings/security*') ? 'bg-gray-800 text-white border-l-4 border-[#C8102E] pl-2' : '' }}">
+                    <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    <span>Security & Privacy</span>
                 </a>
                 @endcan
             </div>
@@ -348,8 +402,8 @@
 
         <!-- User Profile Footer in Sidebar -->
         <div class="p-4 border-t border-gray-800 flex items-center justify-between text-xs">
-            <div class="flex items-center space-x-3">
-                <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center font-bold text-white overflow-hidden">
+            <a href="{{ route('profile') }}" class="flex items-center space-x-3 group hover:opacity-80 transition cursor-pointer">
+                <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center font-bold text-white overflow-hidden group-hover:ring-2 group-hover:ring-[#C8102E] transition">
                     @if(auth()->user()->photo_url)
                         <img src="{{ auth()->user()->photo_url }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
                     @else
@@ -357,10 +411,10 @@
                     @endif
                 </div>
                 <div>
-                    <div class="font-bold text-white truncate max-w-28">{{ auth()->user()->name }}</div>
-                    <div class="text-[10px] text-gray-500 capitalize">{{ auth()->user()->role }}</div>
+                    <div class="font-bold text-white truncate max-w-28 group-hover:text-gray-300 transition">{{ auth()->user()->name }}</div>
+                    <div class="text-[10px] text-gray-550 capitalize">{{ auth()->user()->role }}</div>
                 </div>
-            </div>
+            </a>
             
             <form method="POST" action="{{ route('logout') }}" class="inline">
                 @csrf

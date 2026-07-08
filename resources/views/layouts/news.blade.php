@@ -430,11 +430,10 @@
                     {{ $siteName }} is a modern digital platform dedicated to bringing you timely, accurate, and independent news coverage from Kisii County, Kenya, and across the globe.
                 </p>
                 <div class="flex space-x-4 pt-2">
-                    <!-- Social icons (SVG placeholders) -->
-                    <a href="#" class="text-gray-400 hover:text-white"><span class="sr-only">Facebook</span>FB</a>
-                    <a href="#" class="text-gray-400 hover:text-white"><span class="sr-only">Twitter</span>TW</a>
-                    <a href="#" class="text-gray-400 hover:text-white"><span class="sr-only">Instagram</span>IG</a>
-                    <a href="#" class="text-gray-400 hover:text-white"><span class="sr-only">YouTube</span>YT</a>
+                    <a href="{{ \App\Models\Setting::get('facebook', 'https://facebook.com') }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Facebook</span>FB</a>
+                    <a href="{{ \App\Models\Setting::get('twitter', 'https://twitter.com') }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Twitter</span>TW</a>
+                    <a href="{{ \App\Models\Setting::get('instagram', 'https://instagram.com') }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Instagram</span>IG</a>
+                    <a href="{{ \App\Models\Setting::get('youtube', 'https://youtube.com') }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">YouTube</span>YT</a>
                 </div>
             </div>
 

@@ -223,4 +223,15 @@ Route::get('/run-migrations', function () {
     }
 });
 
+Route::get('/debug-log', function () {
+    $path = storage_path('logs/laravel.log');
+    if (!file_exists($path)) {
+        return 'Log file does not exist at ' . $path;
+    }
+    $content = file_get_contents($path);
+    $lines = explode("\n", $content);
+    $lastLines = array_slice($lines, -150);
+    return '<pre style="background: #111; color: #eee; padding: 20px; font-family: monospace; overflow: auto; max-height: 90vh;">' . htmlspecialchars(implode("\n", $lastLines)) . '</pre>';
+});
+
 Route::get('/{slug}', [ArticleController::class, 'category'])->name('category.show');

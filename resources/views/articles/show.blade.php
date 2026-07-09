@@ -142,9 +142,14 @@
                         </div>
                     @endif
 
-                    @if(!empty($article->format_meta['video_url']))
-                        <!-- Video Display -->
-                        @php
+                    @php
+                        $bodyContent = $article->body;
+                        $videoHtml = '';
+                        $audioHtml = '';
+                        $hasVideoPlaceholder = false;
+                        $hasAudioPlaceholder = false;
+
+                        if (!empty($article->format_meta['video_url'])) {
                             $videoUrl = $article->format_meta['video_url'];
                             // YouTube Link Conversion
                             if (preg_match('%(?:youtube\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $videoUrl, $match)) {
@@ -154,24 +159,43 @@
                             elseif (preg_match('%vimeo\.com/(?:channels/(?:\w+/)?|groups/(?:[^\/]*)/videos/|album/(?:\d+)/video/|video/|)(\d+)(?:$|/|\?)%i', $videoUrl, $match)) {
                                 $videoUrl = "https://player.vimeo.com/video/" . $match[1];
                             }
-                        @endphp
-                        <div class="aspect-video w-full rounded-lg overflow-hidden bg-black border border-gray-200 dark:border-gray-800 mb-6">
-                            <iframe src="{{ $videoUrl }}" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                        </div>
+                            $videoHtml = '
+                                <div class="aspect-video w-full rounded-lg overflow-hidden bg-black border border-gray-200 dark:border-gray-800 mb-6">
+                                    <iframe src="' . e($videoUrl) . '" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                </div>';
+                        }
+
+                        if (!empty($article->format_meta['audio_url'])) {
+                            $audioHtml = '
+                                <div class="bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg p-4 mb-6 flex items-center space-x-4">
+                                    <div class="w-12 h-12 rounded-full bg-[#C8102E] text-white flex items-center justify-center font-bold text-lg shadow-md animate-pulse">🔊</div>
+                                    <div class="flex-grow space-y-1">
+                                        <div class="text-xs font-bold text-gray-550 uppercase">Listen to Podcast / Audio Stream</div>
+                                        <audio controls class="w-full h-8">
+                                            <source src="' . e($article->format_meta['audio_url']) . '" type="audio/mpeg">
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                    </div>
+                                </div>';
+                        }
+
+                        if (str_contains($bodyContent, '[video]')) {
+                            $bodyContent = str_replace('[video]', $videoHtml, $bodyContent);
+                            $hasVideoPlaceholder = true;
+                        }
+
+                        if (str_contains($bodyContent, '[audio]')) {
+                            $bodyContent = str_replace('[audio]', $audioHtml, $bodyContent);
+                            $hasAudioPlaceholder = true;
+                        }
+                    @endphp
+
+                    @if(!empty($videoHtml) && !$hasVideoPlaceholder)
+                        {!! $videoHtml !!}
                     @endif
 
-                    @if(!empty($article->format_meta['audio_url']))
-                        <!-- Audio Display -->
-                        <div class="bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg p-4 mb-6 flex items-center space-x-4">
-                            <div class="w-12 h-12 rounded-full bg-[#C8102E] text-white flex items-center justify-center font-bold text-lg shadow-md animate-pulse">🔊</div>
-                            <div class="flex-grow space-y-1">
-                                <div class="text-xs font-bold text-gray-550 uppercase">Listen to Podcast / Audio Stream</div>
-                                <audio controls class="w-full h-8">
-                                    <source src="{{ $article->format_meta['audio_url'] }}" type="audio/mpeg">
-                                    Your browser does not support the audio element.
-                                </audio>
-                            </div>
-                        </div>
+                    @if(!empty($audioHtml) && !$hasAudioPlaceholder)
+                        {!! $audioHtml !!}
                     @endif
 
                     @if($article->format === 'list' && !empty($article->format_meta['list']))
@@ -240,7 +264,7 @@
                         </div>
                     @endif
 
-                    {!! $article->body !!}
+                    {!! $bodyContent !!}
                 </div>
 
                 @if($article->tags && count($article->tags) > 0)

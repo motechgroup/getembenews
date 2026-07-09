@@ -895,7 +895,7 @@ $generateIdeas = function () {
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold text-gray-700 dark:text-gray-350 uppercase">Video Embed URL (YouTube, Vimeo, etc.)</label>
                             <input type="text" wire:model="format_meta.video_url" placeholder="https://www.youtube.com/embed/..." class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
-                            <p class="text-[9px] text-gray-400">Specify an embed URL to display a video player inside the article details view.</p>
+                            <p class="text-[9px] text-gray-400">Specify an embed URL to display a video player inside the article details view. Tip: Add <strong>[video]</strong> inside the text to place it between paragraphs.</p>
                         </div>
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold text-gray-700 dark:text-gray-350 uppercase">Audio Podcast or Stream URL</label>
@@ -903,7 +903,7 @@ $generateIdeas = function () {
                                 <input type="text" wire:model="format_meta.audio_url" placeholder="https://..." class="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white flex-grow font-semibold">
                                 <button type="button" @click="$dispatch('open-media-modal', {field: 'audio_url'})" class="bg-gray-200 dark:bg-gray-800 text-xs px-2.5 py-2 rounded transition">Browse</button>
                             </div>
-                            <p class="text-[9px] text-gray-400 font-semibold">Specify a URL (e.g. MP3 file or sound stream) to display an audio player.</p>
+                            <p class="text-[9px] text-gray-400 font-semibold">Specify a URL (e.g. MP3 file or sound stream) to display an audio player. Tip: Add <strong>[audio]</strong> inside the text to place it between paragraphs.</p>
                         </div>
                     </div>
                 </div>

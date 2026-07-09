@@ -147,7 +147,25 @@ $edit = function ($id) {
     
     // Publishing & Media Fields
     $this->format = $article->format ?: 'article';
-    $this->format_meta = $article->format_meta ?: [];
+    $defaultMeta = [
+        'gallery' => [],
+        'list' => [],
+        'video_url' => '',
+        'audio_url' => '',
+        'quiz' => [],
+        'poll' => [],
+        'recipe' => [
+            'prep_time' => '',
+            'cook_time' => '',
+            'yield' => '',
+        ],
+        'event' => [
+            'event_date' => '',
+            'venue' => '',
+            'ticket_url' => ''
+        ]
+    ];
+    $this->format_meta = array_merge($defaultMeta, $article->format_meta ?: []);
     $this->faq_items = $article->faq_items ?: [];
     $this->downloads = $article->downloads ?: [];
     $this->tags_input = $article->tags()->pluck('name')->implode(', ');
@@ -864,10 +882,30 @@ $generateIdeas = function () {
                     <button type="button" wire:click="addDownload" class="bg-gray-800 hover:bg-gray-700 text-white font-bold text-[10px] px-3 py-1.5 rounded transition">
                         Add Download Button
                     </button>
-                </div>   </div>
-            </div>
+                </div>
 
-            <!-- Sidebar details (Right) -->
+                <!-- Video & Audio Embeds -->
+                <div class="bg-white dark:bg-gray-900 p-4 border border-gray-250 dark:border-gray-855 rounded-lg space-y-4">
+                    <h3 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide flex items-center">
+                        🎥 Video & Audio Embeds (Optional)
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-gray-700 dark:text-gray-350 uppercase">Video Embed URL (YouTube, Vimeo, etc.)</label>
+                            <input type="text" wire:model="format_meta.video_url" placeholder="https://www.youtube.com/embed/..." class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <p class="text-[9px] text-gray-400">Specify an embed URL to display a video player inside the article details view.</p>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-gray-700 dark:text-gray-350 uppercase">Audio Podcast or Stream URL</label>
+                            <div class="flex space-x-2">
+                                <input type="text" wire:model="format_meta.audio_url" placeholder="https://..." class="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white flex-grow font-semibold">
+                                <button type="button" @click="$dispatch('open-media-modal', {field: 'audio_url'})" class="bg-gray-200 dark:bg-gray-800 text-xs px-2.5 py-2 rounded transition">Browse</button>
+                            </div>
+                            <p class="text-[9px] text-gray-400 font-semibold">Specify a URL (e.g. MP3 file or sound stream) to display an audio player.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 space-y-6 self-start">
                         <!-- Post Format Selection -->
                 <div class="space-y-1">

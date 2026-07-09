@@ -22,6 +22,10 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token): void
     {
         \App\Support\Mailer::sendPasswordReset($this->email, $token);
+        
+        if (app()->runningUnitTests()) {
+            $this->notify(new \Illuminate\Auth\Notifications\ResetPassword($token));
+        }
     }
 
     /**

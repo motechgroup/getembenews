@@ -142,19 +142,19 @@
                         </div>
                     @endif
 
-                    @if($article->format === 'video' && !empty($article->format_meta['video_url']))
-                        <!-- Video Post Format Display -->
+                    @if(!empty($article->format_meta['video_url']))
+                        <!-- Video Display -->
                         <div class="aspect-video w-full rounded-lg overflow-hidden bg-black border border-gray-200 dark:border-gray-800 mb-6">
                             <iframe src="{{ $article->format_meta['video_url'] }}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
                         </div>
                     @endif
 
-                    @if($article->format === 'audio' && !empty($article->format_meta['audio_url']))
-                        <!-- Audio Post Format Display -->
-                        <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-lg p-4 mb-6 flex items-center space-x-4">
+                    @if(!empty($article->format_meta['audio_url']))
+                        <!-- Audio Display -->
+                        <div class="bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg p-4 mb-6 flex items-center space-x-4">
                             <div class="w-12 h-12 rounded-full bg-[#C8102E] text-white flex items-center justify-center font-bold text-lg shadow-md animate-pulse">🔊</div>
                             <div class="flex-grow space-y-1">
-                                <div class="text-xs font-bold text-gray-500 uppercase">Listen to Podcast / Audio Stream</div>
+                                <div class="text-xs font-bold text-gray-550 uppercase">Listen to Podcast / Audio Stream</div>
                                 <audio controls class="w-full h-8">
                                     <source src="{{ $article->format_meta['audio_url'] }}" type="audio/mpeg">
                                     Your browser does not support the audio element.

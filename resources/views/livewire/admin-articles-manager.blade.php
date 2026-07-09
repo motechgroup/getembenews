@@ -49,7 +49,7 @@ rules([
     'slug' => 'required|string|max:255',
     'subtitle' => 'nullable|string|max:255',
     'body' => 'required|string',
-    'featured_image' => 'nullable|url',
+    'featured_image' => 'nullable|string|max:1000',
     'category_id' => 'required|exists:categories,id',
     'selectedCategories' => 'nullable|array',
     'selectedCategories.*' => 'exists:categories,id',
@@ -983,7 +983,7 @@ $generateIdeas = function () {
                 <div class="space-y-1">
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Featured Image URL</label>
                     <div class="flex space-x-2">
-                        <input type="url" wire:model="featured_image" placeholder="https://unsplash.com/...jpg"
+                        <input type="text" wire:model="featured_image" placeholder="https://unsplash.com/...jpg"
                                class="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white flex-grow font-semibold">
                         <button type="button" @click="$dispatch('open-media-modal', {field: 'featured_image'})" class="bg-gray-200 dark:bg-gray-800 text-xs px-2.5 py-2 rounded transition">Browse</button>
                     </div>

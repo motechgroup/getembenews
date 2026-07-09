@@ -585,6 +585,7 @@
             </div>
 
             <!-- Section 4: Live TV & Programme Schedule (Dark Mode Design Handoff) -->
+            @if(\App\Models\Setting::get('live_tv_active', '1') == '1')
             @php
                 $tvUrl = \App\Models\Setting::get('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE');
             @endphp
@@ -683,6 +684,7 @@
                     </div>
                 </div>
             </div>
+            @endif
         @endif
         </div>
 

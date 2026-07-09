@@ -213,6 +213,7 @@
                 @endforeach
 
                 <!-- TV link -->
+                @if(\App\Models\Setting::get('live_tv_active', '1') == '1')
                 <a href="/tv" class="hover:text-red-600 transition flex items-center space-x-1 py-5 text-red-500 font-extrabold tracking-wider">
                     <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -220,8 +221,10 @@
                     </svg>
                     <span>TV</span>
                 </a>
+                @endif
 
                 <!-- RADIO link -->
+                @if(\App\Models\Setting::get('live_radio_active', '1') == '1')
                 <a href="/live-radio" class="hover:text-blue-600 transition flex items-center space-x-1 py-5 text-blue-500 font-extrabold tracking-wider">
                     <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -229,6 +232,7 @@
                     </svg>
                     <span>RADIO</span>
                 </a>
+                @endif
             </nav>
 
             <!-- Right Side Actions -->
@@ -343,8 +347,12 @@
                         </a>
                     @endif
                 @endforeach
+                @if(\App\Models\Setting::get('live_tv_active', '1') == '1')
                 <a href="/tv" class="block px-3 py-2 rounded text-sm font-bold text-red-500 hover:bg-gray-100 dark:hover:bg-gray-855">TV</a>
+                @endif
+                @if(\App\Models\Setting::get('live_radio_active', '1') == '1')
                 <a href="/live-radio" class="block px-3 py-2 rounded text-sm font-bold text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-855">RADIO</a>
+                @endif
                 @auth
                     <div class="border-t border-gray-150 dark:border-gray-800 my-2 pt-2 space-y-1">
                         <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded text-sm font-bold text-gray-900 dark:text-gray-250 hover:bg-gray-100 dark:hover:bg-gray-855 hover:text-[#cc6c3b] uppercase">

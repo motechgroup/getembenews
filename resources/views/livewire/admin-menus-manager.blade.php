@@ -118,6 +118,24 @@ $updatedSelectedCategorySlug = function ($value) {
     $this->selectedCategorySlug = '';
 };
 
+$addTvToMenu = function () {
+    $this->menuItems[] = [
+        'label' => 'TV',
+        'url' => '/tv',
+        'is_child' => false,
+        'is_disabled' => false,
+    ];
+};
+
+$addRadioToMenu = function () {
+    $this->menuItems[] = [
+        'label' => 'RADIO',
+        'url' => '/live-radio',
+        'is_child' => false,
+        'is_disabled' => false,
+    ];
+};
+
 $indent = function ($index) {
     if (isset($this->menuItems[$index])) {
         $this->menuItems[$index]['is_child'] = true;
@@ -263,6 +281,18 @@ $saveMenu = function () {
             <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Add Link Item</h3>
             
             <form wire:submit.prevent="addItem" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-5 shadow-sm space-y-4">
+                <div class="space-y-1.5 pb-2 border-b border-gray-150 dark:border-gray-800">
+                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Quick-Add System Links</label>
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        <button type="button" wire:click="addTvToMenu" class="bg-red-55 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-900/30 text-[#C8102E] dark:text-red-400 font-bold text-[10px] px-2.5 py-1.5 rounded transition border border-red-200 dark:border-red-900/50 flex items-center space-x-1">
+                            <span>+ Live TV (/tv)</span>
+                        </button>
+                        <button type="button" wire:click="addRadioToMenu" class="bg-blue-55 hover:bg-blue-100 dark:bg-blue-950/20 dark:hover:bg-blue-900/30 text-blue-750 dark:text-blue-400 font-bold text-[10px] px-2.5 py-1.5 rounded transition border border-blue-200 dark:border-blue-900/50 flex items-center space-x-1">
+                            <span>+ Live Radio (/live-radio)</span>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="space-y-1">
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Quick-Select Category Link</label>
                     <select wire:model.live="selectedCategorySlug" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none font-bold">

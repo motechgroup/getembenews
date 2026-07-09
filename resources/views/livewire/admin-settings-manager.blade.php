@@ -46,6 +46,8 @@ state([
     'weather_city' => fn() => Setting::get('weather_city', 'Kisii'),
     'live_tv_url' => fn() => Setting::get('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE'),
     'live_radio_url' => fn() => Setting::get('live_radio_url', 'http://stream.zeno.fm/f5r7x1t1zv8uv'),
+    'live_tv_active' => fn() => (bool) Setting::get('live_tv_active', true),
+    'live_radio_active' => fn() => (bool) Setting::get('live_radio_active', true),
 
     // Mobile App Settings
     'app_play_store_url' => fn() => Setting::get('app_play_store_url', 'https://play.google.com/store'),
@@ -825,7 +827,7 @@ $save = function () use ($logAction) {
         'google_login', 'facebook_login', 'twitter_login', 'github_login', 'linkedin_login', 'whatsapp_login', 'apple_login', 'pinterest_login', 'threads_login',
         'google_client_id', 'google_client_secret', 'facebook_client_id', 'facebook_client_secret', 'github_client_id', 'github_client_secret', 'twitter_client_id', 'twitter_client_secret',
         'notifications_enabled', 'notifications_push', 'notifications_in_app', 'notifications_email',
-        'live_tv_url', 'live_radio_url', 'weather_city', 'homepage_categories',
+        'live_tv_url', 'live_radio_url', 'live_tv_active', 'live_radio_active', 'weather_city', 'homepage_categories',
         'app_play_store_url', 'app_app_store_url', 'app_banner_title', 'app_banner_desc',
         'tv_schedule', 'radio_schedule',
         'adsense_enabled', 'adsense_client_id', 'adsense_code',
@@ -1245,10 +1247,18 @@ $sendTestEmail = function () {
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Live TV stream URL</label>
                             <input type="url" wire:model="live_tv_url" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            <div class="flex items-center space-x-2 pt-1">
+                                <input type="checkbox" wire:model="live_tv_active" id="live_tv_active" class="rounded text-[#C8102E] focus:ring-[#C8102E] h-3.5 w-3.5 border-gray-300 dark:border-gray-700 dark:bg-gray-800">
+                                <label for="live_tv_active" class="text-[10px] font-bold text-gray-600 dark:text-gray-400">Enable Live TV page & links</label>
+                            </div>
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Live FM stream URL</label>
                             <input type="url" wire:model="live_radio_url" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            <div class="flex items-center space-x-2 pt-1">
+                                <input type="checkbox" wire:model="live_radio_active" id="live_radio_active" class="rounded text-[#C8102E] focus:ring-[#C8102E] h-3.5 w-3.5 border-gray-300 dark:border-gray-700 dark:bg-gray-800">
+                                <label for="live_radio_active" class="text-[10px] font-bold text-gray-600 dark:text-gray-400">Enable Live Radio page & links</label>
+                            </div>
                         </div>
                     </div>
 

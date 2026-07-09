@@ -145,6 +145,9 @@ Route::post('/articles/{id}/view', [ArticleController::class, 'trackView'])->nam
 Route::get('/search', [ArticleController::class, 'search'])->name('search');
 
 Route::get('/tv', function () {
+    if (\App\Models\Setting::get('live_tv_active', '1') != '1') {
+        return redirect('/')->with('error', 'Live TV page is currently disabled.');
+    }
     $tvUrl = \App\Models\Setting::get('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE');
     return view('live-tv', compact('tvUrl'));
 })->name('live-tv');
@@ -152,6 +155,9 @@ Route::get('/tv', function () {
 Route::redirect('/live-tv', '/tv');
 
 Route::get('/live-radio', function () {
+    if (\App\Models\Setting::get('live_radio_active', '1') != '1') {
+        return redirect('/')->with('error', 'Live Radio page is currently disabled.');
+    }
     $radioUrl = \App\Models\Setting::get('live_radio_url', 'http://stream.zeno.fm/f5r7x1t1zv8uv');
     return view('live-radio', compact('radioUrl'));
 })->name('live-radio');

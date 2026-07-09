@@ -594,7 +594,7 @@
                         <span class="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping inline-block"></span>
                         <span class="text-white font-serif">Getembe TV Live Coverage</span>
                     </h3>
-                    <a href="/live-tv" class="text-xs font-semibold text-gray-400 hover:text-white transition flex items-center space-x-1">
+                    <a href="/tv" class="text-xs font-semibold text-gray-400 hover:text-white transition flex items-center space-x-1">
                         <span>Full Screen TV</span>
                         <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </a>

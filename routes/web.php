@@ -77,7 +77,7 @@ Route::get('/', function () {
             $url = $item['url'] ?? '';
             if (str_starts_with($url, '/')) {
                 $slug = ltrim($url, '/');
-                if ($slug && !in_array($slug, ['live-tv', 'live-radio', 'gallery', 'contact', 'about', 'privacy', 'terms'])) {
+                if ($slug && !in_array($slug, ['live-tv', 'tv', 'live-radio', 'gallery', 'contact', 'about', 'privacy', 'terms'])) {
                     $selectedCategorySlugs[] = $slug;
                 }
             }
@@ -144,10 +144,12 @@ Route::get('/articles/{slug}', [ArticleController::class, 'show'])->name('articl
 Route::post('/articles/{id}/view', [ArticleController::class, 'trackView'])->name('articles.track-view');
 Route::get('/search', [ArticleController::class, 'search'])->name('search');
 
-Route::get('/live-tv', function () {
+Route::get('/tv', function () {
     $tvUrl = \App\Models\Setting::get('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE');
     return view('live-tv', compact('tvUrl'));
 })->name('live-tv');
+
+Route::redirect('/live-tv', '/tv');
 
 Route::get('/live-radio', function () {
     $radioUrl = \App\Models\Setting::get('live_radio_url', 'http://stream.zeno.fm/f5r7x1t1zv8uv');

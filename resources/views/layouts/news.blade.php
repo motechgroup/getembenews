@@ -32,7 +32,7 @@
             ['label' => 'Business', 'url' => '/business'],
             ['label' => 'Entertainment', 'url' => '/entertainment'],
             ['label' => 'Sports', 'url' => '/sports'],
-            ['label' => 'Video', 'url' => '/live-tv'],
+            ['label' => 'Video', 'url' => '/tv'],
         ];
         $filterMenu = function($items) use (&$filterMenu) {
             return array_values(array_filter(array_map(function($item) use ($filterMenu) {
@@ -213,7 +213,7 @@
                 @endforeach
 
                 <!-- TV link -->
-                <a href="/live-tv" class="hover:text-red-600 transition flex items-center space-x-1 py-5 text-red-500 font-extrabold tracking-wider">
+                <a href="/tv" class="hover:text-red-600 transition flex items-center space-x-1 py-5 text-red-500 font-extrabold tracking-wider">
                     <span class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z" />
@@ -343,7 +343,7 @@
                         </a>
                     @endif
                 @endforeach
-                <a href="/live-tv" class="block px-3 py-2 rounded text-sm font-bold text-red-500 hover:bg-gray-100 dark:hover:bg-gray-855">TV</a>
+                <a href="/tv" class="block px-3 py-2 rounded text-sm font-bold text-red-500 hover:bg-gray-100 dark:hover:bg-gray-855">TV</a>
                 <a href="/live-radio" class="block px-3 py-2 rounded text-sm font-bold text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-855">RADIO</a>
                 @auth
                     <div class="border-t border-gray-150 dark:border-gray-800 my-2 pt-2 space-y-1">
@@ -459,7 +459,7 @@
                 <ul class="space-y-2 text-xs text-gray-400">
                     @php
                         $defaultFooter = [
-                            ['label' => 'Live Stream TV', 'url' => '/live-tv'],
+                            ['label' => 'Live Stream TV', 'url' => '/tv'],
                             ['label' => 'Live Radio Audio', 'url' => '/live-radio'],
                             ['label' => 'About Us', 'url' => '/about'],
                             ['label' => 'Contact & Tips', 'url' => '/contact'],

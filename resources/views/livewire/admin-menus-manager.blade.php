@@ -30,7 +30,7 @@ $loadMenu = function () {
         ['label' => 'Business', 'url' => '/business'],
         ['label' => 'Entertainment', 'url' => '/entertainment'],
         ['label' => 'Sports', 'url' => '/sports'],
-        ['label' => 'Video', 'url' => '/live-tv'],
+        ['label' => 'Video', 'url' => '/tv'],
     ];
 
     $defaultFooter = [

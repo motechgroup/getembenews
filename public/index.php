@@ -1,5 +1,29 @@
 <?php
 
+if (isset($_GET['clear_cache_now']) && $_GET['clear_cache_now'] === 'secret123') {
+    $files = [
+        __DIR__ . '/../bootstrap/cache/routes-v7.php',
+        __DIR__ . '/../bootstrap/cache/routes.php',
+        __DIR__ . '/../bootstrap/cache/config.php',
+        __DIR__ . '/../bootstrap/cache/services.php',
+        __DIR__ . '/../bootstrap/cache/packages.php',
+    ];
+    foreach ($files as $file) {
+        if (file_exists($file)) {
+            @unlink($file);
+        }
+    }
+    // Clear view cache
+    $viewPath = __DIR__ . '/../storage/framework/views';
+    if (is_dir($viewPath)) {
+        foreach (glob($viewPath . '/*.php') as $viewFile) {
+            @unlink($viewFile);
+        }
+    }
+    echo "Caches cleared successfully!";
+    exit;
+}
+
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 

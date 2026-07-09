@@ -1039,4 +1039,77 @@ $generateIdeas = function () {
     @endif
 
     <livewire:media-select-modal />
+
+    <script>
+        (function() {
+            // Function to add buttons
+            function initializeTrixToolbar(event) {
+                var toolbar = event.target.toolbarElement;
+                if (!toolbar) return;
+                
+                // Prevent duplicate buttons if re-initialized
+                if (toolbar.querySelector('[data-trix-action="embed-video"]')) {
+                    return;
+                }
+
+                // Create video button
+                var videoButton = document.createElement("button");
+                videoButton.setAttribute("type", "button");
+                videoButton.setAttribute("class", "trix-button trix-button--icon");
+                videoButton.setAttribute("data-trix-action", "embed-video");
+                videoButton.setAttribute("title", "Embed Video");
+                videoButton.style.backgroundImage = "none";
+                videoButton.style.fontSize = "13px";
+                videoButton.style.display = "inline-flex";
+                videoButton.style.alignItems = "center";
+                videoButton.style.justifyContent = "center";
+                videoButton.innerHTML = "📹";
+
+                // Create audio button
+                var audioButton = document.createElement("button");
+                audioButton.setAttribute("type", "button");
+                audioButton.setAttribute("class", "trix-button trix-button--icon");
+                audioButton.setAttribute("data-trix-action", "embed-audio");
+                audioButton.setAttribute("title", "Embed Audio");
+                audioButton.style.backgroundImage = "none";
+                audioButton.style.fontSize = "13px";
+                audioButton.style.display = "inline-flex";
+                audioButton.style.alignItems = "center";
+                audioButton.style.justifyContent = "center";
+                audioButton.innerHTML = "🔊";
+
+                // Insert into file-tools or block-tools group
+                var group = toolbar.querySelector(".trix-button-group--file-tools") || toolbar.querySelector(".trix-button-group--block-tools");
+                if (group) {
+                    group.appendChild(videoButton);
+                    group.appendChild(audioButton);
+                }
+            }
+
+            // Function to handle toolbar button actions
+            function handleTrixAction(event) {
+                var actionName = event.actionName;
+                var editor = event.target.editor;
+                if (!editor) return;
+
+                if (actionName === "embed-video") {
+                    var url = prompt("Enter YouTube or Vimeo URL to embed:");
+                    if (url) {
+                        editor.insertString('[video url="' + url.trim() + '"]');
+                    }
+                }
+
+                if (actionName === "embed-audio") {
+                    var url = prompt("Enter Audio Stream or MP3 File URL:");
+                    if (url) {
+                        editor.insertString('[audio url="' + url.trim() + '"]');
+                    }
+                }
+            }
+
+            // Register events globally
+            document.addEventListener("trix-initialize", initializeTrixToolbar);
+            document.addEventListener("trix-action-invoke", handleTrixAction);
+        })();
+    </script>
 </div>

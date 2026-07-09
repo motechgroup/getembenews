@@ -1,12 +1,89 @@
 <x-news-layout>
     <x-slot name="title">Live Radio Stream - Getembe News</x-slot>
 
+    @php
+        $checkIsPlaying = function ($timeString, $dayKey) {
+            $currentDay = strtolower(now()->format('l'));
+            if ($currentDay !== strtolower($dayKey)) {
+                return false;
+            }
+
+            $parts = explode('-', $timeString);
+            if (count($parts) !== 2) {
+                return false;
+            }
+
+            try {
+                $now = now();
+                
+                $parseTime = function ($timeStr) use ($now) {
+                    $timeStr = trim($timeStr);
+                    try {
+                        return \Illuminate\Support\Carbon::createFromFormat('h:i A', $timeStr);
+                    } catch (\Exception $e) {
+                        try {
+                            return \Illuminate\Support\Carbon::createFromFormat('g:i A', $timeStr);
+                        } catch (\Exception $e2) {
+                            return \Illuminate\Support\Carbon::createFromFormat('H:i', $timeStr);
+                        }
+                    }
+                };
+
+                $start = $parseTime($parts[0]);
+                $end = $parseTime($parts[1]);
+
+                if ($end->lt($start)) {
+                    return $now->gte($start) || $now->lte($end);
+                }
+
+                return $now->between($start, $end);
+            } catch (\Exception $e) {
+                return false;
+            }
+        };
+
+        $radioSchedule = \App\Models\Setting::get('radio_schedule', []);
+        $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        $defaultRadioFlat = [
+            ['time' => '06:00 AM - 10:00 AM', 'title' => 'The Morning Drive', 'desc' => 'Kickstart the day with updates and music.'],
+            ['time' => '10:00 AM - 01:00 PM', 'title' => 'Midday Request Show', 'desc' => 'Listener choices, request lines, and interviews.'],
+            ['time' => '01:00 PM - 04:00 PM', 'title' => 'Getembe Express Drive', 'desc' => 'Mid-afternoon drive show with regional topics and guest experts.'],
+            ['time' => '04:00 PM - 08:00 PM', 'title' => 'Evening Jam & Sports', 'desc' => 'Local sports bulletins and afternoon reviews.'],
+            ['time' => '08:00 PM - 12:00 AM', 'title' => 'Late Night Soul Session', 'desc' => 'Slow jams, classic tracks, and quiet storm conversations.']
+        ];
+        if (!is_array($radioSchedule) || empty($radioSchedule)) {
+            $radioSchedule = array_fill_keys($days, $defaultRadioFlat);
+        } else {
+            $isGrouped = true;
+            foreach ($days as $day) {
+                if (!isset($radioSchedule[$day])) {
+                    $isGrouped = false; break;
+                }
+            }
+            if (!$isGrouped) {
+                $radioSchedule = array_fill_keys($days, $radioSchedule);
+            }
+        }
+
+        $todayDay = strtolower(now()->format('l'));
+        $currentRadioShow = null;
+        foreach (($radioSchedule[$todayDay] ?? []) as $item) {
+            if ($checkIsPlaying($item['time'], $todayDay)) {
+                $currentRadioShow = $item;
+                break;
+            }
+        }
+        if (!$currentRadioShow && !empty($radioSchedule[$todayDay])) {
+            $currentRadioShow = $radioSchedule[$todayDay][0]; // fallback
+        }
+    @endphp
+
     <div class="bg-gray-900 text-white min-h-[calc(100vh-140px)] py-8 flex flex-col justify-center">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 w-full space-y-8">
             
             <!-- Page Header -->
             <div class="text-center space-y-2">
-                <span class="inline-flex items-center px-2.5 py-0.5 bg-[#C8102E] text-white text-[10px] font-black tracking-wider uppercase rounded-full animate-pulse">
+                <span class="inline-flex items-center px-2.5 py-0.5 bg-[#cc6c3b] text-white text-[10px] font-black tracking-wider uppercase rounded-full animate-pulse">
                     On Air
                 </span>
                 <h1 class="text-3xl sm:text-4xl font-serif font-black tracking-tight">
@@ -48,25 +125,21 @@
                 <div class="flex flex-col items-center space-y-4">
                     <!-- Audio Visualizer Mock -->
                     <div class="flex items-end justify-center space-x-1.5 h-12 w-full max-w-xs px-4">
-                        <span class="w-1 bg-[#C8102E] rounded-full transition-all duration-300" :style="playing ? 'height: 48px; transform: scaleY(0.7)' : 'height: 8px'"></span>
-                        <span class="w-1 bg-[#C8102E] rounded-full transition-all duration-300" :style="playing ? 'height: 32px; transform: scaleY(0.9)' : 'height: 8px'"></span>
-                        <span class="w-1 bg-[#C8102E] rounded-full transition-all duration-300" :style="playing ? 'height: 40px; transform: scaleY(0.5)' : 'height: 8px'"></span>
-                        <span class="w-1 bg-[#C8102E] rounded-full transition-all duration-300" :style="playing ? 'height: 16px; transform: scaleY(0.8)' : 'height: 8px'"></span>
-                        <span class="w-1 bg-[#C8102E] rounded-full transition-all duration-300" :style="playing ? 'height: 48px; transform: scaleY(0.6)' : 'height: 8px'"></span>
-                        <span class="w-1 bg-[#C8102E] rounded-full transition-all duration-300" :style="playing ? 'height: 36px; transform: scaleY(0.8)' : 'height: 8px'"></span>
-                        <span class="w-1 bg-[#C8102E] rounded-full transition-all duration-300" :style="playing ? 'height: 24px; transform: scaleY(0.4)' : 'height: 8px'"></span>
-                        <span class="w-1 bg-[#C8102E] rounded-full transition-all duration-300" :style="playing ? 'height: 44px; transform: scaleY(0.8)' : 'height: 8px'"></span>
+                        <template x-for="i in 18">
+                            <span :style="'height: ' + (playing ? Math.floor(Math.random() * 40) + 8 : 4) + 'px'" 
+                                  class="w-1.5 bg-[#cc6c3b] rounded-t-sm transition-all duration-150"></span>
+                        </template>
                     </div>
 
                     <!-- Current Show Profile -->
                     <div class="text-center space-y-1">
-                        <h3 class="text-lg font-bold text-white">Getembe Express Drive</h3>
-                        <p class="text-xs text-gray-500">Host: <span class="text-gray-300 font-semibold">MC Getembe</span></p>
+                        <h3 class="text-lg font-bold text-white">{{ $currentRadioShow['title'] ?? 'Getembe Express Drive' }}</h3>
+                        <p class="text-xs text-gray-450">{{ $currentRadioShow['desc'] ?? 'Mid-afternoon drive show with regional topics.' }}</p>
                     </div>
 
                     <!-- Play / Pause Main Button -->
                     <div class="pt-2">
-                        <button @click="togglePlay()" class="h-16 w-16 bg-[#C8102E] hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-lg transition duration-200 focus:outline-none focus:ring-4 focus:ring-red-950">
+                        <button @click="togglePlay()" class="h-16 w-16 bg-[#cc6c3b] hover:opacity-90 text-white rounded-full flex items-center justify-center shadow-lg transition duration-200 focus:outline-none focus:ring-4 focus:ring-orange-950">
                             <!-- Play Icon -->
                             <svg x-show="!playing" class="h-8 w-8 fill-current text-white translate-x-0.5" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
@@ -93,7 +166,7 @@
                             </svg>
                         </button>
                         <!-- Volume Slider -->
-                        <input type="range" min="0" max="100" x-model="volume" @input="updateVolume()" class="w-full accent-[#C8102E] h-1 bg-gray-800 rounded-lg cursor-pointer">
+                        <input type="range" min="0" max="100" x-model="volume" @input="updateVolume()" class="w-full accent-[#cc6c3b] h-1 bg-gray-800 rounded-lg cursor-pointer">
                     </div>
 
                     <div class="flex items-center space-x-1">
@@ -115,56 +188,32 @@
                 <!-- Day Navigation Tabs -->
                 <div class="flex border-b border-gray-800 pb-1.5 overflow-x-auto gap-3 scrollbar-none text-[10px] font-bold uppercase tracking-wider">
                     @foreach(['monday' => 'Mon', 'tuesday' => 'Tue', 'wednesday' => 'Wed', 'thursday' => 'Thu', 'friday' => 'Fri', 'saturday' => 'Sat', 'sunday' => 'Sun'] as $key => $name)
-                        <button type="button" @click="activeDay = '{{ $key }}'" :class="activeDay === '{{ $key }}' ? 'text-[#C8102E] border-b border-[#C8102E] pb-1' : 'text-gray-500 hover:text-gray-300 pb-1'" class="shrink-0 transition focus:outline-none">
+                        <button type="button" @click="activeDay = '{{ $key }}'" :class="activeDay === '{{ $key }}' ? 'text-[#cc6c3b] border-b border-[#cc6c3b] pb-1' : 'text-gray-500 hover:text-gray-300 pb-1'" class="shrink-0 transition focus:outline-none">
                             {{ $name }}
                         </button>
                     @endforeach
                 </div>
-                
-                @php
-                    $radioSchedule = \App\Models\Setting::get('radio_schedule', []);
-                    $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-                    $defaultRadioFlat = [
-                        ['time' => '06:00 AM - 10:00 AM', 'title' => 'The Morning Drive', 'desc' => 'Kickstart the day with updates and music.', 'is_playing' => false],
-                        ['time' => '10:00 AM - 01:00 PM', 'title' => 'Midday Request Show', 'desc' => 'Listener choices, request lines, and interviews.', 'is_playing' => false],
-                        ['time' => '01:00 PM - 04:00 PM', 'title' => 'Getembe Express Drive', 'desc' => 'Mid-afternoon drive show with regional topics and guest experts.', 'is_playing' => true],
-                        ['time' => '04:00 PM - 08:00 PM', 'title' => 'Evening Jam & Sports', 'desc' => 'Local sports bulletins and afternoon reviews.', 'is_playing' => false],
-                        ['time' => '08:00 PM - 12:00 AM', 'title' => 'Late Night Soul Session', 'desc' => 'Slow jams, classic tracks, and quiet storm conversations.', 'is_playing' => false]
-                    ];
-                    if (!is_array($radioSchedule) || empty($radioSchedule)) {
-                        $radioSchedule = array_fill_keys($days, $defaultRadioFlat);
-                    } else {
-                        $isGrouped = true;
-                        foreach ($days as $day) {
-                            if (!isset($radioSchedule[$day])) {
-                                $isGrouped = false; break;
-                            }
-                        }
-                        if (!$isGrouped) {
-                            $radioSchedule = array_fill_keys($days, $radioSchedule);
-                        }
-                    }
-                @endphp
 
                 <!-- Schedule List Containers by Day -->
                 <div class="text-xs">
                     @foreach($days as $dayKey)
                         <div x-show="activeDay === '{{ $dayKey }}'" class="grid grid-cols-1 md:grid-cols-2 gap-4" style="display: none;" x-cloak>
                             @forelse(($radioSchedule[$dayKey] ?? []) as $item)
-                                <div class="flex items-start space-x-3 {{ ($item['is_playing'] ?? false) ? 'bg-red-950/20 border-l-2 border-[#C8102E] pl-2 py-1 col-span-full' : 'text-gray-400' }}">
-                                    <span class="font-bold w-20 shrink-0 {{ ($item['is_playing'] ?? false) ? 'text-[#C8102E]' : 'text-gray-500' }}">{{ $item['time'] }}</span>
+                                @php $isPlaying = $checkIsPlaying($item['time'], $dayKey); @endphp
+                                <div class="flex items-start space-x-3 {{ $isPlaying ? 'bg-red-955/20 border-l-2 border-[#cc6c3b] pl-2 py-1 col-span-full' : 'text-gray-400' }}">
+                                    <span class="font-bold w-20 shrink-0 {{ $isPlaying ? 'text-[#cc6c3b]' : 'text-gray-500' }}">{{ $item['time'] }}</span>
                                     <div>
-                                        <h4 class="font-bold {{ ($item['is_playing'] ?? false) ? 'text-white flex items-center space-x-1.5' : 'text-gray-300' }}">
+                                        <h4 class="font-bold {{ $isPlaying ? 'text-white flex items-center space-x-1.5' : 'text-gray-300' }}">
                                             <span>{{ $item['title'] }}</span>
-                                            @if($item['is_playing'] ?? false)
-                                                <span class="inline-block w-1.5 h-1.5 bg-[#C8102E] rounded-full animate-pulse"></span>
+                                            @if($isPlaying)
+                                                <span class="inline-block w-1.5 h-1.5 bg-[#cc6c3b] rounded-full animate-pulse"></span>
                                             @endif
                                         </h4>
-                                        <p class="text-[11px] {{ ($item['is_playing'] ?? false) ? 'text-gray-400' : 'text-gray-500' }}">{{ $item['desc'] }}</p>
+                                        <p class="text-[11px] {{ $isPlaying ? 'text-gray-400' : 'text-gray-500' }}">{{ $item['desc'] }}</p>
                                     </div>
                                 </div>
                             @empty
-                                <p class="text-gray-550 text-center py-4 col-span-full">No programs scheduled for {{ ucfirst($dayKey) }}.</p>
+                                <p class="text-gray-555 text-center py-4 col-span-full">No programs scheduled for {{ ucfirst($dayKey) }}.</p>
                             @endforelse
                         </div>
                     @endforeach

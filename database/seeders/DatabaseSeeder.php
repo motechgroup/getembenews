@@ -22,27 +22,24 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Create Users with different roles
-        $admin = User::create([
+        $admin = User::firstOrCreate(['email' => 'admin@getembenews.com'], [
             'name' => 'Admin User',
-            'email' => 'admin@getembenews.com',
             'password' => Hash::make('password'),
             'role' => 'admin',
             'bio' => 'Lead administrator and editorial director at Getembe News.',
             'photo_url' => 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200&h=200',
         ]);
 
-        $editor = User::create([
+        $editor = User::firstOrCreate(['email' => 'editor@getembenews.com'], [
             'name' => 'Editor User',
-            'email' => 'editor@getembenews.com',
             'password' => Hash::make('password'),
             'role' => 'editor',
             'bio' => 'Senior editor managing daily news operations.',
             'photo_url' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200&h=200',
         ]);
 
-        $reporter = User::create([
+        $reporter = User::firstOrCreate(['email' => 'reporter@getembenews.com'], [
             'name' => 'Reporter John',
-            'email' => 'reporter@getembenews.com',
             'password' => Hash::make('password'),
             'role' => 'reporter',
             'bio' => 'Investigative journalist specializing in politics and local affairs.',
@@ -53,9 +50,8 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        $subscriber = User::create([
+        $subscriber = User::firstOrCreate(['email' => 'test@example.com'], [
             'name' => 'John Doe',
-            'email' => 'test@example.com',
             'password' => Hash::make('password'),
             'role' => 'subscriber',
         ]);
@@ -76,7 +72,7 @@ class DatabaseSeeder extends Seeder
 
         $categories = [];
         foreach ($categoriesData as $catData) {
-            $categories[$catData['slug']] = Category::create($catData);
+            $categories[$catData['slug']] = Category::firstOrCreate(['slug' => $catData['slug']], $catData);
         }
 
         // 3. Seed Articles
@@ -501,13 +497,15 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($articles as $art) {
-            $art['read_time'] = Article::calculateReadTime($art['body']);
-            Article::create($art);
+            if (!Article::where('slug', $art['slug'])->exists()) {
+                $art['read_time'] = Article::calculateReadTime($art['body']);
+                Article::create($art);
+            }
         }
 
         // 4. Seed Comments
         $dbArticle = Article::first();
-        if ($dbArticle) {
+        if ($dbArticle && Comment::count() === 0) {
             Comment::create([
                 'article_id' => $dbArticle->id,
                 'user_id' => $subscriber->id,
@@ -532,55 +530,63 @@ class DatabaseSeeder extends Seeder
         }
 
         // 5. Seed Videos
-        Video::create([
-            'title' => 'Inside Getembe County Innovation and Technology Hub',
-            'slug' => 'inside-getembe-county-innovation-hub',
-            'description' => 'A visual tour of the newly opened technology facility and exclusive interviews with local programmers.',
-            'embed_url' => 'https://www.youtube.com/embed/5Peo-ivmupE',
-            'thumbnail_url' => 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=400&h=225',
-            'category_id' => $categories['technology']->id,
-            'is_featured' => true,
-            'status' => 'published',
-            'published_at' => now(),
-        ]);
+        if (!Video::where('slug', 'inside-getembe-county-innovation-hub')->exists()) {
+            Video::create([
+                'title' => 'Inside Getembe County Innovation and Technology Hub',
+                'slug' => 'inside-getembe-county-innovation-hub',
+                'description' => 'A visual tour of the newly opened technology facility and exclusive interviews with local programmers.',
+                'embed_url' => 'https://www.youtube.com/embed/5Peo-ivmupE',
+                'thumbnail_url' => 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=400&h=225',
+                'category_id' => $categories['technology']->id,
+                'is_featured' => true,
+                'status' => 'published',
+                'published_at' => now(),
+            ]);
+        }
 
-        Video::create([
-            'title' => 'Highlights: Getembe FC vs Regional Rivals Championship Match',
-            'slug' => 'highlights-getembe-fc-championship',
-            'description' => 'Watch the thrilling comeback and the late penalty that secured the title.',
-            'embed_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            'thumbnail_url' => 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=400&h=225',
-            'category_id' => $categories['sports']->id,
-            'is_featured' => false,
-            'status' => 'published',
-            'published_at' => now()->subHours(5),
-        ]);
+        if (!Video::where('slug', 'highlights-getembe-fc-championship')->exists()) {
+            Video::create([
+                'title' => 'Highlights: Getembe FC vs Regional Rivals Championship Match',
+                'slug' => 'highlights-getembe-fc-championship',
+                'description' => 'Watch the thrilling comeback and the late penalty that secured the title.',
+                'embed_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+                'thumbnail_url' => 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&q=80&w=400&h=225',
+                'category_id' => $categories['sports']->id,
+                'is_featured' => false,
+                'status' => 'published',
+                'published_at' => now()->subHours(5),
+            ]);
+        }
 
         // 6. Seed Breaking News Alerts
-        BreakingNews::create([
-            'title' => 'BREAKING: National Assembly Debates Tax Bill - live vote expected in 1 hour.',
-            'link' => '/articles/national-assembly-debates-crucial-tax-reform-bill',
-            'priority' => 'high',
-            'is_active' => true,
-            'expires_at' => now()->addHours(2),
-        ]);
+        if (BreakingNews::count() === 0) {
+            BreakingNews::create([
+                'title' => 'BREAKING: National Assembly Debates Tax Bill - live vote expected in 1 hour.',
+                'link' => '/articles/national-assembly-debates-crucial-tax-reform-bill',
+                'priority' => 'high',
+                'is_active' => true,
+                'expires_at' => now()->addHours(2),
+            ]);
+        }
 
         // 7. Seed Advertisements
-        Advertisement::create([
-            'title' => 'Top Banner Ad',
-            'image_url' => 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200&h=150',
-            'destination_url' => 'https://example.com',
-            'location' => 'top',
-            'is_active' => true,
-        ]);
+        if (Advertisement::count() === 0) {
+            Advertisement::create([
+                'title' => 'Top Banner Ad',
+                'image_url' => 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200&h=150',
+                'destination_url' => 'https://example.com',
+                'location' => 'top',
+                'is_active' => true,
+            ]);
 
-        Advertisement::create([
-            'title' => 'Sidebar Premium Ad',
-            'image_url' => 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=300&h=250',
-            'destination_url' => 'https://example.com',
-            'location' => 'sidebar',
-            'is_active' => true,
-        ]);
+            Advertisement::create([
+                'title' => 'Sidebar Premium Ad',
+                'image_url' => 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=300&h=250',
+                'destination_url' => 'https://example.com',
+                'location' => 'sidebar',
+                'is_active' => true,
+            ]);
+        }
 
         // 8. Seed Site Settings
         Setting::set('site_name', 'Getembe News');
@@ -654,13 +660,11 @@ class DatabaseSeeder extends Seeder
         Setting::set('simulated_quizzes', json_encode($demoQuizzes));
 
         // 12. Seed Agents
-        \App\Models\Agent::create([
-            'name' => 'Agent Mogaka',
+        \App\Models\Agent::firstOrCreate(['name' => 'Agent Mogaka'], [
             'location' => 'Kisii Town',
             'commission_percentage' => 15,
         ]);
-        \App\Models\Agent::create([
-            'name' => 'Agent Nyabuto',
+        \App\Models\Agent::firstOrCreate(['name' => 'Agent Nyabuto'], [
             'location' => 'Nyamira',
             'commission_percentage' => 10,
         ]);

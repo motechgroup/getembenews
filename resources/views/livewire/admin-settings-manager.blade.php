@@ -2468,7 +2468,7 @@ $sendTestEmail = function () {
 
                 <!-- NEWSLETTER SUBSCRIPTIONS TAB -->
                 <div x-show="activeTab === 'subscriptions'" class="space-y-4" style="display: none;">
-                    @can('newsletter subscriptions management')
+                    @can('subscription management')
                     <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">Newsletter Subscription & Notification Management</h3>
                     
                     @if (session()->has('sub_success'))
@@ -2980,7 +2980,8 @@ $sendTestEmail = function () {
                             <!-- Left: List -->
                             <div class="lg:col-span-2 space-y-3">
                                 <h4 class="text-xs font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider">TV Program Slots ({{ ucfirst($activeScheduleDay) }})</h4>
-                                <div class="space                                    @forelse(($tv_schedule[$activeScheduleDay] ?? []) as $index => $item)
+                                <div class="space-y-3">
+                                    @forelse(($tv_schedule[$activeScheduleDay] ?? []) as $index => $item)
                                         <div class="p-4 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-855 rounded-lg flex flex-col gap-3 text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
                                             <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 w-full">
                                                 <div class="sm:col-span-3">

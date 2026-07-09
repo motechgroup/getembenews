@@ -7,10 +7,6 @@ use App\Models\Video;
 use App\Models\Advertisement;
 use App\Models\Category;
 
-Route::get('/git-check', function() {
-    return shell_exec('git log -n 1 --oneline');
-});
-
 Route::get('/', function () {
     $now = now();
     

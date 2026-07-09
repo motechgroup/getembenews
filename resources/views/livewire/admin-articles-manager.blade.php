@@ -95,6 +95,7 @@ $create = function () {
         'seo_title', 'seo_description', 'format', 'format_meta', 'faq_items', 'downloads', 'tags_input', 'published_at'
     ]);
     $this->selectedCategories = [];
+    $this->format = 'article';
     
     // Set default category if possible
     $firstCat = Category::first();
@@ -266,6 +267,8 @@ $save = function () {
         'seo_title', 'seo_description', 'format', 'format_meta', 'faq_items', 'downloads', 'tags_input', 'published_at'
     ]);
     $this->selectedCategories = [];
+    $this->format = 'article';
+    $this->status = 'draft';
 };
 
 $addFaqItem = function () {

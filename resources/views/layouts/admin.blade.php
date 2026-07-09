@@ -69,9 +69,15 @@
     <aside class="w-full md:w-64 bg-gray-900 text-gray-300 flex flex-col border-r border-gray-800 shrink-0">
         <!-- Sidebar Brand Header -->
         <div class="h-16 px-6 border-b border-gray-800 flex items-center justify-between">
-            <a href="/" class="flex items-center space-x-2">
-                <span class="bg-[#C8102E] text-white font-extrabold text-lg px-1.5 py-0.5 rounded tracking-tighter">{{ substr($firstWord, 0, 1) }}</span>
-                <span class="font-serif font-black text-sm tracking-tight text-white">{{ $firstWord }} <span class="text-[#C8102E]">{{ $secondWord }}</span></span>
+            <a href="/" class="flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-sm">
+                <!-- Left: Orange -->
+                <div class="bg-[#cc6c3b] px-2.5 py-1 text-white font-sans font-black tracking-tight text-[10px] uppercase">
+                    {{ $firstWord }}
+                </div>
+                <!-- Right: Dark Gray/Black -->
+                <div class="bg-gray-900 px-2.5 py-1 text-white font-sans font-black tracking-tight text-[10px] uppercase border-l border-gray-800 dark:border-gray-700">
+                    {{ $secondWord }}
+                </div>
             </a>
             @if(auth()->user()->isAdmin())
             <span class="text-[9px] bg-gray-800 text-gray-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">ADMIN</span>

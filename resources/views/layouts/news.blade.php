@@ -436,10 +436,16 @@
     <footer class="py-12 px-4 sm:px-6 border-t-4 transition-colors" style="background-color: {{ $footerBgColor }}; color: {{ $footerTextColor }}; border-top-color: {{ $brandColor }};">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
             <div class="space-y-4">
-                <div class="flex items-center space-x-3">
-                    <span class="text-white font-extrabold text-2xl px-2 py-0.5 rounded tracking-tighter" style="background-color: {{ $brandColor }};">{{ substr($firstWord, 0, 1) }}</span>
-                    <span class="font-serif font-black text-xl tracking-tight text-white">{{ $firstWord }} <span style="color: {{ $brandColor }};">{{ $secondWord }}</span></span>
-                </div>
+                <a href="/" class="inline-flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-sm mb-2">
+                    <!-- Left: Orange -->
+                    <div class="bg-[#cc6c3b] px-3.5 py-1.5 text-white font-sans font-black tracking-tight text-xs uppercase">
+                        {{ $firstWord }}
+                    </div>
+                    <!-- Right: Dark Gray/Black -->
+                    <div class="bg-gray-900 px-3.5 py-1.5 text-white font-sans font-black tracking-tight text-xs uppercase border-l border-gray-800 dark:border-gray-700">
+                        {{ $secondWord }}
+                    </div>
+                </a>
                 <p class="text-xs text-gray-400 leading-relaxed">
                     {{ $siteName }} is a modern digital platform dedicated to bringing you timely, accurate, and independent news coverage from Kisii County, Kenya, and across the globe.
                 </p>

@@ -249,7 +249,14 @@ Route::get('/run-seeders', function () {
             }
         });
 
-        return 'Database seeders and local asset URLs cleanup completed successfully!';
+        // Update brand_color setting in database to orange #cc6c3b if it is currently red #C8102E
+        $bcSetting = \App\Models\Setting::where('key', 'brand_color')->first();
+        if ($bcSetting && ($bcSetting->value === '#C8102E' || empty($bcSetting->value))) {
+            $bcSetting->value = '#cc6c3b';
+            $bcSetting->save();
+        }
+
+        return 'Database seeders, asset URLs, and theme color updates completed successfully!';
     } catch (\Exception $e) {
         return 'Error during seeding: ' . $e->getMessage();
     }

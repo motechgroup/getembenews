@@ -21,7 +21,7 @@
         $firstWord = $parts[0] ?? 'Getembe';
         $secondWord = $parts[1] ?? 'News';
 
-        $brandColor = \App\Models\Setting::get('brand_color', '#C8102E');
+        $brandColor = \App\Models\Setting::get('brand_color', '#cc6c3b');
         $footerBgColor = \App\Models\Setting::get('footer_bg_color', '#111827');
         $footerTextColor = \App\Models\Setting::get('footer_text_color', '#9CA3AF');
 
@@ -101,6 +101,7 @@
         .border-t-\[\#C8102E\] { border-top-color: var(--brand-color) !important; }
         .border-b-\[\#C8102E\] { border-bottom-color: var(--brand-color) !important; }
         .border-r-\[\#C8102E\] { border-right-color: var(--brand-color) !important; }
+        .hover\:bg-red-700:hover { background-color: var(--brand-color) !important; filter: brightness(0.95); }
     </style>
 
     <!-- Scripts -->
@@ -450,10 +451,22 @@
                     {{ $siteName }} is a modern digital platform dedicated to bringing you timely, accurate, and independent news coverage from Kisii County, Kenya, and across the globe.
                 </p>
                 <div class="flex space-x-4 pt-2">
-                    <a href="{{ \App\Models\Setting::getStats('facebook', \App\Models\Setting::get('facebook'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Facebook</span>FB</a>
-                    <a href="{{ \App\Models\Setting::getStats('twitter', \App\Models\Setting::get('twitter'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Twitter</span>TW</a>
-                    <a href="{{ \App\Models\Setting::getStats('instagram', \App\Models\Setting::get('instagram'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Instagram</span>IG</a>
-                    <a href="{{ \App\Models\Setting::getStats('youtube', \App\Models\Setting::get('youtube'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">YouTube</span>YT</a>
+                    <a href="{{ \App\Models\Setting::getStats('facebook', \App\Models\Setting::get('facebook'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener" title="Facebook">
+                        <span class="sr-only">Facebook</span>
+                        <svg class="h-4.5 w-4.5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg>
+                    </a>
+                    <a href="{{ \App\Models\Setting::getStats('twitter', \App\Models\Setting::get('twitter'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener" title="Twitter / X">
+                        <span class="sr-only">Twitter</span>
+                        <svg class="h-4.5 w-4.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    </a>
+                    <a href="{{ \App\Models\Setting::getStats('instagram', \App\Models\Setting::get('instagram'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener" title="Instagram">
+                        <span class="sr-only">Instagram</span>
+                        <svg class="h-4.5 w-4.5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.01 3.71.054 1.14.051 1.96.23 2.673.506.77.3 1.44.75 2.05 1.36.6.6 1.05 1.27 1.35 2.05.28.72.45 1.54.5 2.67.04.93.05 1.28.05 3.71 0 2.43-.01 2.78-.05 3.71-.05 1.13-.22 1.96-.5 2.67-.3.77-.75 1.44-1.36 2.05-.6.6-1.27 1.05-2.05 1.35-.72.28-1.54.45-2.67.5-.93.04-1.28.05-3.71.05-2.43 0-2.78-.01-3.71-.05-1.13-.05-1.96-.22-2.67-.5-.77-.3-1.44-.75-2.05-1.36-.6-.6-1.05-1.27-1.35-2.05-.28-.72-.45-1.54-.5-2.67-.04-.93-.05-1.28-.05-3.71 0-2.43.01-2.78.05-3.71.05-1.13.22-1.96.5-2.67.3-.77.75-1.44 1.36-2.05.6-.6 1.27-1.05 2.05-1.35.72-.28 1.54-.45 2.67-.5.93-.04 1.28-.05 3.71-.05zm0 1.151c-2.43 0-2.784.009-3.71.053-.96.044-1.48.204-1.83.34-.46.18-.8.39-1.15.74-.35.35-.56.69-.74 1.15-.14.35-.3.87-.34 1.83-.04.93-.05 1.28-.05 3.71 0 2.43.01 2.78.05 3.71.04.96.2 1.48.34 1.83.18.46.39.8.74 1.15.35.35.69.56 1.15.74.35.14.87.3 1.83.34.93.04 1.28.05 3.71.05 2.43 0 2.78-.01 3.71-.05.96-.04 1.48-.2 1.83-.34.46-.18.8-.39 1.15-.74.35-.35.56-.69.74-1.15.14-.35.3-.87.34-1.83.04-.93.05-1.28.05-3.71 0-2.43-.01-2.78-.05-3.71-.04-.96-.2-1.48-.34-1.83-.18-.46-.39-.8-.74-1.15-.35-.35-.69-.56-1.15-.74-.35-.14-.87-.3-1.83-.34-.93-.04-1.28-.05-3.71-.05zm0 3.712a5.137 5.137 0 100 10.275 5.137 5.137 0 000-10.275zm0 9.124a3.987 3.987 0 110-7.975 3.987 3.987 0 010 7.975zm5.721-9.155a1.2 1.2 0 11-2.4 0 1.2 1.2 0 012.4 0z" clip-rule="evenodd" /></svg>
+                    </a>
+                    <a href="{{ \App\Models\Setting::getStats('youtube', \App\Models\Setting::get('youtube'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener" title="YouTube">
+                        <span class="sr-only">YouTube</span>
+                        <svg class="h-4.5 w-4.5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C22 8.68 22 12 22 12s0 3.32-.42 4.814c-.23.861-.907 1.538-1.768 1.768C18.32 19 12 19 12 19s-6.32 0-7.814-.42c-.861-.23-1.538-.907-1.768-1.768C2 15.32 2 12 2 12s0-3.32.42-4.814c.23-.861.907-1.538 1.768-1.768C5.68 5 12 5 12 5s6.32 0 7.812.418zM9.75 15.022L15.5 12 9.75 8.978v6.044z" clip-rule="evenodd" /></svg>
+                    </a>
                 </div>
             </div>
 

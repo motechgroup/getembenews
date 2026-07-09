@@ -41,7 +41,7 @@ $subscribe = function () {
         <form wire:submit.prevent="subscribe" class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
             <input type="email" wire:model="email" placeholder="Your email address" required
                    class="bg-gray-800 border border-gray-700 text-white rounded px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#C8102E] focus:border-[#C8102E] flex-1">
-            <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded transition">
+            <button type="submit" class="bg-[#C8102E] hover:opacity-90 text-white text-xs font-bold px-4 py-2 rounded transition">
                 Subscribe
             </button>
         </form>

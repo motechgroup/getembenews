@@ -65,6 +65,12 @@ new #[Layout('layouts.guest')] class extends Component
         <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     @endif
 
+    <!-- Form Title -->
+    <div class="mb-6 text-center">
+        <h2 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Create Account</h2>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Join Getembe News to save articles and comment</p>
+    </div>
+
     <form wire:submit="register">
         <!-- Name -->
         <div>
@@ -120,14 +126,18 @@ new #[Layout('layouts.guest')] class extends Component
             <x-input-error :messages="$errors->get('captcha')" class="mt-2 text-center" />
         @endif
 
-        <div class="flex items-center justify-end mt-6">
-            <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}" wire:navigate>
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
+        <div class="mt-6">
+            <button type="submit" class="w-full flex justify-center items-center px-4 py-2.5 bg-[#cc6c3b] hover:bg-orange-700 active:bg-orange-800 text-white font-bold text-xs uppercase tracking-widest rounded-lg transition shadow-sm focus:outline-none focus:ring-2 focus:ring-[#cc6c3b] focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                 {{ __('Register') }}
-            </x-primary-button>
+            </button>
+        </div>
+
+        <!-- Already registered? Link -->
+        <div class="mt-6 text-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-150 dark:border-gray-800/80 pt-4">
+            {{ __('Already registered?') }}
+            <a href="{{ route('login') }}" class="font-bold text-[#cc6c3b] hover:underline ml-1" wire:navigate>
+                {{ __('Log in') }}
+            </a>
         </div>
     </form>
 </div>

@@ -24,7 +24,7 @@ rules(function () {
         'name' => 'required|string|max:255',
         'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->userId)],
         'password' => $this->userId ? 'nullable|string|min:8' : 'required|string|min:8',
-        'role' => 'required|string|in:admin,editor,author,user,reporter,contributor,subscriber,manager',
+        'role' => 'required|string|in:admin,editor,author,user,reporter,contributor,subscriber,manager,writing-article',
     ];
 });
 
@@ -66,12 +66,17 @@ $saveUser = function () {
         $user->save();
         session()->flash('message', 'User profile updated successfully.');
     } else {
-        User::create([
+        $user = User::create([
             'name' => $this->name,
             'email' => $this->email,
             'role' => $this->role,
             'password' => Hash::make($this->password),
         ]);
+
+        if (in_array($this->role, ['admin', 'editor', 'author', 'manager', 'writing-article'])) {
+            \App\Support\Mailer::sendNewAccountNotification($user, $this->password);
+        }
+
         session()->flash('message', 'User account created successfully.');
     }
 
@@ -141,6 +146,7 @@ with(function () {
                 <option value="editor">Editor</option>
                 <option value="manager">Manager</option>
                 <option value="author">Author</option>
+                <option value="writing-article">Writing Article</option>
                 <option value="user">User</option>
                 <option value="reporter">Reporter (Legacy)</option>
                 <option value="contributor">Contributor (Legacy)</option>
@@ -172,6 +178,7 @@ with(function () {
                     <select wire:model="role" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         <option value="user">User</option>
                         <option value="author">Author</option>
+                        <option value="writing-article">Writing Article</option>
                         <option value="manager">Manager</option>
                         <option value="editor">Editor</option>
                         <option value="admin">Administrator</option>
@@ -230,15 +237,18 @@ with(function () {
                                 </div>
                             </td>
                             <td class="p-4">
-                                <span class="px-2 py-0.5 rounded font-bold uppercase text-[9px] 
-                                    {{ $user->role === 'admin' ? 'bg-red-100 text-red-800 dark:bg-red-950/20 dark:text-red-400' : '' }}
-                                    {{ $user->role === 'editor' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/20 dark:text-blue-400' : '' }}
-                                    {{ $user->role === 'manager' ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/20 dark:text-purple-400' : '' }}
-                                    {{ in_array($user->role, ['author', 'reporter', 'contributor']) ? 'bg-green-100 text-green-800 dark:bg-green-950/20 dark:text-green-400' : '' }}
-                                    {{ in_array($user->role, ['user', 'subscriber']) ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400' : '' }}
-                                ">
+                                <button type="button" wire:click="$set('roleFilter', '{{ $user->role }}')" 
+                                        title="Click to filter users by {{ $user->role }}" 
+                                        aria-label="Filter by {{ $user->role }} role"
+                                        class="px-2 py-0.5 rounded font-bold uppercase text-[9px] cursor-pointer hover:opacity-80 transition focus:outline-none focus:ring-1 focus:ring-[#C8102E]
+                                            {{ $user->role === 'admin' ? 'bg-red-100 text-red-800 dark:bg-red-950/20 dark:text-red-400' : '' }}
+                                            {{ $user->role === 'editor' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/20 dark:text-blue-400' : '' }}
+                                            {{ $user->role === 'manager' ? 'bg-purple-100 text-purple-800 dark:bg-purple-950/20 dark:text-purple-400' : '' }}
+                                            {{ in_array($user->role, ['author', 'reporter', 'contributor']) ? 'bg-green-100 text-green-800 dark:bg-green-950/20 dark:text-green-400' : '' }}
+                                            {{ in_array($user->role, ['user', 'subscriber']) ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400' : '' }}
+                                        ">
                                     {{ $user->role }}
-                                </span>
+                                </button>
                             </td>
                             <td class="p-4 text-gray-500">
                                 {{ $user->created_at->format('M d, Y') }}

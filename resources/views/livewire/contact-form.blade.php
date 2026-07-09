@@ -37,12 +37,17 @@ $submit = function () {
     }
     \Illuminate\Support\Facades\RateLimiter::hit('contact-submit:' . $ip, 60);
 
-    \App\Models\ContactMessage::create([
+    $contactData = [
         'name' => $this->name,
         'email' => $this->email,
         'subject' => $this->subject,
         'message' => $this->message,
-    ]);
+    ];
+
+    \App\Models\ContactMessage::create($contactData);
+    
+    // Trigger admin email alert
+    \App\Support\Mailer::sendContactAlert($contactData);
     
     $this->reset(['name', 'email', 'subject', 'message', 'captchaToken']);
     $this->submitted = true;

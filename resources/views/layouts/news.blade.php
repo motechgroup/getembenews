@@ -287,7 +287,7 @@
                         </div>
                     </div>
                 @else
-                    <a href="{{ route('login') }}" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-5 py-2 rounded-lg transition shadow-sm shrink-0">
+                    <a href="{{ route('login') }}" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg transition shadow-sm shrink-0 uppercase tracking-wider">
                         Sign In
                     </a>
                 @endauth
@@ -355,10 +355,16 @@
                         </a>
                         <form method="POST" action="{{ route('logout') }}" class="block pt-1">
                             @csrf
-                            <button type="submit" class="w-full text-left px-3 py-2 rounded text-sm font-bold text-red-650 hover:bg-red-50 dark:hover:bg-red-950/20 transition uppercase">
+                            <button type="submit" class="w-full text-left px-3 py-2 rounded text-sm font-bold text-red-650 hover:bg-red-50 dark:hover:bg-red-955/20 transition uppercase">
                                 Sign Out
                             </button>
                         </form>
+                    </div>
+                @else
+                    <div class="border-t border-gray-150 dark:border-gray-800 my-2 pt-4 flex flex-col">
+                        <a href="{{ route('login') }}" class="text-center bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs py-2.5 rounded-lg transition shadow-sm uppercase tracking-wider">
+                            Sign In
+                        </a>
                     </div>
                 @endauth
             </div>
@@ -430,10 +436,10 @@
                     {{ $siteName }} is a modern digital platform dedicated to bringing you timely, accurate, and independent news coverage from Kisii County, Kenya, and across the globe.
                 </p>
                 <div class="flex space-x-4 pt-2">
-                    <a href="{{ \App\Models\Setting::get('facebook', 'https://facebook.com') }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Facebook</span>FB</a>
-                    <a href="{{ \App\Models\Setting::get('twitter', 'https://twitter.com') }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Twitter</span>TW</a>
-                    <a href="{{ \App\Models\Setting::get('instagram', 'https://instagram.com') }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Instagram</span>IG</a>
-                    <a href="{{ \App\Models\Setting::get('youtube', 'https://youtube.com') }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">YouTube</span>YT</a>
+                    <a href="{{ \App\Support\SocialFetcher::getStats('facebook', \App\Models\Setting::get('facebook'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Facebook</span>FB</a>
+                    <a href="{{ \App\Support\SocialFetcher::getStats('twitter', \App\Models\Setting::get('twitter'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Twitter</span>TW</a>
+                    <a href="{{ \App\Support\SocialFetcher::getStats('instagram', \App\Models\Setting::get('instagram'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Instagram</span>IG</a>
+                    <a href="{{ \App\Support\SocialFetcher::getStats('youtube', \App\Models\Setting::get('youtube'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">YouTube</span>YT</a>
                 </div>
             </div>
 

@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Welcome to Getembe News!</title>
+    <title>Reset Password Notification - Getembe News</title>
     <style>
         body {
             background-color: #f6f6f6;
@@ -87,16 +87,16 @@
             width: auto;
         }
         .btn table td {
-            background-color: #ffffff;
+            background-color: #C8102E;
             border-radius: 5px;
             text-align: center;
         }
         .btn a {
-            background-color: #ffffff;
+            background-color: #C8102E;
             border: solid 1px #C8102E;
             border-radius: 5px;
             box-sizing: border-box;
-            color: #C8102E;
+            color: #ffffff;
             cursor: pointer;
             display: inline-block;
             font-size: 14px;
@@ -104,15 +104,6 @@
             margin: 0;
             padding: 12px 25px;
             text-decoration: none;
-            text-transform: capitalize;
-        }
-        .btn-primary table td {
-            background-color: #C8102E;
-        }
-        .btn-primary a {
-            background-color: #C8102E;
-            border-color: #C8102E;
-            color: #ffffff;
         }
         .header-logo {
             text-align: center;
@@ -149,28 +140,33 @@
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                     <tr>
                                         <td>
-                                            <h1>Welcome to Getembe News!</h1>
-                                            <p>Hi there,</p>
+                                            <h1>Reset Password</h1>
+                                            <p>Hello,</p>
                                             
                                             <div style="font-family: sans-serif; font-size: 14px; color: #4a4a4a; line-height: 1.6; margin-bottom: 25px;">
                                                 {!! nl2br(e($body)) !!}
                                             </div>
                                             
-                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="margin: 25px 0;">
+                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn" style="margin: 25px 0;">
                                                 <tbody>
                                                     <tr>
                                                         <td align="left">
                                                             <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                                                 <tbody>
-                                                                     <tr>
-                                                                         <td> <a href="{{ url('/') }}" target="_blank">Visit Getembe News</a> </td>
-                                                                     </tr>
-                                                                 </tbody>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td> <a href="{{ $url }}" target="_blank">Reset Password</a> </td>
+                                                                    </tr>
+                                                                </tbody>
                                                             </table>
                                                         </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
+
+                                            <p style="font-size: 11px; color: #777; border-top: 1px solid #eee; pt-15; margin-top: 25px;">
+                                                If you are having trouble clicking the "Reset Password" button, copy and paste the URL below into your web browser: <br>
+                                                <a href="{{ $url }}" style="color: #C8102E; word-break: break-all;">{{ $url }}</a>
+                                            </p>
                                         </td>
                                     </tr>
                                 </table>
@@ -183,7 +179,6 @@
                             <tr>
                                 <td class="content-block">
                                     <span class="apple-link">Getembe News, Kisii, Kenya</span>
-                                    <br> Don't want these emails? <a href="{{ url('/newsletter/unsubscribe?email=' . urlencode($email ?? '')) }}">Unsubscribe instantly</a>.
                                 </td>
                             </tr>
                         </table>

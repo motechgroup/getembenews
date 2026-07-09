@@ -17,6 +17,28 @@ class User extends Authenticatable
     protected $hidden = ['password', 'remember_token'];
 
     /**
+     * Send the password reset notification.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        \App\Support\Mailer::sendPasswordReset($this->email, $token);
+    }
+
+    /**
+     * Send the email verification notification.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $url = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $this->getKey(), 'hash' => sha1($this->getEmailForVerification())]
+        );
+
+        \App\Support\Mailer::sendEmailVerification($this->email, $url);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -84,60 +106,68 @@ class User extends Authenticatable
             return true;
         }
 
+        $defaultRolesPermissions = [
+            'admin' => ['all'],
+            'editor' => [
+                'content management',
+                'article management',
+                'category management',
+                'comment management',
+                'tag management',
+                'page management',
+                'contact message management',
+                'settings management',
+                'theme management',
+                'email management',
+                'seo management',
+                'cookie management',
+                'notification management',
+                'subscription management',
+                'polls management',
+                'quizzes management',
+                'rss management',
+                'webhooks management',
+                'api keys management',
+                'cache management',
+                'announcement management',
+            ],
+            'manager' => [
+                'announcement management',
+            ],
+            'author' => [
+                'content management',
+                'article management',
+                'writing article',
+            ],
+            'reporter' => [
+                'content management',
+                'article management',
+            ],
+            'contributor' => [
+                'content management',
+                'article management',
+            ],
+            'user' => [],
+            'subscriber' => [],
+        ];
+
         $rolesPermissions = json_decode(\App\Models\Setting::get('roles_permissions', '{}'), true);
 
-        if (empty($rolesPermissions)) {
-            $rolesPermissions = [
-                'admin' => ['all'],
-                'editor' => [
-                    'content management',
-                    'article management',
-                    'category management',
-                    'comment management',
-                    'tag management',
-                    'page management',
-                    'contact message management',
-                    'settings management',
-                    'theme management',
-                    'email management',
-                    'seo management',
-                    'cookie management',
-                    'notification management',
-                    'subscription management',
-                    'polls management',
-                    'quizzes management',
-                    'rss management',
-                    'webhooks management',
-                    'api keys management',
-                    'cache management',
-                    'announcement management',
-                ],
-                'manager' => [
-                    'announcement management',
-                ],
-                'author' => [
-                    'content management',
-                    'article management',
-                ],
-                'reporter' => [
-                    'content management',
-                    'article management',
-                ],
-                'contributor' => [
-                    'content management',
-                    'article management',
-                ],
-                'user' => [],
-                'subscriber' => [],
-            ];
+        if (!is_array($rolesPermissions)) {
+            $rolesPermissions = [];
         }
 
         $userRole = $this->role;
-        if (!isset($rolesPermissions[$userRole])) {
-            return false;
+        
+        $permissions = [];
+        if (isset($rolesPermissions[$userRole]['perms'])) {
+            $permissions = $rolesPermissions[$userRole]['perms'];
+        } elseif (isset($rolesPermissions[$userRole]) && is_array($rolesPermissions[$userRole])) {
+            $permissions = $rolesPermissions[$userRole];
+        } elseif (isset($defaultRolesPermissions[$userRole])) {
+            $permissions = $defaultRolesPermissions[$userRole];
         }
 
-        $permissions = $rolesPermissions[$userRole];
         return in_array('all', $permissions) || in_array($permission, $permissions);
     }
 

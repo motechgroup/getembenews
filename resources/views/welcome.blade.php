@@ -203,440 +203,487 @@
                         @include('partials.sidebar-widgets')
                     </div>
                 </div>
-            </div>
-
-        @else
-            <!-- 3. STANDARD LAYOUT VARIANT (DEFAULT AL JAZEERA STYLE) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                
-                <!-- COLUMN 1: Large Hero Spotlight + Live Updates -->
-                <div class="space-y-6">
-                    @if($featuredArticle)
-                        <article class="group space-y-4">
-                            <div class="aspect-video overflow-hidden rounded-t-lg bg-gray-105 dark:bg-gray-850 border border-gray-200 dark:border-gray-800">
-                                <img src="{{ $featuredArticle->featured_image }}" alt="{{ $featuredArticle->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
-                            </div>
-                            <div class="bg-white dark:bg-gray-900 border border-gray-150 dark:border-gray-850 p-5 rounded-b-lg shadow-sm -mt-6 relative z-10 space-y-3">
-                                <div class="h-1 bg-[#FF7900] w-20 rounded-full"></div>
-                                <h1 class="text-2xl font-serif font-black tracking-tight text-gray-900 dark:text-white leading-tight hover:text-[#C8102E] dark:hover:text-[#C8102E] transition">
-                                    <a href="/articles/{{ $featuredArticle->slug }}">{{ $featuredArticle->title }}</a>
-                                </h1>
-                                <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
-                                    {{ $featuredArticle->subtitle }}
-                                </p>
-                            </div>
-                        </article>
-                    @endif
-
-                    <!-- Live Updates Timeline -->
-                    <div class="bg-white dark:bg-gray-900 border border-gray-150 dark:border-gray-850 p-5 rounded-lg shadow-sm space-y-4">
-                        <h4 class="text-xs font-black uppercase text-[#C8102E] tracking-wider flex items-center border-b border-gray-100 dark:border-gray-800 pb-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#C8102E] animate-ping mr-2 inline-block"></span>
-                            <span>Live Updates</span>
-                        </h4>
-                        <div class="border-l-2 border-gray-200 dark:border-gray-800 ml-1.5 pl-4 space-y-4 text-xs">
-                            @foreach($latestArticles->take(3) as $latestItem)
-                                <div class="relative">
-                                    <span class="absolute w-2.5 h-2.5 rounded-full bg-[#FF7900] -left-[21.5px] top-1 border border-white dark:border-gray-900"></span>
-                                    <div class="space-y-0.5">
-                                        <span class="font-bold text-[#FF7900] text-[10px]">{{ $latestItem->published_at->diffForHumans() }}:</span>
-                                        <a href="/articles/{{ $latestItem->slug }}" class="hover:text-[#C8102E] text-gray-900 dark:text-gray-200 font-bold block leading-snug">{{ $latestItem->title }}</a>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-
-                <!-- COLUMN 2: Sub-featured + Small Lists with Thumbnails on the Right -->
-                <div class="space-y-6">
-                    @php
-                        $subFeatured = $topStories->first();
-                        $middleList = $topStories->skip(1)->concat($latestArticles->skip(3)->take(2));
-                    @endphp
-
-                    @if($subFeatured)
-                        <article class="group space-y-3">
-                            <div class="aspect-video overflow-hidden rounded bg-gray-105 dark:bg-gray-850 border border-gray-200 dark:border-gray-800">
-                                <img src="{{ $subFeatured->featured_image }}" alt="{{ $subFeatured->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
-                            </div>
-                            <h2 class="text-lg font-serif font-black text-gray-900 dark:text-white leading-snug hover:text-[#C8102E] dark:hover:text-[#C8102E] transition">
-                                <a href="/articles/{{ $subFeatured->slug }}">{{ $subFeatured->title }}</a>
+            @else
+            <!-- 3. STANDARD LAYOUT VARIANT (VARIANT HIGH-FIDELITY REDESIGN) -->
+            
+            <!-- Hero Spotlight Grid (Matching Screenshot 1) -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <!-- Left: Large Featured Article Card (Spans 2 columns) -->
+                @if($featuredArticle)
+                    <a href="/articles/{{ $featuredArticle->slug }}" class="lg:col-span-2 relative block aspect-[16/10] lg:aspect-auto lg:h-[450px] overflow-hidden rounded group bg-gray-950 shadow-md">
+                        <img src="{{ $featuredArticle->featured_image }}" alt="{{ $featuredArticle->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85">
+                        <!-- Red category tag on top-left -->
+                        <span class="absolute top-4 left-4 px-3 py-1 bg-[#C8102E] text-white text-[10px] font-black uppercase tracking-widest rounded shadow">
+                            {{ $featuredArticle->category->name }}
+                        </span>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent flex flex-col justify-end p-6 space-y-2">
+                            <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-black text-white leading-tight group-hover:text-red-400 transition">
+                                {{ $featuredArticle->title }}
                             </h2>
-                        </article>
-                    @endif
-
-                    <div class="divide-y divide-gray-150 dark:divide-gray-850 border-t border-gray-150 dark:border-gray-850 pt-2 space-y-4">
-                        @foreach($middleList as $item)
-                            <article class="flex justify-between items-start gap-4 pt-4 first:pt-0 group">
-                                <div class="space-y-1.5 flex-1">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="px-1.5 py-0.5 bg-red-100 text-[#C8102E] dark:bg-red-950/20 dark:text-red-400 text-[9px] font-bold rounded-sm uppercase tracking-wider">BREAKING</span>
-                                        <span class="text-[9px] text-gray-400 font-medium">{{ $item->published_at->diffForHumans() }}</span>
-                                    </div>
-                                    <h3 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition line-clamp-3">
-                                        <a href="/articles/{{ $item->slug }}">{{ $item->title }}</a>
-                                    </h3>
-                                </div>
-                                <div class="w-20 h-14 overflow-hidden rounded bg-gray-100 border border-gray-150 dark:border-gray-800 shrink-0">
-                                    <img src="{{ $item->featured_image }}" alt="{{ $item->title }}" class="w-full h-full object-cover">
-                                </div>
-                            </article>
-                        @endforeach
-                    </div>
-                </div>
-
-                <!-- COLUMN 3: Categories & Special Sections Stacks -->
-                <div class="space-y-8">
-                    <!-- SECTION 1: Trending -->
-                    <div class="space-y-3">
-                        <h3 class="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider border-l-4 border-[#FF7900] pl-2 mb-3">Trending</h3>
-                        <div class="divide-y divide-gray-150 dark:divide-gray-850">
-                            @foreach($trendingArticles->take(3) as $index => $trending)
-                                <article class="py-3 first:pt-0 group flex justify-between items-start gap-3">
-                                    <div class="flex-grow space-y-1">
-                                        <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] transition line-clamp-3">
-                                            <a href="/articles/{{ $trending->slug }}">{{ $trending->title }}</a>
-                                        </h4>
-                                    </div>
-                                    @if($index === 0)
-                                        <div class="w-16 h-12 overflow-hidden rounded bg-gray-100 border border-gray-150 dark:border-gray-800 shrink-0">
-                                            <img src="{{ $trending->featured_image }}" alt="{{ $trending->title }}" class="w-full h-full object-cover">
-                                        </div>
-                                    @endif
-                                </article>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <!-- SECTION 2: Must Read -->
-                    <div class="space-y-3 pt-4 border-t border-gray-150 dark:border-gray-850">
-                        <h3 class="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider border-l-4 border-[#FF7900] pl-2 mb-3">Must Read</h3>
-                        <div class="divide-y divide-gray-150 dark:divide-gray-850">
-                            @foreach($politicsArticles->take(3) as $index => $mustRead)
-                                <article class="py-3 first:pt-0 group flex justify-between items-start gap-3">
-                                    <div class="flex-grow space-y-1">
-                                        <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] transition line-clamp-3">
-                                            <a href="/articles/{{ $mustRead->slug }}">{{ $mustRead->title }}</a>
-                                        </h4>
-                                    </div>
-                                    @if($index === 0)
-                                        <div class="w-16 h-12 overflow-hidden rounded bg-gray-100 border border-gray-150 dark:border-gray-800 shrink-0">
-                                            <img src="{{ $mustRead->featured_image }}" alt="{{ $mustRead->title }}" class="w-full h-full object-cover">
-                                        </div>
-                                    @endif
-                                </article>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <!-- SECTION 3: Opinion Columns -->
-                    <div class="space-y-3 pt-4 border-t border-gray-150 dark:border-gray-850">
-                        <h3 class="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider border-l-4 border-[#FF7900] pl-2 mb-3">Opinion</h3>
-                        <div class="divide-y divide-gray-150 dark:divide-gray-850">
-                            @foreach($businessArticles->take(2) as $opinion)
-                                <article class="py-3 first:pt-0 group flex items-start gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-gray-150 dark:bg-gray-800 shrink-0 overflow-hidden font-bold flex items-center justify-center text-xs text-gray-500 border border-gray-200 dark:border-gray-700">
-                                        @if($opinion->user && $opinion->user->photo_url)
-                                            <img src="{{ $opinion->user->photo_url }}" alt="{{ $opinion->user->name }}" class="w-full h-full object-cover">
-                                        @else
-                                            {{ strtoupper(substr($opinion->user->name ?? 'A', 0, 1)) }}
-                                        @endif
-                                    </div>
-                                    <div class="space-y-0.5">
-                                        <h4 class="text-xs font-serif font-black italic text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] transition">
-                                            <a href="/articles/{{ $opinion->slug }}">"{{ $opinion->title }}"</a>
-                                        </h4>
-                                        <span class="text-[9px] text-gray-400 block font-medium">By {{ $opinion->user->name ?? 'Staff Writer' }}</span>
-                                    </div>
-                                </article>
-                            @endforeach
-                        </div>
-                    </div>
-                    @include('partials.sidebar-widgets')
-                </div>
-
-        @endif
-    </div>
-
-        <!-- Section 3: Trending and Advertising Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-8 border-t border-gray-200 dark:border-gray-800">
-            <!-- Trending Articles -->
-            <div class="lg:col-span-2 space-y-4">
-                <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white border-b-2 border-[#C8102E] pb-2 inline-block">
-                    Trending Stories
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    @foreach($trendingArticles as $index => $trending)
-                        <div class="flex space-x-4 items-start group">
-                            <!-- Large Number -->
-                            <div class="text-4xl font-serif font-black text-gray-250 dark:text-gray-800 w-10 text-center shrink-0 select-none leading-none">
-                                {{ sprintf("%02d", $index + 1) }}
-                            </div>
-                            <!-- Title Block -->
-                            <div class="flex-grow min-w-0">
-                                <a href="/{{ $trending->category->slug }}" class="text-[9px] font-bold text-[#C8102E] dark:text-red-400 uppercase tracking-wider hover:underline block mb-1">
-                                    {{ $trending->category->name }}
-                                </a>
-                                <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition">
-                                    <a href="/articles/{{ $trending->slug }}">{{ $trending->title }}</a>
-                                </h4>
+                            <div class="flex items-center space-x-3 text-[10px] text-gray-300 font-semibold">
+                                <span>{{ $featuredArticle->author->name ?? 'admin' }}</span>
+                                <span>&bull;</span>
+                                <span>{{ $featuredArticle->published_at->format('M j, Y') }}</span>
+                                <span>&bull;</span>
+                                <span class="flex items-center space-x-1">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                    <span>{{ $featuredArticle->comments->count() }}</span>
+                                </span>
+                                <span>&bull;</span>
+                                <span class="flex items-center space-x-1">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    <span>{{ number_format($featuredArticle->views_count) }}</span>
+                                </span>
                             </div>
                         </div>
+                        @if($featuredArticle->is_featured)
+                            <span class="absolute top-4 right-4 bg-yellow-500 text-white p-1 rounded-full shadow-md z-20">
+                                <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                            </span>
+                        @endif
+                    </a>
+                @endif
+
+                <!-- Right: 2x2 Grid of 4 spotlight cards (Spans 2 columns) -->
+                <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @foreach($topStories->take(4) as $story)
+                        <a href="/articles/{{ $story->slug }}" class="relative block aspect-[16/10] overflow-hidden rounded group bg-gray-950 shadow border border-gray-150 dark:border-gray-855">
+                            <img src="{{ $story->featured_image }}" alt="{{ $story->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85">
+                            <!-- Category tag with custom color overlay -->
+                            <span class="absolute top-3 left-3 px-2 py-0.5 bg-[#FF7900] text-white text-[9px] font-black uppercase tracking-wider rounded shadow">
+                                {{ $story->category->name }}
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent flex flex-col justify-end p-4 space-y-1.5">
+                                <h3 class="text-xs sm:text-sm font-serif font-bold text-white leading-tight line-clamp-2 group-hover:text-red-400 transition">
+                                    {{ $story->title }}
+                                </h3>
+                                <div class="flex items-center space-x-2 text-[9px] text-gray-350">
+                                    <span>{{ $story->author->name ?? 'staff' }}</span>
+                                    <span>&bull;</span>
+                                    <span>{{ $story->published_at->format('M j, Y') }}</span>
+                                    <span>&bull;</span>
+                                    <span class="flex items-center space-x-0.5">
+                                        <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <span>{{ number_format($story->views_count) }}</span>
+                                    </span>
+                                </div>
+                            </div>
+                            @if($story->is_featured)
+                                <span class="absolute top-3 right-3 bg-yellow-500 text-white p-0.5 rounded-full shadow-md z-20">
+                                    <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                </span>
+                            @endif
+                        </a>
                     @endforeach
                 </div>
             </div>
 
-            <!-- Sidebar Advertisement -->
-            <div class="space-y-4">
-                @include('partials.render-ad', ['location' => 'sidebar'])
-            </div>
-        </div>
-
-        <!-- Section 4: Live TV & Programme Schedule (Dark Mode Design Handoff) -->
-        @php
-            $tvUrl = \App\Models\Setting::get('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE');
-        @endphp
-        <div class="bg-gray-950 text-white rounded-lg p-6 sm:p-8 space-y-6 border border-gray-850">
-            <div class="flex justify-between items-center border-b border-gray-850 pb-3">
-                <h3 class="text-base font-black tracking-wider uppercase flex items-center space-x-2">
-                    <span class="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping inline-block"></span>
-                    <span class="text-white font-serif">Getembe TV Live Coverage</span>
-                </h3>
-                <a href="/live-tv" class="text-xs font-semibold text-gray-400 hover:text-white transition flex items-center space-x-1">
-                    <span>Full Screen TV</span>
-                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                </a>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- TV Stream Player -->
-                <div class="lg:col-span-2 space-y-3">
-                    <div class="aspect-video rounded-lg overflow-hidden bg-black relative border border-gray-800 shadow-2xl">
-                        @if(Str::contains($tvUrl, 'youtube.com') || Str::contains($tvUrl, 'embed'))
-                            <iframe src="{{ $tvUrl }}" title="Getembe Live TV" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                        @else
-                            <video controls autoplay class="w-full h-full">
-                                <source src="{{ $tvUrl }}" type="application/x-mpegURL">
-                                Your browser does not support HLS streaming.
-                            </video>
-                        @endif
-                    </div>
-                    <div class="bg-gray-900 p-4 border border-gray-850 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                        <div>
-                            <span class="text-[9px] font-black text-red-500 uppercase tracking-widest block mb-0.5">Live Broadcast</span>
-                            <h4 class="text-sm font-bold text-white">Currently Playing: <span class="text-[#FF7900]">News Hour Live</span></h4>
-                            <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">Broadcasting live from Getembe newsroom, Kisii, Kenya. Stay tuned for breaking bulletins, political debates, and regional briefs.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Programme Schedule -->
-                <div class="bg-gray-900 border border-gray-855 rounded-lg p-5 space-y-4">
-                    <h3 class="text-xs font-black uppercase tracking-wider text-white border-b border-gray-855 pb-2">
-                        Today's Programme Schedule
-                    </h3>
-                    
-                    <div class="space-y-4 text-[11px] overflow-y-auto max-h-[300px] scrollbar-none pr-1">
-                        <div class="flex items-start space-x-3 text-gray-400">
-                            <span class="font-bold w-20 shrink-0 text-gray-500">06:00 - 09:00</span>
-                            <div>
-                                <h4 class="font-bold text-gray-300">Getembe Morning Call</h4>
-                                <p class="text-[10px] text-gray-500">Breakfast news and newspaper review.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3 text-gray-400">
-                            <span class="font-bold w-20 shrink-0 text-gray-500">09:00 - 12:00</span>
-                            <div>
-                                <h4 class="font-bold text-gray-300">Business Daily</h4>
-                                <p class="text-[10px] text-gray-500">Economic trends, stock updates, and trade discussion.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3 bg-red-950/20 border-l-2 border-red-600 pl-2 py-1">
-                            <span class="font-bold w-20 shrink-0 text-red-500">12:00 - 14:00</span>
-                            <div>
-                                <h4 class="font-bold text-white flex items-center space-x-1.5">
-                                    <span>News Hour Live</span>
-                                    <span class="inline-block w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></span>
-                                </h4>
-                                <p class="text-[10px] text-gray-400">Midday headlines, market check, and regional briefs.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3 text-gray-400">
-                            <span class="font-bold w-20 shrink-0 text-gray-500">14:00 - 16:00</span>
-                            <div>
-                                <h4 class="font-bold text-gray-300">Health & Sports Highlights</h4>
-                                <p class="text-[10px] text-gray-550">Wellness insights and sporting roundups.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3 text-gray-400">
-                            <span class="font-bold w-20 shrink-0 text-gray-500">16:00 - 19:00</span>
-                            <div>
-                                <h4 class="font-bold text-gray-300">Regional News Express</h4>
-                                <p class="text-[10px] text-gray-555">Community spotlights and county assembly briefings.</p>
-                            </div>
-                        </div>
-
-                        <div class="flex items-start space-x-3 text-gray-400">
-                            <span class="font-bold w-20 shrink-0 text-gray-500">19:00 - 21:00</span>
-                            <div>
-                                <h4 class="font-bold text-gray-300">Evening Prime Time News</h4>
-                                <p class="text-[10px] text-gray-555">Comprehensive summary of major regional events.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Section 5: Categories Grids (Al Jazeera Block Design) -->
-        @php
-            $sidebarAds = \App\Models\Advertisement::active()->location('sidebar')->get();
-        @endphp
-        <div class="space-y-12">
-            @foreach($categoryBlocks as $index => $block)
-                @if($block['articles']->isNotEmpty())
-                    <div class="space-y-4">
-                        <!-- Section Header -->
-                        <div class="flex items-center space-x-2.5 border-b-2 border-gray-150 dark:border-gray-855 pb-2">
-                            <span class="w-1.5 h-6 bg-[#FF7900] inline-block rounded-sm"></span>
-                            <h2 class="text-lg font-serif font-black text-gray-900 dark:text-white uppercase tracking-tight flex items-center">
-                                <span>{{ $block['category']->name }}</span>
-                            </h2>
-                        </div>
-
-                        <!-- 3-Column Block Layout -->
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <!-- Left Column: 1 Large Spotlight -->
-                            @php $first = $block['articles']->first(); @endphp
-                            <article class="group space-y-3 lg:col-span-1">
-                                <div class="aspect-video overflow-hidden rounded-lg bg-gray-105 dark:bg-gray-850 border border-gray-200 dark:border-gray-800 relative">
-                                    <img src="{{ $first->featured_image }}" alt="{{ $first->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
-                                    <!-- Quote Overlay Icon (Matches Screenshot styling) -->
-                                    <div class="absolute bottom-3 left-3 bg-black/85 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md select-none z-20">
-                                        <span class="text-sm font-serif leading-none mt-1">“</span>
+            <!-- Two-Column Main Feed Area (Matching Screenshot 2 & 3) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-8">
+                
+                <!-- LEFT 2/3 COLUMN: Categories blocks -->
+                <div class="lg:col-span-2 space-y-10">
+                    @foreach($categoryBlocks as $index => $block)
+                        @if($block['articles']->isNotEmpty())
+                            <div class="space-y-6">
+                                <!-- Category Section Header tag -->
+                                <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2">
+                                    <h2 class="text-xs font-black uppercase text-white bg-[#C8102E] px-3 py-1.5 tracking-wider inline-block">
+                                        {{ $block['category']->name }}
+                                    </h2>
+                                    <!-- Right side subcategories tabs -->
+                                    <div class="hidden sm:flex items-center space-x-3 text-[10px] font-bold text-gray-550 uppercase tracking-wide dark:text-gray-400 min-w-0 overflow-hidden">
+                                        <span class="text-gray-900 dark:text-white cursor-pointer hover:text-[#C8102E] shrink-0">All</span>
+                                        @foreach($block['articles']->take(2) as $fItem)
+                                            <span class="hover:text-[#C8102E] cursor-pointer shrink-0">&bull;</span>
+                                            <span class="hover:text-[#C8102E] cursor-pointer inline-block align-middle truncate max-w-[100px] sm:max-w-[150px] md:max-w-[220px]">{{ $fItem->title }}</span>
+                                        @endforeach
                                     </div>
                                 </div>
-                                <div class="space-y-1">
-                                    <span class="text-[9px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest block">{{ $block['category']->name }}</span>
-                                    <h3 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition">
-                                        <a href="/articles/{{ $first->slug }}">{{ $first->title }}</a>
-                                    </h3>
-                                    <p class="text-xs text-gray-600 dark:text-gray-455 leading-relaxed line-clamp-2">
-                                        {{ $first->subtitle }}
-                                    </p>
+
+                                <!-- Sub Grid: 2 Medium Spotlight cards side-by-side -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    @foreach($block['articles']->take(2) as $medItem)
+                                        <article class="group space-y-3">
+                                            <a href="/articles/{{ $medItem->slug }}" class="block aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-855 border border-gray-150 dark:border-gray-850 relative">
+                                                <img src="{{ $medItem->featured_image }}" alt="{{ $medItem->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
+                                                @if($medItem->is_featured)
+                                                    <span class="absolute top-2.5 right-2.5 bg-yellow-500 text-white p-0.5 rounded-full shadow-md z-10">
+                                                        <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                                    </span>
+                                                @endif
+                                            </a>
+                                            <div class="space-y-1">
+                                                <h3 class="text-sm font-bold font-serif text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] transition line-clamp-2">
+                                                    <a href="/articles/{{ $medItem->slug }}">{{ $medItem->title }}</a>
+                                                </h3>
+                                                <div class="flex items-center space-x-2 text-[9px] text-gray-400 font-semibold">
+                                                    <span>{{ $medItem->author->name ?? 'staff' }}</span>
+                                                    <span>&bull;</span>
+                                                    <span>{{ $medItem->published_at->format('M j, Y') }}</span>
+                                                    <span>&bull;</span>
+                                                    <span class="flex items-center space-x-0.5">
+                                                        <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                        <span>{{ number_format($medItem->views_count) }}</span>
+                                                    </span>
+                                                </div>
+                                                <p class="text-[11px] text-gray-550 dark:text-gray-400 leading-relaxed line-clamp-2">
+                                                    {{ $medItem->subtitle }}
+                                                </p>
+                                            </div>
+                                        </article>
+                                    @endforeach
                                 </div>
-                            </article>
 
-                            <!-- Middle Column: 4 List Items with Thumbnail and Quote Overlays -->
-                            <div class="lg:col-span-1 space-y-3">
-                                @foreach($block['articles']->skip(1)->take(4) as $item)
-                                    <article class="group flex items-start gap-4 pb-3 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
-                                        <!-- Left Side: Tiny image thumbnail with quote overlay -->
-                                        <div class="w-20 h-14 overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800 relative">
-                                            <img src="{{ $item->featured_image }}" alt="{{ $item->title }}" class="w-full h-full object-cover">
-                                            <div class="absolute bottom-1 left-1 bg-black/85 text-white w-4 h-4 rounded-full flex items-center justify-center shadow-md select-none z-20">
-                                                <span class="text-[10px] font-serif leading-none mt-0.5">“</span>
-                                            </div>
-                                        </div>
-                                        <div class="space-y-0.5 flex-grow min-w-0">
-                                            <span class="text-[8px] font-black text-gray-500 dark:text-gray-455 uppercase tracking-widest block">{{ $block['category']->name }}</span>
-                                            <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-2">
-                                                <a href="/articles/{{ $item->slug }}">{{ $item->title }}</a>
-                                            </h4>
-                                        </div>
-                                    </article>
-                                @endforeach
+                                <!-- Sub Grid: 2 Columns of row-based articles underneath (3 in col1, 3 in col2) -->
+                                @php
+                                    $remaining = $block['articles']->skip(2)->take(6);
+                                    $col1 = $remaining->take(3);
+                                    $col2 = $remaining->skip(3)->take(3);
+                                @endphp
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 border-t border-gray-100 dark:border-gray-855 pt-4">
+                                    <!-- Column 1 -->
+                                    <div class="space-y-3">
+                                        @foreach($col1 as $item)
+                                            <article class="group flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
+                                                <div class="w-20 h-14 overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800 relative">
+                                                    <img src="{{ $item->featured_image }}" alt="{{ $item->title }}" class="w-full h-full object-cover">
+                                                    @if($item->is_featured)
+                                                        <span class="absolute top-1 right-1 bg-yellow-500 text-white p-0.5 rounded-full shadow z-10 scale-75">
+                                                            <svg class="h-2 w-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="space-y-0.5 flex-grow min-w-0">
+                                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] transition line-clamp-2">
+                                                        <a href="/articles/{{ $item->slug }}">{{ $item->title }}</a>
+                                                    </h4>
+                                                    <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-400 font-semibold">
+                                                        <span>{{ $item->author->name ?? 'staff' }}</span>
+                                                        <span>&bull;</span>
+                                                        <span>{{ $item->published_at->format('M j, Y') }}</span>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        @endforeach
+                                    </div>
+
+                                    <!-- Column 2 -->
+                                    <div class="space-y-3">
+                                        @foreach($col2 as $item)
+                                            <article class="group flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
+                                                <div class="w-20 h-14 overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800 relative">
+                                                    <img src="{{ $item->featured_image }}" alt="{{ $item->title }}" class="w-full h-full object-cover">
+                                                    @if($item->is_featured)
+                                                        <span class="absolute top-1 right-1 bg-yellow-500 text-white p-0.5 rounded-full shadow z-10 scale-75">
+                                                            <svg class="h-2 w-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <div class="space-y-0.5 flex-grow min-w-0">
+                                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] transition line-clamp-2">
+                                                        <a href="/articles/{{ $item->slug }}">{{ $item->title }}</a>
+                                                    </h4>
+                                                    <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-400 font-semibold">
+                                                        <span>{{ $item->author->name ?? 'staff' }}</span>
+                                                        <span>&bull;</span>
+                                                        <span>{{ $item->published_at->format('M j, Y') }}</span>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
+                        @endif
+                    @endforeach
+                </div>
 
-                            <!-- Right Column: Premium Dynamic / Placeholder Advertisements -->
-                            @php
-                                $dbAd = $sidebarAds->isNotEmpty() && isset($sidebarAds[$index]) ? $sidebarAds[$index] : null;
-                            @endphp
-                            <div class="lg:col-span-1">
-                                @if($dbAd)
-                                    <a href="{{ $dbAd->destination_url }}" target="_blank" class="block w-full h-full relative group">
-                                        <div class="bg-gray-100 dark:bg-gray-955 border border-gray-250 dark:border-gray-850 rounded-lg overflow-hidden h-full min-h-[220px] flex items-center justify-center relative">
-                                            <img src="{{ $dbAd->image_url }}" alt="{{ $dbAd->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
-                                            <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
+                <!-- RIGHT 1/3 COLUMN: Sidebar with widgets -->
+                <div class="lg:col-span-1 space-y-8">
+                    
+                    <!-- Sidebar Banner Ad (Custom blue box ad matching screenshot 2) -->
+                    <div class="relative bg-gradient-to-br from-[#1E3A8A] to-[#1D4ED8] text-white rounded-lg p-6 flex flex-col justify-between border border-blue-900 shadow-md h-[220px]">
+                        <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
+                        <div class="space-y-1 pt-4">
+                            <h3 class="text-lg font-black tracking-tight uppercase leading-none">VARIENT</h3>
+                            <span class="text-[10px] text-blue-200 block font-bold">Best News & Magazine Script</span>
+                        </div>
+                        <div class="pt-6">
+                            <a href="/contact" class="inline-block bg-white text-[#1D4ED8] hover:bg-gray-100 transition px-5 py-2 rounded text-xs font-black uppercase tracking-wider shadow">
+                                BUY NOW
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Popular Posts Widget -->
+                    <div class="space-y-4">
+                        <h3 class="bg-gray-900 text-white font-black text-xs uppercase px-4 py-2.5 tracking-wider">
+                            Popular Posts
+                        </h3>
+                        <div class="space-y-3">
+                            @foreach($trendingArticles->take(5) as $popItem)
+                                <article class="group flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
+                                    <div class="w-20 h-14 overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800 relative">
+                                        <img src="{{ $popItem->featured_image }}" alt="{{ $popItem->title }}" class="w-full h-full object-cover">
+                                        @if($popItem->is_featured)
+                                            <span class="absolute top-1 right-1 bg-yellow-500 text-white p-0.5 rounded-full shadow z-10 scale-75">
+                                                <svg class="h-2 w-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="space-y-0.5 flex-grow min-w-0">
+                                        <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] transition line-clamp-2">
+                                            <a href="/articles/{{ $popItem->slug }}">{{ $popItem->title }}</a>
+                                        </h4>
+                                        <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-400 font-semibold">
+                                            <span>{{ $popItem->author->name ?? 'admin' }}</span>
+                                            <span>&bull;</span>
+                                            <span>{{ $popItem->published_at->format('M j, Y') }}</span>
+                                            <span>&bull;</span>
+                                            <span class="flex items-center space-x-0.5">
+                                                <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                <span>{{ number_format($popItem->views_count) }}</span>
+                                            </span>
                                         </div>
-                                    </a>
-                                @else
-                                    @if($index % 4 === 0)
-                                        <!-- Ad Variation 0: Kisii County Tourism -->
-                                        <a href="/kisii" class="block w-full h-full relative group">
-                                            <div class="relative bg-gray-950 border border-gray-250 dark:border-gray-850 rounded-lg overflow-hidden h-full min-h-[220px] flex flex-col justify-end p-5">
-                                                <img src="https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&q=80&w=400&h=300" alt="Visit Kisii" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-102 transition duration-500">
-                                                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-                                                <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
-                                                <div class="relative z-10 space-y-1">
-                                                    <span class="text-[9px] font-black text-yellow-500 uppercase tracking-widest">Explore Kenya</span>
-                                                    <h4 class="text-sm font-serif font-black text-white leading-tight">Visit Kisii County</h4>
-                                                    <p class="text-[10px] text-gray-300 leading-snug">Experience the legendary Soapstone hills, beautiful culture, and rich heritage of Southwestern Kenya.</p>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    @elseif($index % 4 === 1)
-                                        <!-- Ad Variation 1: Getembe News Mobile App -->
-                                        <a href="/contact" class="block w-full h-full relative group">
-                                            <div class="relative bg-gradient-to-br from-[#C8102E] to-red-950 border border-red-900 rounded-lg overflow-hidden h-full min-h-[220px] flex flex-col justify-between p-5">
-                                                <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
-                                                <div class="pt-2 flex justify-center">
-                                                    <div class="flex items-center space-x-1.5 bg-white/10 px-3 py-1 rounded-full text-white text-[9px] font-bold">
-                                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                                                        </svg>
-                                                        <span>Getembe News App</span>
-                                                    </div>
-                                                </div>
-                                                <div class="space-y-1">
-                                                    <h4 class="text-sm font-black text-white leading-tight">Read Anywhere, Anytime</h4>
-                                                    <p class="text-[10px] text-red-100 leading-snug">Read breaking stories on the go. Enable instant alerts to never miss news from Gusii region.</p>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    @elseif($index % 4 === 2)
-                                        <!-- Ad Variation 2: Advertise With Us -->
-                                        <a href="/contact" class="block w-full h-full relative group">
-                                            <div class="relative bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-lg overflow-hidden h-full min-h-[220px] flex flex-col justify-between p-5">
-                                                <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
-                                                <div class="pt-2 flex justify-center">
-                                                    <span class="bg-yellow-500 text-black font-extrabold text-[9px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">Grow Your Brand</span>
-                                                </div>
-                                                <div class="space-y-1">
-                                                    <h4 class="text-sm font-black text-white leading-tight">Advertise With Us</h4>
-                                                    <p class="text-[10px] text-gray-400 leading-snug">Reach over 1.2M active monthly visitors. Promote your business, services, or events across our digital network.</p>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    @else
-                                        <!-- Ad Variation 3: Getembe FM Radio -->
-                                        <a href="/live-radio" class="block w-full h-full relative group">
-                                            <div class="relative bg-gradient-to-br from-blue-900 via-indigo-950 to-gray-950 border border-indigo-900 rounded-lg overflow-hidden h-full min-h-[220px] flex flex-col justify-between p-5">
-                                                <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
-                                                <div class="pt-2 flex justify-center">
-                                                    <div class="flex items-center space-x-1.5 bg-blue-500/20 px-3 py-1 rounded-full text-blue-300 text-[9px] font-bold animate-pulse">
-                                                        <span class="w-1.5 h-1.5 bg-blue-400 rounded-full"></span>
-                                                        <span>Getembe FM Live</span>
-                                                    </div>
-                                                </div>
-                                                <div class="space-y-1">
-                                                    <h4 class="text-sm font-black text-white leading-tight">Listen to Getembe FM</h4>
-                                                    <p class="text-[10px] text-blue-100 leading-snug">Enjoy dynamic talk shows, local Gusii music, cultural updates, and comprehensive live news reports.</p>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    @endif
-                                @endif
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- FOLLOW US Widget (Colored button layout grid matching Screenshot 3) -->
+                    <div class="space-y-4">
+                        <h3 class="bg-gray-900 text-white font-black text-xs uppercase px-4 py-2.5 tracking-wider">
+                            Follow Us
+                        </h3>
+                        <div class="grid grid-cols-2 gap-2 text-[10px] font-black text-white">
+                            @php
+                                $fbStats = \App\Support\SocialFetcher::getStats('facebook', \App\Models\Setting::get('facebook'));
+                                $twStats = \App\Support\SocialFetcher::getStats('twitter', \App\Models\Setting::get('twitter'));
+                                $igStats = \App\Support\SocialFetcher::getStats('instagram', \App\Models\Setting::get('instagram'));
+                                $ytStats = \App\Support\SocialFetcher::getStats('youtube', \App\Models\Setting::get('youtube'));
+                                $waStats = \App\Support\SocialFetcher::getStats('whatsapp', \App\Models\Setting::get('whatsapp'));
+                                $tkStats = \App\Support\SocialFetcher::getStats('tiktok', \App\Models\Setting::get('tiktok'));
+                                $tgStats = \App\Support\SocialFetcher::getStats('telegram', \App\Models\Setting::get('telegram'));
+                                $snapStats = \App\Support\SocialFetcher::getStats('snapchat', \App\Models\Setting::get('snapchat'));
+                                $pinStats = \App\Support\SocialFetcher::getStats('pinterest', \App\Models\Setting::get('pinterest'));
+                                $thStats = \App\Support\SocialFetcher::getStats('threads', \App\Models\Setting::get('threads'));
+                            @endphp
+
+                            <!-- X (Twitter) -->
+                            @if(\App\Models\Setting::get('social_twitter_active', '1') == '1')
+                            <a href="{{ $twStats['url'] }}" target="_blank" style="background-color: #000000;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase">X (Twitter)</span>
+                                <span class="text-[9px] font-medium text-gray-300 mt-0.5">{{ $twStats['formatted'] }} {{ $twStats['label'] }}</span>
+                            </a>
+                            @endif
+
+                            <!-- Instagram -->
+                            @if(\App\Models\Setting::get('social_instagram_active', '1') == '1')
+                            <a href="{{ $igStats['url'] }}" target="_blank" style="background-color: #E1306C;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase">Instagram</span>
+                                <span class="text-[9px] font-medium text-red-100 mt-0.5">{{ $igStats['formatted'] }} {{ $igStats['label'] }}</span>
+                            </a>
+                            @endif
+
+                            <!-- Facebook -->
+                            @if(\App\Models\Setting::get('social_facebook_active', '1') == '1')
+                            <a href="{{ $fbStats['url'] }}" target="_blank" style="background-color: #1877F2;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase">Facebook</span>
+                                <span class="text-[9px] font-medium text-blue-100 mt-0.5">{{ $fbStats['formatted'] }} {{ $fbStats['label'] }}</span>
+                            </a>
+                            @endif
+
+                            <!-- YouTube -->
+                            @if(\App\Models\Setting::get('social_youtube_active', '1') == '1')
+                            <a href="{{ $ytStats['url'] }}" target="_blank" style="background-color: #FF0000;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase">YouTube</span>
+                                <span class="text-[9px] font-medium text-red-100 mt-0.5">{{ $ytStats['formatted'] }} {{ $ytStats['label'] }}</span>
+                            </a>
+                            @endif
+
+                            <!-- WhatsApp -->
+                            @if(\App\Models\Setting::get('social_whatsapp_active', '1') == '1')
+                            <a href="{{ $waStats['url'] }}" target="_blank" style="background-color: #25D366;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase">WhatsApp</span>
+                                <span class="text-[9px] font-medium text-green-100 mt-0.5">{{ $waStats['formatted'] }} {{ $waStats['label'] }}</span>
+                            </a>
+                            @endif
+
+                            <!-- TikTok -->
+                            @if(\App\Models\Setting::get('social_tiktok_active', '1') == '1')
+                            <a href="{{ $tkStats['url'] }}" target="_blank" style="background-color: #111111;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase">TikTok</span>
+                                <span class="text-[9px] font-medium text-gray-300 mt-0.5">{{ $tkStats['formatted'] }} {{ $tkStats['label'] }}</span>
+                            </a>
+                            @endif
+
+                            <!-- Telegram -->
+                            @if(\App\Models\Setting::get('social_telegram_active', '1') == '1')
+                            <a href="{{ $tgStats['url'] }}" target="_blank" style="background-color: #26A69A;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase">Telegram</span>
+                                <span class="text-[9px] font-medium text-teal-100 mt-0.5">{{ $tgStats['formatted'] }} {{ $tgStats['label'] }}</span>
+                            </a>
+                            @endif
+
+                            <!-- Snapchat -->
+                            @if(\App\Models\Setting::get('social_snapchat_active', '1') == '1')
+                            <a href="{{ $snapStats['url'] }}" target="_blank" style="background-color: #FFFC00;" class="flex flex-col items-center justify-center hover:opacity-90 text-black transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase text-black">Snapchat</span>
+                                <span class="text-[9px] font-medium text-gray-800 mt-0.5">{{ $snapStats['formatted'] }} {{ $snapStats['label'] }}</span>
+                            </a>
+                            @endif
+
+                            <!-- Pinterest -->
+                            @if(\App\Models\Setting::get('social_pinterest_active', '1') == '1')
+                            <a href="{{ $pinStats['url'] }}" target="_blank" style="background-color: #BD081C;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase">Pinterest</span>
+                                <span class="text-[9px] font-medium text-red-100 mt-0.5">{{ $pinStats['formatted'] }} {{ $pinStats['label'] }}</span>
+                            </a>
+                            @endif
+
+                            <!-- Threads -->
+                            @if(\App\Models\Setting::get('social_threads_active', '1') == '1')
+                            <a href="{{ $thStats['url'] }}" target="_blank" style="background-color: #222222;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase">Threads</span>
+                                <span class="text-[9px] font-medium text-gray-300 mt-0.5">{{ $thStats['formatted'] }} {{ $thStats['label'] }}</span>
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- RECOMMENDED POSTS Widget -->
+                    <div class="space-y-4">
+                        <h3 class="bg-gray-900 text-white font-black text-xs uppercase px-4 py-2.5 tracking-wider">
+                            Recommended Posts
+                        </h3>
+                        @if($featuredArticle)
+                            @php
+                                $recItem = $latestArticles->first();
+                            @endphp
+                            @if($recItem)
+                                <a href="/articles/{{ $recItem->slug }}" class="relative block aspect-[16/10] overflow-hidden rounded group bg-gray-950 shadow border border-gray-150 dark:border-gray-855">
+                                    <img src="{{ $recItem->featured_image }}" alt="{{ $recItem->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85">
+                                    <div class="absolute bottom-3 left-3 bg-[#C8102E] text-white text-[8px] font-black uppercase px-2 py-0.5 tracking-wider rounded z-20">
+                                        {{ $recItem->category->name }}
+                                    </div>
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent flex flex-col justify-end p-4 space-y-1">
+                                        <h4 class="text-xs font-serif font-bold text-white leading-tight line-clamp-2 pt-4">
+                                            {{ $recItem->title }}
+                                        </h4>
+                                    </div>
+                                </a>
+                            @endif
+                        @endif
+                    </div>
+
+                    <!-- Reader Poll & Quizzes (Included from partials) -->
+                    @include('partials.sidebar-widgets')
+
+                </div>
+            </div>
+
+            <!-- Section 4: Live TV & Programme Schedule (Dark Mode Design Handoff) -->
+            @php
+                $tvUrl = \App\Models\Setting::get('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE');
+            @endphp
+            <div class="bg-gray-950 text-white rounded-lg p-6 sm:p-8 space-y-6 border border-gray-850 mt-10">
+                <div class="flex justify-between items-center border-b border-gray-850 pb-3">
+                    <h3 class="text-base font-black tracking-wider uppercase flex items-center space-x-2">
+                        <span class="w-2.5 h-2.5 bg-red-600 rounded-full animate-ping inline-block"></span>
+                        <span class="text-white font-serif">Getembe TV Live Coverage</span>
+                    </h3>
+                    <a href="/live-tv" class="text-xs font-semibold text-gray-400 hover:text-white transition flex items-center space-x-1">
+                        <span>Full Screen TV</span>
+                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- TV Stream Player -->
+                    <div class="lg:col-span-2 space-y-3">
+                        <div class="aspect-video rounded-lg overflow-hidden bg-black relative border border-gray-800 shadow-2xl">
+                            @if(Str::contains($tvUrl, 'youtube.com') || Str::contains($tvUrl, 'embed'))
+                                <iframe src="{{ $tvUrl }}" title="Getembe Live TV" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            @else
+                                <video controls autoplay class="w-full h-full">
+                                    <source src="{{ $tvUrl }}" type="application/x-mpegURL">
+                                    Your browser does not support HLS streaming.
+                                </video>
+                            @endif
+                        </div>
+                        <div class="bg-gray-900 p-4 border border-gray-855 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div>
+                                <span class="text-[9px] font-black text-red-500 uppercase tracking-widest block mb-0.5">Live Broadcast</span>
+                                <h4 class="text-sm font-bold text-white">Currently Playing: <span class="text-[#FF7900]">News Hour Live</span></h4>
+                                <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">Broadcasting live from Getembe newsroom, Kisii, Kenya. Stay tuned for breaking bulletins, political debates, and regional briefs.</p>
                             </div>
                         </div>
                     </div>
-                @endif
-            @endforeach
+
+                    <!-- Programme Schedule -->
+                    <div class="bg-gray-900 border border-gray-855 rounded-lg p-5 space-y-4">
+                        <h3 class="text-xs font-black uppercase tracking-wider text-white border-b border-gray-855 pb-2">
+                            Today's Programme Schedule
+                        </h3>
+                        
+                        <div class="space-y-4 text-[11px] overflow-y-auto max-h-[300px] scrollbar-none pr-1">
+                            <div class="flex items-start space-x-3 text-gray-400">
+                                <span class="font-bold w-20 shrink-0 text-gray-500">06:00 - 09:00</span>
+                                <div>
+                                    <h4 class="font-bold text-gray-300">Getembe Morning Call</h4>
+                                    <p class="text-[10px] text-gray-500">Breakfast news and newspaper review.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3 text-gray-400">
+                                <span class="font-bold w-20 shrink-0 text-gray-500">09:00 - 12:00</span>
+                                <div>
+                                    <h4 class="font-bold text-gray-300">Business Daily</h4>
+                                    <p class="text-[10px] text-gray-550">Economic trends, stock updates, and trade discussion.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3 bg-red-950/20 border-l-2 border-red-600 pl-2 py-1">
+                                <span class="font-bold w-20 shrink-0 text-red-500">12:00 - 14:00</span>
+                                <div>
+                                    <h4 class="font-bold text-white flex items-center space-x-1.5">
+                                        <span>News Hour Live</span>
+                                        <span class="inline-block w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></span>
+                                    </h4>
+                                    <p class="text-[10px] text-gray-400">Midday headlines, market check, and regional briefs.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3 text-gray-400">
+                                <span class="font-bold w-20 shrink-0 text-gray-500">14:00 - 16:00</span>
+                                <div>
+                                    <h4 class="font-bold text-gray-300">Health & Sports Highlights</h4>
+                                    <p class="text-[10px] text-gray-550">Wellness insights and sporting roundups.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3 text-gray-400">
+                                <span class="font-bold w-20 shrink-0 text-gray-500">16:00 - 19:00</span>
+                                <div>
+                                    <h4 class="font-bold text-gray-300">Regional News Express</h4>
+                                    <p class="text-[10px] text-gray-555">Community spotlights and county assembly briefings.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3 text-gray-400">
+                                <span class="font-bold w-20 shrink-0 text-gray-500">19:00 - 21:00</span>
+                                <div>
+                                    <h4 class="font-bold text-gray-300">Evening Prime Time News</h4>
+                                    <p class="text-[10px] text-gray-555">Comprehensive summary of major regional events.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
         </div>
 
         <!-- App Download Promo Banner -->

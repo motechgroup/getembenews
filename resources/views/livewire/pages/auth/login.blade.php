@@ -32,6 +32,12 @@ new #[Layout('layouts.guest')] class extends Component
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
+    <!-- Form Title -->
+    <div class="mb-6 text-center">
+        <h2 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Sign In</h2>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Welcome back! Access your Getembe News account</p>
+    </div>
+
     <form wire:submit="login">
         <!-- Email Address -->
         <div>
@@ -52,24 +58,32 @@ new #[Layout('layouts.guest')] class extends Component
             <x-input-error :messages="$errors->get('form.password')" class="mt-2" />
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
+        <!-- Remember Me & Forgot Password -->
+        <div class="flex items-center justify-between mt-4">
             <label for="remember" class="inline-flex items-center">
-                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" name="remember">
-                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
+                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-[#cc6c3b] focus:ring-[#cc6c3b] dark:focus:ring-offset-gray-800" name="remember">
+                <span class="ms-2 text-xs text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
             </label>
-        </div>
 
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}" wire:navigate>
-                    {{ __('Forgot your password?') }}
+                <a class="text-xs text-gray-500 dark:text-gray-400 hover:text-[#cc6c3b] transition" href="{{ route('password.request') }}" wire:navigate>
+                    {{ __('Forgot password?') }}
                 </a>
             @endif
+        </div>
 
-            <x-primary-button class="ms-3">
+        <div class="mt-6">
+            <button type="submit" class="w-full flex justify-center items-center px-4 py-2.5 bg-[#cc6c3b] hover:bg-orange-700 active:bg-orange-800 text-white font-bold text-xs uppercase tracking-widest rounded-lg transition shadow-sm focus:outline-none focus:ring-2 focus:ring-[#cc6c3b] focus:ring-offset-2 dark:focus:ring-offset-gray-800">
                 {{ __('Log in') }}
-            </x-primary-button>
+            </button>
+        </div>
+
+        <!-- Signup Link -->
+        <div class="mt-6 text-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-150 dark:border-gray-800/80 pt-4">
+            {{ __("Don't have an account?") }}
+            <a href="{{ route('register') }}" class="font-bold text-[#cc6c3b] hover:underline ml-1" wire:navigate>
+                {{ __('Sign up') }}
+            </a>
         </div>
     </form>
 </div>

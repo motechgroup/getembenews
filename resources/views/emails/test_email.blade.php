@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Welcome to Getembe News!</title>
+    <title>SMTP Connection Test - Getembe News</title>
     <style>
         body {
             background-color: #f6f6f6;
@@ -75,44 +75,15 @@
             margin-bottom: 15px;
             color: #4a4a4a;
         }
-        a {
-            color: #C8102E;
-            text-decoration: underline;
-        }
-        .btn {
-            box-sizing: border-box;
-            width: 100%;
-        }
-        .btn table {
-            width: auto;
-        }
-        .btn table td {
-            background-color: #ffffff;
-            border-radius: 5px;
-            text-align: center;
-        }
-        .btn a {
-            background-color: #ffffff;
-            border: solid 1px #C8102E;
-            border-radius: 5px;
-            box-sizing: border-box;
-            color: #C8102E;
-            cursor: pointer;
-            display: inline-block;
-            font-size: 14px;
+        .status-badge {
+            background-color: #d1fae5;
+            color: #065f46;
+            padding: 8px 12px;
+            border-radius: 6px;
             font-weight: bold;
-            margin: 0;
-            padding: 12px 25px;
-            text-decoration: none;
-            text-transform: capitalize;
-        }
-        .btn-primary table td {
-            background-color: #C8102E;
-        }
-        .btn-primary a {
-            background-color: #C8102E;
-            border-color: #C8102E;
-            color: #ffffff;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 15px;
         }
         .header-logo {
             text-align: center;
@@ -149,28 +120,14 @@
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                     <tr>
                                         <td>
-                                            <h1>Welcome to Getembe News!</h1>
-                                            <p>Hi there,</p>
-                                            
-                                            <div style="font-family: sans-serif; font-size: 14px; color: #4a4a4a; line-height: 1.6; margin-bottom: 25px;">
-                                                {!! nl2br(e($body)) !!}
-                                            </div>
-                                            
-                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="margin: 25px 0;">
-                                                <tbody>
-                                                    <tr>
-                                                        <td align="left">
-                                                            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                                                 <tbody>
-                                                                     <tr>
-                                                                         <td> <a href="{{ url('/') }}" target="_blank">Visit Getembe News</a> </td>
-                                                                     </tr>
-                                                                 </tbody>
-                                                            </table>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                            <h1>SMTP Connection Test</h1>
+                                            <div class="status-badge">✓ SMTP CONNECTION SUCCESSFUL</div>
+                                            <p>Hi Admin,</p>
+                                            <p>This is a test email sent from the Getembe News administration panel to verify your SMTP mail server configurations.</p>
+                                            <p>If you received this message, it means your SMTP server settings are correctly configured, and the mail system is functioning properly.</p>
+                                            <p><strong>Mail Recipient:</strong> {{ $recipient }}</p>
+                                            <p><strong>Time Sent:</strong> {{ now()->toDayDateTimeString() }}</p>
+                                            <p>— Getembe News Mail System</p>
                                         </td>
                                     </tr>
                                 </table>
@@ -182,8 +139,7 @@
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td class="content-block">
-                                    <span class="apple-link">Getembe News, Kisii, Kenya</span>
-                                    <br> Don't want these emails? <a href="{{ url('/newsletter/unsubscribe?email=' . urlencode($email ?? '')) }}">Unsubscribe instantly</a>.
+                                    <span class="apple-link">Getembe News Admin System</span>
                                 </td>
                             </tr>
                         </table>

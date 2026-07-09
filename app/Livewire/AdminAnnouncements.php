@@ -32,6 +32,9 @@ class AdminAnnouncements extends Component
             'is_approved' => !$announcement->is_approved
         ]);
 
+        // Trigger user email notification
+        \App\Support\Mailer::sendAnnouncementStatus($announcement);
+
         session()->flash('message', 'Announcement approval status updated.');
     }
 
@@ -52,6 +55,9 @@ class AdminAnnouncements extends Component
             'payment_reference' => $announcement->payment_reference ?? 'MANUAL-' . strtoupper(uniqid()),
             'commission_amount' => $commissionAmount,
         ]);
+
+        // Trigger user email notification
+        \App\Support\Mailer::sendAnnouncementStatus($announcement);
 
         session()->flash('message', 'Announcement marked as Paid.');
     }

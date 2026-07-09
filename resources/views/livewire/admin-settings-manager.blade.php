@@ -68,6 +68,20 @@ state([
     'threads' => fn() => Setting::get('threads', ''),
     'other_social_links' => fn() => Setting::get('other_social_links', ''),
 
+    // Toggles for Social Widgets
+    'social_facebook_active' => fn() => Setting::get('social_facebook_active', '1'),
+    'social_twitter_active' => fn() => Setting::get('social_twitter_active', '1'),
+    'social_instagram_active' => fn() => Setting::get('social_instagram_active', '1'),
+    'social_linkedin_active' => fn() => Setting::get('social_linkedin_active', '1'),
+    'social_whatsapp_active' => fn() => Setting::get('social_whatsapp_active', '1'),
+    'social_youtube_active' => fn() => Setting::get('social_youtube_active', '1'),
+    'social_tiktok_active' => fn() => Setting::get('social_tiktok_active', '1'),
+    'social_snapchat_active' => fn() => Setting::get('social_snapchat_active', '1'),
+    'social_telegram_active' => fn() => Setting::get('social_telegram_active', '1'),
+    'social_pinterest_active' => fn() => Setting::get('social_pinterest_active', '1'),
+    'social_threads_active' => fn() => Setting::get('social_threads_active', '1'),
+
+
     // 3. Contact Settings
     'contact_email' => fn() => Setting::get('contact_email', 'contact@getembenews.com'),
     'contact_phone' => fn() => Setting::get('contact_phone', '+254712345678'),
@@ -258,6 +272,30 @@ state([
     'newsletter_popup_description' => fn() => Setting::get('newsletter_popup_description', 'Get the latest breaking news alerts and regional updates delivered directly to your inbox.'),
     'newsletter_popup_delay' => fn() => (int) Setting::get('newsletter_popup_delay', 3),
     'uploaded_subscribers_file' => null,
+    'test_email_recipient' => '',
+    'test_email_status' => '',
+
+    // Email Templates Customizations
+    'email_template_welcome_subject' => fn() => Setting::get('email_template_welcome_subject', 'Welcome to Getembe News Newsletter!'),
+    'email_template_welcome_body' => fn() => Setting::get('email_template_welcome_body', "Thank you for subscribing to Getembe News. You are now part of our growing community of readers who value fast, reliable, and in-depth local news and analysis from Kisii County and beyond.\n\nHere is what you can look forward to:\n- **Breaking News Alerts**\n- **Weekly Digests**\n- **Exclusive Insights**\n\nIf you have any feedback or news tips, feel free to contact us!"),
+    
+    'email_template_contact_subject' => fn() => Setting::get('email_template_contact_subject', 'New Contact Inquiry: [Subject]'),
+    'email_template_contact_body' => fn() => Setting::get('email_template_contact_body', "A new contact message / anonymous tip has been received through the Getembe News website form.\n\n**Sender Name:** [Name]\n**Sender Email:** [Email]\n**Subject:** [Subject]\n\n**Message details:**\n[Message]"),
+    
+    'email_template_announcement_subject' => fn() => Setting::get('email_template_announcement_subject', 'Announcement Status Update - Getembe News'),
+    'email_template_announcement_body' => fn() => Setting::get('email_template_announcement_body', "This is to inform you that the status of your announcement submitted to Getembe News has been updated.\n\n**Announcement ID:** #[ID]\n**Type / Category:** [Type]\n**Payment Status:** [PaymentStatus]\n**Total Charged:** [Amount]\n**Approval:** [ApprovalStatus]\n\n**Announcement Content:**\n\"[Content]\""),
+    
+    'email_template_breaking_subject' => fn() => Setting::get('email_template_breaking_subject', '🔴 BREAKING NEWS: [Title]'),
+    'email_template_breaking_body' => fn() => Setting::get('email_template_breaking_body', "We are reaching out to you with a major news alert just published on the Getembe News website.\n\n**[Title]**\n\n[Subtitle]\n\nOur editorial team is currently tracking this story and updates will be posted in real time."),
+
+    'email_template_password_reset_subject' => fn() => Setting::get('email_template_password_reset_subject', 'Reset Password Notification - Getembe News'),
+    'email_template_password_reset_body' => fn() => Setting::get('email_template_password_reset_body', "You are receiving this email because we received a password reset request for your account.\n\nThis password reset link will expire in 60 minutes.\n\nIf you did not request a password reset, no further action is required."),
+
+    'email_template_verification_subject' => fn() => Setting::get('email_template_verification_subject', 'Verify Email Address - Getembe News'),
+    'email_template_verification_body' => fn() => Setting::get('email_template_verification_body', "Please click the button below to verify your email address.\n\nIf you did not create an account, no further action is required."),
+
+    'email_template_new_account_subject' => fn() => Setting::get('email_template_new_account_subject', 'Staff Account Created - Getembe News'),
+    'email_template_new_account_body' => fn() => Setting::get('email_template_new_account_body', "Hello [Name],\n\nAn administrator has created a staff account for you on the Getembe News platform.\n\nHere are your access credentials:\n- **Login Email:** [Email]\n- **Temporary Password:** [Password]\n\n**Role Assigned:** [Role]\n\nPlease log in and change your password immediately for security purposes."),
 ]);
 
 mount(function ($activeTab = 'identity') {
@@ -395,6 +433,9 @@ $addRole = function () use ($logAction) {
         $rolesPermissions = [
             'admin' => ['name' => 'Administrator', 'desc' => 'All permissions access', 'perms' => ['all']],
             'editor' => ['name' => 'Editor', 'desc' => 'Content control and moderation', 'perms' => ['content management', 'article management', 'category management', 'comment management', 'tag management', 'page management', 'contact message management']],
+            'manager' => ['name' => 'Manager', 'desc' => 'Announcement and transaction moderator', 'perms' => ['announcement management']],
+            'author' => ['name' => 'Author', 'desc' => 'Article writer and publisher', 'perms' => ['writing article']],
+            'writing-article' => ['name' => 'Writing Article', 'desc' => 'Allows writing and managing own articles', 'perms' => ['content management', 'article management', 'writing article']],
             'reporter' => ['name' => 'Reporter', 'desc' => 'News writer and creator', 'perms' => ['article management']],
             'contributor' => ['name' => 'Contributor', 'desc' => 'Guest writer status', 'perms' => ['article management']],
             'subscriber' => ['name' => 'Subscriber', 'desc' => 'Regular user', 'perms' => []]
@@ -443,6 +484,9 @@ $savePermissions = function () use ($logAction) {
         $rolesPermissions = [
             'admin' => ['name' => 'Administrator', 'desc' => 'All permissions access', 'perms' => ['all']],
             'editor' => ['name' => 'Editor', 'desc' => 'Content control and moderation', 'perms' => ['content management', 'article management', 'category management', 'comment management', 'tag management', 'page management', 'contact message management']],
+            'manager' => ['name' => 'Manager', 'desc' => 'Announcement and transaction moderator', 'perms' => ['announcement management']],
+            'author' => ['name' => 'Author', 'desc' => 'Article writer and publisher', 'perms' => ['writing article']],
+            'writing-article' => ['name' => 'Writing Article', 'desc' => 'Allows writing and managing own articles', 'perms' => ['content management', 'article management', 'writing article']],
             'reporter' => ['name' => 'Reporter', 'desc' => 'News writer and creator', 'perms' => ['article management']],
             'contributor' => ['name' => 'Contributor', 'desc' => 'Guest writer status', 'perms' => ['article management']],
             'subscriber' => ['name' => 'Subscriber', 'desc' => 'Regular user', 'perms' => []]
@@ -766,6 +810,7 @@ $save = function () use ($logAction) {
     $fields = [
         'site_name', 'site_logo', 'brand_color', 'favicon',
         'website', 'facebook', 'twitter', 'instagram', 'linkedin', 'whatsapp', 'youtube', 'tiktok', 'snapchat', 'telegram', 'pinterest', 'threads', 'other_social_links',
+        'social_facebook_active', 'social_twitter_active', 'social_instagram_active', 'social_linkedin_active', 'social_whatsapp_active', 'social_youtube_active', 'social_tiktok_active', 'social_snapchat_active', 'social_telegram_active', 'social_pinterest_active', 'social_threads_active',
         'contact_email', 'contact_phone', 'contact_open_hours', 'contact_address',
         'payment_methods', 'payment_gateways', 'currency', 'currency_symbol',
         'announcement_rate_tv', 'announcement_rate_radio', 'announcement_rate_both',
@@ -795,7 +840,14 @@ $save = function () use ($logAction) {
         'email_blacklist', 'password_min_length', 'password_complexity_required', 'login_max_attempts', 'login_lockout_duration',
         'seo_nofollow_links', 'seo_strip_links', 'author_reward_rate',
         'email_driver', 'mailgun_domain', 'mailgun_secret', 'mailgun_endpoint', 'brevo_username', 'brevo_api_key',
-        'newsletter_popup_enabled', 'newsletter_popup_title', 'newsletter_popup_description', 'newsletter_popup_delay'
+        'newsletter_popup_enabled', 'newsletter_popup_title', 'newsletter_popup_description', 'newsletter_popup_delay',
+        'email_template_welcome_subject', 'email_template_welcome_body',
+        'email_template_contact_subject', 'email_template_contact_body',
+        'email_template_announcement_subject', 'email_template_announcement_body',
+        'email_template_breaking_subject', 'email_template_breaking_body',
+        'email_template_password_reset_subject', 'email_template_password_reset_body',
+        'email_template_verification_subject', 'email_template_verification_body',
+        'email_template_new_account_subject', 'email_template_new_account_body'
     ];
 
     foreach ($fields as $field) {
@@ -816,6 +868,22 @@ $clearCache = function () use ($logAction) {
     
     $logAction("Cleared system cache tables & mapping structures");
     session()->flash('cache_cleared', 'Application caches cleared successfully.');
+};
+
+$resetArticles = function () use ($logAction) {
+    if (!auth()->user() || !auth()->user()->isAdmin()) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    // Delete all articles (saved_articles, comments, tags, etc. cascade delete)
+    \App\Models\Article::query()->delete();
+
+    // Flush system caches
+    Artisan::call('cache:clear');
+    Artisan::call('view:clear');
+
+    $logAction("Cleaned all articles and related comments from the database");
+    session()->flash('database_reset_success', 'All articles and comments deleted successfully. Website cleaned!');
 };
 
 $getSystemInfo = function () {
@@ -1002,10 +1070,55 @@ $toggleArticlePinned = function ($id, $field) use ($logAction) {
     $this->pinned_articles_list = Article::where('is_pinned', true)->orWhere('is_featured', true)->get();
 };
 
+$sendTestEmail = function () {
+    $this->validate([
+        'test_email_recipient' => 'required|email',
+    ]);
+
+    $this->test_email_status = 'pending|Sending test email...';
+
+    // Temporary override settings based on inputs, so we test CURRENT form values before saving them!
+    if ($this->email_driver === 'brevo') {
+        \Illuminate\Support\Facades\Config::set('mail.default', 'smtp');
+        \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.host', 'smtp-relay.brevo.com');
+        \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.port', 587);
+        \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.username', $this->brevo_username ?: $this->contact_email);
+        \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.password', $this->brevo_api_key);
+        \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.encryption', 'tls');
+    } elseif ($this->email_driver === 'mailgun') {
+        \Illuminate\Support\Facades\Config::set('mail.default', 'mailgun');
+        \Illuminate\Support\Facades\Config::set('services.mailgun.domain', $this->mailgun_domain);
+        \Illuminate\Support\Facades\Config::set('services.mailgun.secret', $this->mailgun_secret);
+        \Illuminate\Support\Facades\Config::set('services.mailgun.endpoint', $this->mailgun_endpoint ?: 'api.mailgun.net');
+    } else {
+        \Illuminate\Support\Facades\Config::set('mail.default', 'smtp');
+        \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.host', $this->smtp_server);
+        \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.port', (int) $this->smtp_port);
+        \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.username', $this->smtp_username);
+        \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.password', $this->smtp_password);
+        \Illuminate\Support\Facades\Config::set('mail.mailers.smtp.encryption', $this->smtp_encryption ?: 'tls');
+    }
+
+    \Illuminate\Support\Facades\Config::set('mail.from.address', $this->smtp_from_email ?: 'no-reply@getembenews.com');
+    \Illuminate\Support\Facades\Config::set('mail.from.name', $this->smtp_from_name ?: 'Getembe News');
+
+    $success = \App\Support\Mailer::sendTestEmail($this->test_email_recipient);
+    if ($success) {
+        $this->test_email_status = "success|Test email sent successfully to " . $this->test_email_recipient;
+    } else {
+        $this->test_email_status = "error|Failed to send test email. Please check your configurations and server settings.";
+    }
+};
+
 ?>
 
 <div class="space-y-6" x-data="{ 
     activeTab: @entangle('activeTab'),
+    email_driver: @entangle('email_driver'),
+    custom_ads_enabled: @entangle('custom_ads_enabled'),
+    adsense_enabled: @entangle('adsense_enabled'),
+    facebook_ads_enabled: @entangle('facebook_ads_enabled'),
+    captcha_driver: @entangle('captcha_driver'),
     saved: false
 }" @settings-saved.window="saved = true; setTimeout(() => saved = false, 3000)">
     
@@ -1019,7 +1132,7 @@ $toggleArticlePinned = function ($id, $field) use ($logAction) {
     </div>
 
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 shadow-sm">
-        <form wire:submit.prevent="save" class="space-y-6">
+        <form wire:submit.prevent="save" class="space-y-6" novalidate>
                 
                 <!-- IDENTITY & THEME TAB -->
                 <div x-show="activeTab === 'identity'" class="space-y-4">
@@ -1177,51 +1290,117 @@ $toggleArticlePinned = function ($id, $field) use ($logAction) {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Website URL</label>
-                            <input type="url" wire:model="website" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <input type="url" wire:model="website" placeholder="https://getembetv.co.ke" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Facebook URL</label>
-                            <input type="url" wire:model="facebook" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Facebook Username / Page</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_facebook_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <input type="text" wire:model="facebook" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Twitter / X URL</label>
-                            <input type="url" wire:model="twitter" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Twitter / X Username</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_twitter_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <input type="text" wire:model="twitter" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Instagram URL</label>
-                            <input type="url" wire:model="instagram" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Instagram Username</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_instagram_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <input type="text" wire:model="instagram" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">LinkedIn URL</label>
-                            <input type="url" wire:model="linkedin" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">LinkedIn Username</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_linkedin_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <input type="text" wire:model="linkedin" placeholder="e.g. company/getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">WhatsApp URL / API Link</label>
-                            <input type="text" wire:model="whatsapp" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">WhatsApp Phone / API Link</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_whatsapp_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <input type="text" wire:model="whatsapp" placeholder="e.g. +254712345678" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">YouTube Channel URL</label>
-                            <input type="url" wire:model="youtube" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">YouTube Channel Username</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_youtube_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <input type="text" wire:model="youtube" placeholder="e.g. @getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">TikTok Profile URL</label>
-                            <input type="url" wire:model="tiktok" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">TikTok Username</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_tiktok_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <input type="text" wire:model="tiktok" placeholder="e.g. @getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Snapchat URL</label>
-                            <input type="url" wire:model="snapchat" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Snapchat Username</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_snapchat_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <input type="text" wire:model="snapchat" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Telegram Channel URL</label>
-                            <input type="url" wire:model="telegram" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Telegram Channel Username</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_telegram_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <input type="text" wire:model="telegram" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Pinterest URL</label>
-                            <input type="url" wire:model="pinterest" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Pinterest Username</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_pinterest_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <input type="text" wire:model="pinterest" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Threads URL</label>
-                            <input type="url" wire:model="threads" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Threads Username</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_threads_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <input type="text" wire:model="threads" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-normal">
                         </div>
                     </div>
                     <div class="space-y-1">
@@ -1373,7 +1552,7 @@ $toggleArticlePinned = function ($id, $field) use ($logAction) {
                     
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Delivery Method</label>
-                        <select wire:model="email_driver" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        <select wire:model.live="email_driver" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                             <option value="smtp">Standard SMTP Relay</option>
                             <option value="mailgun">Mailgun API Integration</option>
                             <option value="brevo">Brevo (Sendinblue) SMTP Relay</option>
@@ -1482,6 +1661,158 @@ $toggleArticlePinned = function ($id, $field) use ($logAction) {
 
                     <div class="pt-4">
                         <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save Email Configurations</button>
+                    </div>
+
+                    <!-- Test Email Form -->
+                    <div class="border-t border-gray-150 dark:border-gray-800 pt-6 mt-6 space-y-4">
+                        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Test SMTP / Email Connection</h4>
+                        
+                        <div class="flex flex-col sm:flex-row items-end gap-3">
+                            <div class="flex-grow space-y-1 w-full">
+                                <label class="text-[10px] font-bold text-gray-400">Recipient Email Address</label>
+                                <input type="email" wire:model="test_email_recipient" placeholder="receiver@example.com" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <button type="button" wire:click="sendTestEmail" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold text-xs px-4 py-2.5 rounded transition border border-gray-300 dark:border-gray-700 shadow-sm whitespace-nowrap">
+                                Send Test Email
+                            </button>
+                        </div>
+
+                        @if($test_email_status)
+                            @php
+                                list($type, $msg) = explode('|', $test_email_status, 2);
+                            @endphp
+                            @if($type === 'success')
+                                <div class="p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900 text-green-700 dark:text-green-400 text-xs rounded">
+                                    {{ $msg }}
+                                </div>
+                            @elseif($type === 'pending')
+                                <div class="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-400 text-xs rounded">
+                                    {{ $msg }}
+                                </div>
+                            @else
+                                <div class="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 text-xs rounded">
+                                    {{ $msg }}
+                                </div>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+
+                <!-- EMAIL TEMPLATES TAB -->
+                <div x-show="activeTab === 'email-templates'" class="space-y-6" style="display: none;">
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">Branded Email Templates Manager</h3>
+
+                    <div class="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded text-xs text-blue-800 dark:text-blue-200">
+                        <strong>Note:</strong> Customize subjects and bodies below. Content supports standard markdown text, paragraphs, and list items. Keep brackets like <code>[Name]</code>, <code>[Subject]</code>, <code>[ID]</code>, <code>[Title]</code>, <code>[Url]</code> intact as they will be replaced dynamically when emails are sent.
+                    </div>
+
+                    <!-- Welcome Confirmation Template -->
+                    <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                        <h4 class="text-xs font-bold text-[#C8102E] uppercase tracking-wide border-b border-gray-200 dark:border-gray-700 pb-1">1. Welcome / Newsletter Signup Confirmation</h4>
+                        <div class="space-y-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Subject</label>
+                                <input type="text" wire:model="email_template_welcome_subject" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Body Content</label>
+                                <textarea wire:model="email_template_welcome_body" rows="4" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs text-gray-900 dark:text-white font-mono"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Form Admin Alert Template -->
+                    <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                        <h4 class="text-xs font-bold text-[#C8102E] uppercase tracking-wide border-b border-gray-200 dark:border-gray-700 pb-1">2. Contact Message Admin Alert</h4>
+                        <div class="space-y-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Subject</label>
+                                <input type="text" wire:model="email_template_contact_subject" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Body Content (Supports placeholder keys: <code>[Name]</code>, <code>[Email]</code>, <code>[Subject]</code>, <code>[Message]</code>)</label>
+                                <textarea wire:model="email_template_contact_body" rows="5" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs text-gray-900 dark:text-white font-mono"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Announcement Status Update Template -->
+                    <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                        <h4 class="text-xs font-bold text-[#C8102E] uppercase tracking-wide border-b border-gray-200 dark:border-gray-700 pb-1">3. Paid Announcement Status Update</h4>
+                        <div class="space-y-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Subject</label>
+                                <input type="text" wire:model="email_template_announcement_subject" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Body Content (Supports placeholder keys: <code>[Name]</code>, <code>[ID]</code>, <code>[Type]</code>, <code>[PaymentStatus]</code>, <code>[Amount]</code>, <code>[ApprovalStatus]</code>, <code>[Content]</code>)</label>
+                                <textarea wire:model="email_template_announcement_body" rows="6" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs text-gray-900 dark:text-white font-mono"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Breaking News Alert Template -->
+                    <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                        <h4 class="text-xs font-bold text-[#C8102E] uppercase tracking-wide border-b border-gray-200 dark:border-gray-700 pb-1">4. Breaking News Subscriber Alert</h4>
+                        <div class="space-y-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Subject</label>
+                                <input type="text" wire:model="email_template_breaking_subject" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Body Content (Supports placeholder keys: <code>[Title]</code>, <code>[Subtitle]</code>)</label>
+                                <textarea wire:model="email_template_breaking_body" rows="5" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs text-gray-900 dark:text-white font-mono"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Reset Template -->
+                    <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                        <h4 class="text-xs font-bold text-[#C8102E] uppercase tracking-wide border-b border-gray-200 dark:border-gray-700 pb-1">5. Password Reset Alert</h4>
+                        <div class="space-y-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Subject</label>
+                                <input type="text" wire:model="email_template_password_reset_subject" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Body Content (The reset password action link button is automatically appended to this template)</label>
+                                <textarea wire:model="email_template_password_reset_body" rows="4" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs text-gray-900 dark:text-white font-mono"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Verification Template -->
+                    <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                        <h4 class="text-xs font-bold text-[#C8102E] uppercase tracking-wide border-b border-gray-200 dark:border-gray-700 pb-1">6. Email Verification Alert</h4>
+                        <div class="space-y-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Subject</label>
+                                <input type="text" wire:model="email_template_verification_subject" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Body Content (The email verification action link button is automatically appended to this template)</label>
+                                <textarea wire:model="email_template_verification_body" rows="4" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs text-gray-900 dark:text-white font-mono"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Staff Account Created Template -->
+                    <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
+                        <h4 class="text-xs font-bold text-[#C8102E] uppercase tracking-wide border-b border-gray-200 dark:border-gray-700 pb-1">7. New Staff Account Notification</h4>
+                        <div class="space-y-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Subject</label>
+                                <input type="text" wire:model="email_template_new_account_subject" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Body Content (Supports placeholder keys: <code>[Name]</code>, <code>[Email]</code>, <code>[Password]</code>, <code>[Role]</code>)</label>
+                                <textarea wire:model="email_template_new_account_body" rows="6" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs text-gray-900 dark:text-white font-mono"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save Templates Configurations</button>
                     </div>
                 </div>
 
@@ -1780,15 +2111,15 @@ $toggleArticlePinned = function ($id, $field) use ($logAction) {
                         <h4 class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wide">Active Channels Selection</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-semibold">
                             <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" wire:model="custom_ads_enabled" class="rounded text-[#C8102E] border-gray-300">
+                                <input type="checkbox" wire:model.live="custom_ads_enabled" class="rounded text-[#C8102E] border-gray-300">
                                 <span class="text-gray-700 dark:text-gray-300">Enable Custom Banners</span>
                             </label>
                             <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" wire:model="adsense_enabled" class="rounded text-[#C8102E] border-gray-300">
+                                <input type="checkbox" wire:model.live="adsense_enabled" class="rounded text-[#C8102E] border-gray-300">
                                 <span class="text-gray-700 dark:text-gray-300">Enable Google AdSense</span>
                             </label>
                             <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="checkbox" wire:model="facebook_ads_enabled" class="rounded text-[#C8102E] border-gray-300">
+                                <input type="checkbox" wire:model.live="facebook_ads_enabled" class="rounded text-[#C8102E] border-gray-300">
                                 <span class="text-gray-700 dark:text-gray-300">Enable Facebook Audience Ads</span>
                             </label>
                         </div>
@@ -1989,7 +2320,7 @@ $toggleArticlePinned = function ($id, $field) use ($logAction) {
                     <div class="bg-gray-50 dark:bg-gray-950 border border-gray-250 dark:border-gray-850 rounded-lg p-4">
                         <h4 class="text-xs font-bold text-gray-800 dark:text-gray-200 uppercase mb-3">System Defined & Custom Roles</h4>
                         <div class="divide-y divide-gray-200 dark:divide-gray-800">
-                            @foreach(json_decode(\App\Models\Setting::get('roles_permissions', '{"admin":{"name":"Administrator","desc":"All permissions access","perms":["all"]},"editor":{"name":"Editor","desc":"Content control and moderation","perms":["content management","article management","category management","comment management","tag management","page management","contact message management"]},"reporter":{"name":"Reporter","desc":"News writer and creator","perms":["article management"]},"contributor":{"name":"Contributor","desc":"Guest writer status","perms":["article management"]},"subscriber":{"name":"Subscriber","desc":"Regular user","perms":[]}}'), true) as $slug => $role)
+                            @foreach(json_decode(\App\Models\Setting::get('roles_permissions', '{"admin":{"name":"Administrator","desc":"All permissions access","perms":["all"]},"editor":{"name":"Editor","desc":"Content control and moderation","perms":["content management","article management","category management","comment management","tag management","page management","contact message management"]},"manager":{"name":"Manager","desc":"Announcement and transaction moderator","perms":["announcement management"]},"author":{"name":"Author","desc":"Article writer and publisher","perms":["writing article"]},"writing-article":{"name":"Writing Article","desc":"Allows writing and managing own articles","perms":["content management","article management","writing article"]},"reporter":{"name":"Reporter","desc":"News writer and creator","perms":["article management"]},"contributor":{"name":"Contributor","desc":"Guest writer status","perms":["article management"]},"subscriber":{"name":"Subscriber","desc":"Regular user","perms":[]}}'), true) as $slug => $role)
                                 <div class="py-2.5 flex justify-between items-center text-xs">
                                     <div>
                                         <div class="font-bold text-gray-900 dark:text-white flex items-center space-x-2">
@@ -2000,7 +2331,7 @@ $toggleArticlePinned = function ($id, $field) use ($logAction) {
                                     </div>
                                     <div class="space-x-3 text-[10px] font-bold">
                                         <button type="button" wire:click="$set('selectedRoleForPermissions', '{{ $slug }}'); loadRolePermissions()" class="text-blue-550 hover:underline">Configure Permissions</button>
-                                        @if(!in_array($slug, ['admin', 'editor', 'reporter', 'contributor', 'subscriber']))
+                                        @if(!in_array($slug, ['admin', 'editor', 'reporter', 'contributor', 'subscriber', 'author', 'manager', 'writing-article']))
                                             <button type="button" wire:click="deleteRole('{{ $slug }}')" class="text-red-550 hover:underline">Delete Role</button>
                                         @endif
                                     </div>
@@ -2452,11 +2783,17 @@ $toggleArticlePinned = function ($id, $field) use ($logAction) {
 
                 <!-- CACHE SYSTEM MANAGEMENT TAB -->
                 <div x-show="activeTab === 'cache'" class="space-y-4" style="display: none;">
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">Cache Clear Controls</h3>
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">Cache & System Maintenance</h3>
                     
                     @if (session()->has('cache_cleared'))
                         <div class="p-3 bg-green-900/10 border border-green-800 text-green-300 text-xs rounded">
                             {{ session('cache_cleared') }}
+                        </div>
+                    @endif
+
+                    @if (session()->has('database_reset_success'))
+                        <div class="p-3 bg-green-900/10 border border-green-800 text-green-300 text-xs rounded">
+                            {{ session('database_reset_success') }}
                         </div>
                     @endif
 
@@ -2477,6 +2814,32 @@ $toggleArticlePinned = function ($id, $field) use ($logAction) {
                         <div class="p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-lg">
                             <span class="text-[10px] font-bold text-gray-400 block uppercase">Object Cache Store</span>
                             <span class="text-gray-800 dark:text-white font-black text-sm">PostgreSQL DB Cache (Ready)</span>
+                        </div>
+                    </div>
+
+                    <!-- Danger Zone: Reset Database -->
+                    <div class="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg space-y-4 mt-6">
+                        <div>
+                            <h4 class="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wide">Danger Zone: Database Reset</h4>
+                            <p class="text-xs text-red-600 dark:text-red-300 mt-1">
+                                Cleans all articles, comments, views, and bookmarks from the database. This action is irreversible. Use this to start with a fresh, clean website.
+                            </p>
+                        </div>
+                        
+                        <div x-data="{ confirming: false }" class="flex items-center space-x-3">
+                            <button type="button" x-show="!confirming" @click="confirming = true" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition shadow-sm">
+                                Clear All Articles & Comments
+                            </button>
+                            
+                            <div x-show="confirming" class="flex items-center space-x-3" x-cloak style="display: none;">
+                                <span class="text-xs font-bold text-red-700 dark:text-red-400">Are you absolutely sure? This will delete all articles!</span>
+                                <button type="button" wire:click="resetArticles" @click="confirming = false" class="bg-red-700 hover:bg-red-800 text-white font-bold text-xs px-3 py-1.5 rounded transition">
+                                    Yes, Delete Everything
+                                </button>
+                                <button type="button" @click="confirming = false" class="bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-3 py-1.5 rounded transition">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

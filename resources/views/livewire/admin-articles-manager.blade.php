@@ -318,6 +318,22 @@ $approve = function ($id) {
     session()->flash('import_success', 'Article approved and published successfully.');
 };
 
+// Action: Send article to newsletter subscribers
+$sendNewsletter = function ($id) {
+    if (!auth()->user()->isAdmin() && !auth()->user()->isEditor()) {
+        abort(403, 'Unauthorized');
+    }
+    $article = Article::findOrFail($id);
+    if ($article->status !== 'published') {
+        session()->flash('import_error', 'Only published articles can be sent as newsletters.');
+        return;
+    }
+
+    $count = \App\Support\Mailer::sendArticleNewsletter($article);
+
+    session()->flash('import_success', "Article newsletter successfully sent to {$count} active subscribers.");
+};
+
 // Action: Import bulk posts via CSV
 $importArticles = function () {
     if (!$this->uploaded_articles_file) {
@@ -556,6 +572,9 @@ $generateIdeas = function () {
                             <td class="p-3 text-right space-x-2">
                                 @if($article->status === 'pending' && (auth()->user()->isAdmin() || auth()->user()->isEditor()))
                                     <button type="button" wire:click="approve({{ $article->id }})" class="text-green-600 font-bold hover:underline">Approve</button>
+                                @endif
+                                @if($article->status === 'published' && (auth()->user()->isAdmin() || auth()->user()->isEditor()))
+                                    <button type="button" wire:click="sendNewsletter({{ $article->id }})" wire:confirm="Are you sure you want to send this article to all newsletter subscribers?" class="text-blue-650 font-bold hover:underline">Send Newsletter</button>
                                 @endif
                                 <button type="button" wire:click="edit({{ $article->id }})" class="text-[#C8102E] font-bold hover:underline">Edit</button>
                                 <button type="button" wire:click="delete({{ $article->id }})" wire:confirm="Are you sure you want to delete this article?" class="text-red-500 font-bold hover:underline">Delete</button>

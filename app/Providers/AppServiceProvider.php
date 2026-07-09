@@ -46,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
             'language management',
             'roles and permissions management',
             'article management',
+            'writing article',
             'category management',
             'tag management',
             'comment management',
@@ -65,9 +66,15 @@ class AppServiceProvider extends ServiceProvider
         ];
 
         foreach ($permissions as $permission) {
-            \Illuminate\Support\Facades\Gate::define($permission, function (\App\Models\User $user) use ($permission) {
-                return $user->hasPermission($permission);
-            });
+            if ($permission === 'article management') {
+                \Illuminate\Support\Facades\Gate::define('article management', function (\App\Models\User $user) {
+                    return $user->hasPermission('article management') || $user->hasPermission('writing article');
+                });
+            } else {
+                \Illuminate\Support\Facades\Gate::define($permission, function (\App\Models\User $user) use ($permission) {
+                    return $user->hasPermission($permission);
+                });
+            }
         }
     }
 }

@@ -73,7 +73,11 @@
                 <span class="bg-[#C8102E] text-white font-extrabold text-lg px-1.5 py-0.5 rounded tracking-tighter">{{ substr($firstWord, 0, 1) }}</span>
                 <span class="font-serif font-black text-sm tracking-tight text-white">{{ $firstWord }} <span class="text-[#C8102E]">{{ $secondWord }}</span></span>
             </a>
+            @if(auth()->user()->isAdmin())
             <span class="text-[9px] bg-gray-800 text-gray-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">ADMIN</span>
+            @else
+            <span class="text-[9px] bg-gray-800 text-gray-500 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">{{ strtoupper(str_replace('-', ' ', auth()->user()->role)) }}</span>
+            @endif
         </div>
 
         <!-- Navigation Links -->
@@ -143,6 +147,7 @@
             </div>
 
             <!-- Section: Users & Inbox -->
+            @if(auth()->user()->can('user management') || auth()->user()->can('contact message management') || auth()->user()->can('subscription management') || auth()->user()->can('announcement management'))
             <div class="space-y-1">
                 <div class="text-[9px] uppercase tracking-wider font-extrabold text-gray-500 pl-2">Users & Mail</div>
 
@@ -199,8 +204,10 @@
                 </a>
                 @endcan
             </div>
+            @endif
 
             <!-- Section: System Settings -->
+            @if(auth()->user()->can('settings management') || auth()->user()->can('email management') || auth()->user()->can('social login management') || auth()->user()->can('payment management') || auth()->user()->can('seo management'))
             <div class="space-y-1">
                 <div class="text-[9px] uppercase tracking-wider font-extrabold text-gray-500 pl-2">System Config</div>
 
@@ -252,11 +259,17 @@
                 @endcan
 
                 @can('email management')
-                <a href="/admin/settings/email" class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition {{ request()->is('admin/settings/email*') ? 'bg-gray-800 text-white border-l-4 border-[#C8102E] pl-2' : '' }}">
+                <a href="/admin/settings/email" class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition {{ request()->is('admin/settings/email') ? 'bg-gray-800 text-white border-l-4 border-[#C8102E] pl-2' : '' }}">
                     <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l8-5.333a2 2 0 012.22 0l8 5.333A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-2.25-1.5a2 2 0 00-2.22 0l-2.25 1.5"/>
                     </svg>
                     <span>SMTP Mail Server</span>
+                </a>
+                <a href="/admin/settings/email-templates" class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition {{ request()->is('admin/settings/email-templates') ? 'bg-gray-800 text-white border-l-4 border-[#C8102E] pl-2' : '' }}">
+                    <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    <span>Email Templates</span>
                 </a>
                 @endcan
 
@@ -300,8 +313,10 @@
                 </a>
                 @endcan
             </div>
+            @endif
 
             <!-- Section: Engagement & Interactive -->
+            @if(auth()->user()->can('polls management') || auth()->user()->can('quizzes management') || auth()->user()->can('rss management'))
             <div class="space-y-1">
                 <div class="text-[9px] uppercase tracking-wider font-extrabold text-gray-500 pl-2">Engagement</div>
 
@@ -332,8 +347,10 @@
                 </a>
                 @endcan
             </div>
+            @endif
 
             <!-- Section: System Tools -->
+            @if(auth()->user()->can('roles and permissions management') || auth()->user()->can('webhooks management') || auth()->user()->can('api keys management') || auth()->user()->can('cache management') || auth()->user()->can('backup management') || auth()->user()->can('audit logs management'))
             <div class="space-y-1">
                 <div class="text-[9px] uppercase tracking-wider font-extrabold text-gray-500 pl-2">System Tools</div>
 
@@ -391,6 +408,7 @@
                 </a>
                 @endcan
             </div>
+            @endif
             <hr class="border-gray-800 my-4">
             <a href="/" class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition">
                 <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

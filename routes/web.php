@@ -231,7 +231,25 @@ Route::get('/run-migrations', function () {
 Route::get('/run-seeders', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-        return 'Database seeders completed successfully! Default admin accounts, roles, categories, and settings have been generated.';
+        
+        // Convert any absolute localhost storage URLs to clean relative paths
+        \App\Models\Article::all()->each(function ($article) {
+            if (str_contains($article->featured_image, '/storage/')) {
+                $parts = explode('/storage/', $article->featured_image);
+                $article->featured_image = '/storage/' . end($parts);
+                $article->save();
+            }
+        });
+        
+        \App\Models\Media::all()->each(function ($media) {
+            if (str_contains($media->url, '/storage/')) {
+                $parts = explode('/storage/', $media->url);
+                $media->url = '/storage/' . end($parts);
+                $media->save();
+            }
+        });
+
+        return 'Database seeders and local asset URLs cleanup completed successfully!';
     } catch (\Exception $e) {
         return 'Error during seeding: ' . $e->getMessage();
     }

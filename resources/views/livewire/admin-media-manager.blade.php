@@ -31,7 +31,7 @@ $upload = function () {
     
     // Store in public/uploads directory
     $path = $this->uploadedFile->storeAs('uploads', $cleanName, 'public');
-    $url = Storage::disk('public')->url($path);
+    $url = '/storage/' . $path;
 
     Media::create([
         'filename' => $originalName,

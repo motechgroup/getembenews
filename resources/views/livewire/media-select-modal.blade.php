@@ -38,7 +38,7 @@ $uploadFile = function () {
     
     $cleanName = time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '', $originalName);
     $path = $this->uploadedFile->storeAs('uploads', $cleanName, 'public');
-    $url = Storage::disk('public')->url($path);
+    $url = '/storage/' . $path;
 
     $media = Media::create([
         'filename' => $originalName,

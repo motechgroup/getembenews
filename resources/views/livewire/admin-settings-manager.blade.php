@@ -245,11 +245,13 @@ state([
     'newTvTitle' => '',
     'newTvDesc' => '',
     'newTvDaily' => false,
+    'newTvDays' => [],
 
     'newRadioTime' => '',
     'newRadioTitle' => '',
     'newRadioDesc' => '',
     'newRadioDaily' => false,
+    'newRadioDays' => [],
 
     // Security & Privacy Settings States
     'captcha_driver' => fn() => Setting::get('captcha_driver', 'none'),
@@ -694,8 +696,8 @@ $restoreBackup = function ($id, $name) use ($logAction) {
 
 $addTvProgram = function () {
     if (!$this->newTvTime || !$this->newTvTitle) return;
-    $days = $this->newTvDaily 
-        ? ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] 
+    $days = !empty($this->newTvDays) 
+        ? $this->newTvDays 
         : [$this->activeScheduleDay];
 
     foreach ($days as $day) {
@@ -713,6 +715,7 @@ $addTvProgram = function () {
     $this->newTvTitle = '';
     $this->newTvDesc = '';
     $this->newTvDaily = false;
+    $this->newTvDays = [];
 };
 
 $removeTvProgram = function ($index) {
@@ -730,10 +733,25 @@ $setTvPlaying = function ($index) {
     }
 };
 
+$changeTvProgramDay = function ($fromDay, $index, $toDay) {
+    if ($fromDay === $toDay) return;
+    if (!isset($this->tv_schedule[$fromDay][$index])) return;
+
+    $item = $this->tv_schedule[$fromDay][$index];
+    unset($this->tv_schedule[$fromDay][$index]);
+    $this->tv_schedule[$fromDay] = array_values($this->tv_schedule[$fromDay]);
+
+    if (!isset($this->tv_schedule[$toDay])) {
+        $this->tv_schedule[$toDay] = [];
+    }
+    $this->tv_schedule[$toDay][] = $item;
+    $this->activeScheduleDay = $toDay;
+};
+
 $addRadioProgram = function () {
     if (!$this->newRadioTime || !$this->newRadioTitle) return;
-    $days = $this->newRadioDaily 
-        ? ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] 
+    $days = !empty($this->newRadioDays) 
+        ? $this->newRadioDays 
         : [$this->activeScheduleDay];
 
     foreach ($days as $day) {
@@ -751,6 +769,7 @@ $addRadioProgram = function () {
     $this->newRadioTitle = '';
     $this->newRadioDesc = '';
     $this->newRadioDaily = false;
+    $this->newRadioDays = [];
 };
 
 $removeRadioProgram = function ($index) {
@@ -766,6 +785,21 @@ $setRadioPlaying = function ($index) {
             $this->radio_schedule[$d][$i]['is_playing'] = ($d === $day && $i === $index);
         }
     }
+};
+
+$changeRadioProgramDay = function ($fromDay, $index, $toDay) {
+    if ($fromDay === $toDay) return;
+    if (!isset($this->radio_schedule[$fromDay][$index])) return;
+
+    $item = $this->radio_schedule[$fromDay][$index];
+    unset($this->radio_schedule[$fromDay][$index]);
+    $this->radio_schedule[$fromDay] = array_values($this->radio_schedule[$fromDay]);
+
+    if (!isset($this->radio_schedule[$toDay])) {
+        $this->radio_schedule[$toDay] = [];
+    }
+    $this->radio_schedule[$toDay][] = $item;
+    $this->activeScheduleDay = $toDay;
 };
 
 // Save standard settings form
@@ -2946,24 +2980,31 @@ $sendTestEmail = function () {
                             <!-- Left: List -->
                             <div class="lg:col-span-2 space-y-3">
                                 <h4 class="text-xs font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider">TV Program Slots ({{ ucfirst($activeScheduleDay) }})</h4>
-                                <div class="space-y-3">
-                                    @forelse(($tv_schedule[$activeScheduleDay] ?? []) as $index => $item)
-                                        <div class="p-4 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-lg flex flex-col gap-3 text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
-                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
-                                                <div>
+                                <div class="space                                    @forelse(($tv_schedule[$activeScheduleDay] ?? []) as $index => $item)
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-855 rounded-lg flex flex-col gap-3 text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
+                                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 w-full">
+                                                <div class="sm:col-span-3">
                                                     <label class="text-[9px] font-bold text-gray-450 uppercase block mb-0.5">Time</label>
                                                     <input type="text" wire:model="tv_schedule.{{ $activeScheduleDay }}.{{ $index }}.time" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                                                 </div>
-                                                <div>
+                                                <div class="sm:col-span-3">
+                                                    <label class="text-[9px] font-bold text-gray-450 uppercase block mb-0.5">Day</label>
+                                                    <select wire:change="changeTvProgramDay('{{ $activeScheduleDay }}', {{ $index }}, $event.target.value)" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none font-bold">
+                                                        @foreach(['monday' => 'Monday', 'tuesday' => 'Tuesday', 'wednesday' => 'Wednesday', 'thursday' => 'Thursday', 'friday' => 'Friday', 'saturday' => 'Saturday', 'sunday' => 'Sunday'] as $dayVal => $dayName)
+                                                            <option value="{{ $dayVal }}" {{ $activeScheduleDay === $dayVal ? 'selected' : '' }}>{{ $dayName }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="sm:col-span-3">
                                                     <label class="text-[9px] font-bold text-gray-450 uppercase block mb-0.5">Title</label>
                                                     <input type="text" wire:model="tv_schedule.{{ $activeScheduleDay }}.{{ $index }}.title" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                                                 </div>
-                                                <div>
+                                                <div class="sm:col-span-3">
                                                     <label class="text-[9px] font-bold text-gray-450 uppercase block mb-0.5">Description</label>
                                                     <input type="text" wire:model="tv_schedule.{{ $activeScheduleDay }}.{{ $index }}.desc" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                                                 </div>
                                             </div>
-                                            <div class="flex items-center justify-between border-t border-gray-150 dark:border-gray-850 pt-2 text-[10px] font-bold">
+                                            <div class="flex items-center justify-between border-t border-gray-150 dark:border-gray-855 pt-2 text-[10px] font-bold">
                                                 <div>
                                                     @if($item['is_playing'] ?? false)
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded bg-red-100 text-red-850 dark:bg-red-950/20 dark:text-[#C8102E]">ON AIR</span>
@@ -2998,9 +3039,16 @@ $sendTestEmail = function () {
                                         <label class="text-[10px] font-bold text-gray-400">Short Description</label>
                                         <textarea wire:model="newTvDesc" rows="2" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none"></textarea>
                                     </div>
-                                    <div class="flex items-center space-x-2 py-1">
-                                        <input type="checkbox" id="newTvDaily" wire:model="newTvDaily" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E]">
-                                        <label for="newTvDaily" class="text-[10px] font-bold text-gray-600 dark:text-gray-400 cursor-pointer select-none">Apply to all days (Daily Show)</label>
+                                    <div class="space-y-1 py-1">
+                                        <label class="text-[10px] font-bold text-gray-400 block">Select Days (Defaults to current day if none selected)</label>
+                                        <div class="grid grid-cols-3 gap-1">
+                                            @foreach(['monday' => 'Mon', 'tuesday' => 'Tue', 'wednesday' => 'Wed', 'thursday' => 'Thu', 'friday' => 'Fri', 'saturday' => 'Sat', 'sunday' => 'Sun'] as $dayVal => $dayLabel)
+                                                <label class="flex items-center space-x-1.5 text-[9px] font-bold text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+                                                    <input type="checkbox" value="{{ $dayVal }}" wire:model="newTvDays" class="rounded border-gray-300 dark:border-gray-700 text-[#cc6c3b] focus:ring-[#cc6c3b]">
+                                                    <span>{{ $dayLabel }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
                                     </div>
                                     <button type="button" wire:click="addTvProgram" class="w-full bg-gray-900 hover:bg-gray-855 text-white font-bold text-[11px] py-1.5 rounded transition">Add Program</button>
                                 </div>
@@ -3011,25 +3059,33 @@ $sendTestEmail = function () {
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <!-- Left: List -->
                             <div class="lg:col-span-2 space-y-3">
-                                <h4 class="text-xs font-bold text-gray-550 dark:text-gray-400 uppercase tracking-wider">Radio Program Slots ({{ ucfirst($activeScheduleDay) }})</h4>
+                                <h4 class="text-xs font-bold text-gray-555 dark:text-gray-400 uppercase tracking-wider">Radio Program Slots ({{ ucfirst($activeScheduleDay) }})</h4>
                                 <div class="space-y-3">
                                     @forelse(($radio_schedule[$activeScheduleDay] ?? []) as $index => $item)
                                         <div class="p-4 bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg flex flex-col gap-3 text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
-                                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
-                                                <div>
+                                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 w-full">
+                                                <div class="sm:col-span-3">
                                                     <label class="text-[9px] font-bold text-gray-455 uppercase block mb-0.5">Time</label>
                                                     <input type="text" wire:model="radio_schedule.{{ $activeScheduleDay }}.{{ $index }}.time" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                                                 </div>
-                                                <div>
+                                                <div class="sm:col-span-3">
+                                                    <label class="text-[9px] font-bold text-gray-455 uppercase block mb-0.5">Day</label>
+                                                    <select wire:change="changeRadioProgramDay('{{ $activeScheduleDay }}', {{ $index }}, $event.target.value)" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none font-bold">
+                                                        @foreach(['monday' => 'Monday', 'tuesday' => 'Tuesday', 'wednesday' => 'Wednesday', 'thursday' => 'Thursday', 'friday' => 'Friday', 'saturday' => 'Saturday', 'sunday' => 'Sunday'] as $dayVal => $dayName)
+                                                            <option value="{{ $dayVal }}" {{ $activeScheduleDay === $dayVal ? 'selected' : '' }}>{{ $dayName }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="sm:col-span-3">
                                                     <label class="text-[9px] font-bold text-gray-455 uppercase block mb-0.5">Title</label>
                                                     <input type="text" wire:model="radio_schedule.{{ $activeScheduleDay }}.{{ $index }}.title" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                                                 </div>
-                                                <div>
+                                                <div class="sm:col-span-3">
                                                     <label class="text-[9px] font-bold text-gray-455 uppercase block mb-0.5">Description</label>
                                                     <input type="text" wire:model="radio_schedule.{{ $activeScheduleDay }}.{{ $index }}.desc" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                                                 </div>
                                             </div>
-                                            <div class="flex items-center justify-between border-t border-gray-150 dark:border-gray-850 pt-2 text-[10px] font-bold">
+                                            <div class="flex items-center justify-between border-t border-gray-150 dark:border-gray-855 pt-2 text-[10px] font-bold">
                                                 <div>
                                                     @if($item['is_playing'] ?? false)
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded bg-red-100 text-red-855 dark:bg-red-950/20 dark:text-[#C8102E]">ON AIR</span>
@@ -3050,7 +3106,7 @@ $sendTestEmail = function () {
                             </div>
                             <!-- Right: Add Form -->
                             <div class="bg-gray-50 dark:bg-gray-955 p-4 border border-gray-200 dark:border-gray-855 rounded-lg space-y-3 h-fit">
-                                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Add Radio Program Slot</h4>
+                                <h4 class="text-xs font-bold text-gray-550 uppercase tracking-wider">Add Radio Program Slot</h4>
                                 <div class="space-y-2">
                                     <div class="space-y-1">
                                         <label class="text-[10px] font-bold text-gray-400">Time Slot (e.g. 01:00 PM - 04:00 PM)</label>
@@ -3064,9 +3120,16 @@ $sendTestEmail = function () {
                                         <label class="text-[10px] font-bold text-gray-400">Short Description</label>
                                         <textarea wire:model="newRadioDesc" rows="2" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none"></textarea>
                                     </div>
-                                    <div class="flex items-center space-x-2 py-1">
-                                        <input type="checkbox" id="newRadioDaily" wire:model="newRadioDaily" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E]">
-                                        <label for="newRadioDaily" class="text-[10px] font-bold text-gray-600 dark:text-gray-400 cursor-pointer select-none">Apply to all days (Daily Show)</label>
+                                    <div class="space-y-1 py-1">
+                                        <label class="text-[10px] font-bold text-gray-400 block">Select Days (Defaults to current day if none selected)</label>
+                                        <div class="grid grid-cols-3 gap-1">
+                                            @foreach(['monday' => 'Mon', 'tuesday' => 'Tue', 'wednesday' => 'Wed', 'thursday' => 'Thu', 'friday' => 'Fri', 'saturday' => 'Sat', 'sunday' => 'Sun'] as $dayVal => $dayLabel)
+                                                <label class="flex items-center space-x-1.5 text-[9px] font-bold text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+                                                    <input type="checkbox" value="{{ $dayVal }}" wire:model="newRadioDays" class="rounded border-gray-300 dark:border-gray-700 text-[#cc6c3b] focus:ring-[#cc6c3b]">
+                                                    <span>{{ $dayLabel }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
                                     </div>
                                     <button type="button" wire:click="addRadioProgram" class="w-full bg-gray-900 hover:bg-gray-855 text-white font-bold text-[11px] py-1.5 rounded transition">Add Program</button>
                                 </div>

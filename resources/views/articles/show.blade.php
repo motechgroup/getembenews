@@ -144,8 +144,19 @@
 
                     @if(!empty($article->format_meta['video_url']))
                         <!-- Video Display -->
+                        @php
+                            $videoUrl = $article->format_meta['video_url'];
+                            // YouTube Link Conversion
+                            if (preg_match('%(?:youtube\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $videoUrl, $match)) {
+                                $videoUrl = "https://www.youtube.com/embed/" . $match[1];
+                            }
+                            // Vimeo Link Conversion
+                            elseif (preg_match('%vimeo\.com/(?:channels/(?:\w+/)?|groups/(?:[^\/]*)/videos/|album/(?:\d+)/video/|video/|)(\d+)(?:$|/|\?)%i', $videoUrl, $match)) {
+                                $videoUrl = "https://player.vimeo.com/video/" . $match[1];
+                            }
+                        @endphp
                         <div class="aspect-video w-full rounded-lg overflow-hidden bg-black border border-gray-200 dark:border-gray-800 mb-6">
-                            <iframe src="{{ $article->format_meta['video_url'] }}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                            <iframe src="{{ $videoUrl }}" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                         </div>
                     @endif
 

@@ -91,9 +91,10 @@ $create = function () {
     $this->resetErrorBag();
     $this->reset([
         'articleId', 'title', 'slug', 'subtitle', 'body', 'featured_image',
-        'category_id', 'selectedCategories', 'status', 'is_featured', 'is_breaking', 'is_pinned',
+        'category_id', 'status', 'is_featured', 'is_breaking', 'is_pinned',
         'seo_title', 'seo_description', 'format', 'format_meta', 'faq_items', 'downloads', 'tags_input', 'published_at'
     ]);
+    $this->selectedCategories = [];
     
     // Set default category if possible
     $firstCat = Category::first();
@@ -137,7 +138,7 @@ $edit = function ($id) {
     $this->body = $article->body;
     $this->featured_image = $article->featured_image;
     $this->category_id = $article->category_id;
-    $this->selectedCategories = $article->categories()->pluck('categories.id')->toArray();
+    $this->selectedCategories = $article->categories()->pluck('categories.id')->map(fn($id) => (string)$id)->toArray() ?: [];
     $this->status = $article->status;
     $this->is_featured = $article->is_featured;
     $this->is_breaking = $article->is_breaking;
@@ -261,9 +262,10 @@ $save = function () {
     $this->isEditing = false;
     $this->reset([
         'articleId', 'title', 'slug', 'subtitle', 'body', 'featured_image',
-        'category_id', 'selectedCategories', 'status', 'is_featured', 'is_breaking', 'is_pinned',
+        'category_id', 'status', 'is_featured', 'is_breaking', 'is_pinned',
         'seo_title', 'seo_description', 'format', 'format_meta', 'faq_items', 'downloads', 'tags_input', 'published_at'
     ]);
+    $this->selectedCategories = [];
 };
 
 $addFaqItem = function () {

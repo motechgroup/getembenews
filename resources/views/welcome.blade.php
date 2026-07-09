@@ -588,6 +588,36 @@
             @if(\App\Models\Setting::get('live_tv_active', '1') == '1')
             @php
                 $tvUrl = \App\Models\Setting::get('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE');
+                $tvSchedule = \App\Models\Setting::get('tv_schedule', []);
+                $currentDay = strtolower(now()->format('l'));
+                $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                $defaultTvFlat = [
+                    ['time' => '06:00 AM - 09:00 AM', 'title' => 'Getembe Morning Call', 'desc' => 'Breakfast news and newspaper review.', 'is_playing' => false],
+                    ['time' => '09:00 AM - 12:00 PM', 'title' => 'Business Daily', 'desc' => 'Economic trends, stock updates, and trade discussion.', 'is_playing' => false],
+                    ['time' => '12:00 PM - 02:00 PM', 'title' => 'News Hour Live', 'desc' => 'Midday headlines, market check, and regional briefs.', 'is_playing' => true],
+                    ['time' => '02:00 PM - 04:00 PM', 'title' => 'Health & Sports Highlights', 'desc' => 'Wellness insights and sporting roundups.', 'is_playing' => false],
+                    ['time' => '04:00 PM - 07:00 PM', 'title' => 'Regional News Express', 'desc' => 'Community spotlights and county assembly briefings.', 'is_playing' => false],
+                    ['time' => '07:00 PM - 09:00 PM', 'title' => 'Evening Prime Time News', 'desc' => 'Comprehensive summary of the day\'s major events.', 'is_playing' => false],
+                    ['time' => '09:00 PM - 11:00 PM', 'title' => 'Late Night Spotlight', 'desc' => 'Documentary film showcases and talkshows.', 'is_playing' => false]
+                ];
+                if (!is_array($tvSchedule) || empty($tvSchedule)) {
+                    $tvSchedule = array_fill_keys($days, $defaultTvFlat);
+                } else {
+                    $isGrouped = true;
+                    foreach ($days as $day) {
+                        if (!isset($tvSchedule[$day])) {
+                            $isGrouped = false; break;
+                        }
+                    }
+                    if (!$isGrouped) {
+                        $tvSchedule = array_fill_keys($days, $tvSchedule);
+                    }
+                }
+                $todaySchedule = $tvSchedule[$currentDay] ?? [];
+                $currentlyPlayingShow = collect($todaySchedule)->firstWhere('is_playing', true) ?? [
+                    'title' => 'Getembe Live Broadcast',
+                    'desc' => 'Broadcasting live from Getembe newsroom, Kisii, Kenya. Stay tuned for breaking bulletins, political debates, and regional briefs.'
+                ];
             @endphp
             <div class="bg-gray-950 text-white rounded-lg p-6 sm:p-8 space-y-6 border border-gray-850 mt-10">
                 <div class="flex justify-between items-center border-b border-gray-850 pb-3">
@@ -617,8 +647,8 @@
                         <div class="bg-gray-900 p-4 border border-gray-855 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div>
                                 <span class="text-[9px] font-black text-red-500 uppercase tracking-widest block mb-0.5">Live Broadcast</span>
-                                <h4 class="text-sm font-bold text-white">Currently Playing: <span class="text-[#FF7900]">News Hour Live</span></h4>
-                                <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">Broadcasting live from Getembe newsroom, Kisii, Kenya. Stay tuned for breaking bulletins, political debates, and regional briefs.</p>
+                                <h4 class="text-sm font-bold text-white">Currently Playing: <span class="text-[#FF7900]">{{ $currentlyPlayingShow['title'] }}</span></h4>
+                                <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">{{ $currentlyPlayingShow['desc'] }}</p>
                             </div>
                         </div>
                     </div>
@@ -630,58 +660,24 @@
                         </h3>
                         
                         <div class="space-y-4 text-[11px] overflow-y-auto max-h-[300px] scrollbar-none pr-1">
-                            <div class="flex items-start space-x-3 text-gray-400">
-                                <span class="font-bold w-20 shrink-0 text-gray-500">06:00 - 09:00</span>
-                                <div>
-                                    <h4 class="font-bold text-gray-300">Getembe Morning Call</h4>
-                                    <p class="text-[10px] text-gray-500">Breakfast news and newspaper review.</p>
+                            @forelse($todaySchedule as $item)
+                                <div class="flex items-start space-x-3 {{ ($item['is_playing'] ?? false) ? 'bg-red-950/20 border-l-2 border-red-600 pl-2 py-1' : 'text-gray-400' }}">
+                                    <span class="font-bold w-24 shrink-0 {{ ($item['is_playing'] ?? false) ? 'text-red-500' : 'text-gray-500' }}">{{ $item['time'] }}</span>
+                                    <div>
+                                        <h4 class="font-bold {{ ($item['is_playing'] ?? false) ? 'text-white flex items-center space-x-1.5' : 'text-gray-300' }}">
+                                            <span>{{ $item['title'] }}</span>
+                                            @if($item['is_playing'] ?? false)
+                                                <span class="inline-block w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></span>
+                                            @endif
+                                        </h4>
+                                        <p class="text-[10px] {{ ($item['is_playing'] ?? false) ? 'text-gray-400' : 'text-gray-550' }}">{{ $item['desc'] }}</p>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3 text-gray-400">
-                                <span class="font-bold w-20 shrink-0 text-gray-500">09:00 - 12:00</span>
-                                <div>
-                                    <h4 class="font-bold text-gray-300">Business Daily</h4>
-                                    <p class="text-[10px] text-gray-550">Economic trends, stock updates, and trade discussion.</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3 bg-red-950/20 border-l-2 border-red-600 pl-2 py-1">
-                                <span class="font-bold w-20 shrink-0 text-red-500">12:00 - 14:00</span>
-                                <div>
-                                    <h4 class="font-bold text-white flex items-center space-x-1.5">
-                                        <span>News Hour Live</span>
-                                        <span class="inline-block w-1.5 h-1.5 bg-red-600 rounded-full animate-pulse"></span>
-                                    </h4>
-                                    <p class="text-[10px] text-gray-400">Midday headlines, market check, and regional briefs.</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3 text-gray-400">
-                                <span class="font-bold w-20 shrink-0 text-gray-500">14:00 - 16:00</span>
-                                <div>
-                                    <h4 class="font-bold text-gray-300">Health & Sports Highlights</h4>
-                                    <p class="text-[10px] text-gray-550">Wellness insights and sporting roundups.</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3 text-gray-400">
-                                <span class="font-bold w-20 shrink-0 text-gray-500">16:00 - 19:00</span>
-                                <div>
-                                    <h4 class="font-bold text-gray-300">Regional News Express</h4>
-                                    <p class="text-[10px] text-gray-555">Community spotlights and county assembly briefings.</p>
-                                </div>
-                            </div>
-
-                            <div class="flex items-start space-x-3 text-gray-400">
-                                <span class="font-bold w-20 shrink-0 text-gray-500">19:00 - 21:00</span>
-                                <div>
-                                    <h4 class="font-bold text-gray-300">Evening Prime Time News</h4>
-                                    <p class="text-[10px] text-gray-555">Comprehensive summary of major regional events.</p>
-                                </div>
-                            </div>
-                        </div>
+                            @empty
+                                <p class="text-gray-500 text-center py-4">No programs scheduled for today.</p>
+                            @endforelse
                     </div>
+                </div>
                 </div>
             </div>
             @endif

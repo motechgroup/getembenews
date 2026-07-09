@@ -244,10 +244,12 @@ state([
     'newTvTime' => '',
     'newTvTitle' => '',
     'newTvDesc' => '',
+    'newTvDaily' => false,
 
     'newRadioTime' => '',
     'newRadioTitle' => '',
     'newRadioDesc' => '',
+    'newRadioDaily' => false,
 
     // Security & Privacy Settings States
     'captcha_driver' => fn() => Setting::get('captcha_driver', 'none'),
@@ -304,21 +306,21 @@ mount(function ($activeTab = 'identity') {
     $this->activeTab = $activeTab;
 
     $defaultTvFlat = [
-        ['time' => '06:00 - 09:00', 'title' => 'Getembe Morning Call', 'desc' => 'Breakfast news and newspaper review.', 'is_playing' => false],
-        ['time' => '09:00 - 12:00', 'title' => 'Business Daily', 'desc' => 'Economic trends, stock updates, and trade discussion.', 'is_playing' => false],
-        ['time' => '12:00 - 14:00', 'title' => 'News Hour Live', 'desc' => 'Midday headlines, market check, and regional briefs.', 'is_playing' => true],
-        ['time' => '14:00 - 16:00', 'title' => 'Health & Sports Highlights', 'desc' => 'Wellness insights and sporting roundups.', 'is_playing' => false],
-        ['time' => '16:00 - 19:00', 'title' => 'Regional News Express', 'desc' => 'Community spotlights and county assembly briefings.', 'is_playing' => false],
-        ['time' => '19:00 - 21:00', 'title' => 'Evening Prime Time News', 'desc' => 'Comprehensive summary of the day\'s major events.', 'is_playing' => false],
-        ['time' => '21:00 - 23:00', 'title' => 'Late Night Spotlight', 'desc' => 'Documentary film showcases and talkshows.', 'is_playing' => false]
+        ['time' => '06:00 AM - 09:00 AM', 'title' => 'Getembe Morning Call', 'desc' => 'Breakfast news and newspaper review.', 'is_playing' => false],
+        ['time' => '09:00 AM - 12:00 PM', 'title' => 'Business Daily', 'desc' => 'Economic trends, stock updates, and trade discussion.', 'is_playing' => false],
+        ['time' => '12:00 PM - 02:00 PM', 'title' => 'News Hour Live', 'desc' => 'Midday headlines, market check, and regional briefs.', 'is_playing' => true],
+        ['time' => '02:00 PM - 04:00 PM', 'title' => 'Health & Sports Highlights', 'desc' => 'Wellness insights and sporting roundups.', 'is_playing' => false],
+        ['time' => '04:00 PM - 07:00 PM', 'title' => 'Regional News Express', 'desc' => 'Community spotlights and county assembly briefings.', 'is_playing' => false],
+        ['time' => '07:00 PM - 09:00 PM', 'title' => 'Evening Prime Time News', 'desc' => 'Comprehensive summary of the day\'s major events.', 'is_playing' => false],
+        ['time' => '09:00 PM - 11:00 PM', 'title' => 'Late Night Spotlight', 'desc' => 'Documentary film showcases and talkshows.', 'is_playing' => false]
     ];
 
     $defaultRadioFlat = [
-        ['time' => '06:00 - 10:00', 'title' => 'The Morning Drive', 'desc' => 'Kickstart the day with updates and music.', 'is_playing' => false],
-        ['time' => '10:00 - 13:00', 'title' => 'Midday Request Show', 'desc' => 'Listener choices, request lines, and interviews.', 'is_playing' => false],
-        ['time' => '13:00 - 16:00', 'title' => 'Getembe Express Drive', 'desc' => 'Mid-afternoon drive show with regional topics and guest experts.', 'is_playing' => true],
-        ['time' => '16:00 - 20:00', 'title' => 'Evening Jam & Sports', 'desc' => 'Local sports bulletins and afternoon reviews.', 'is_playing' => false],
-        ['time' => '20:00 - 00:00', 'title' => 'Late Night Soul Session', 'desc' => 'Slow jams, classic tracks, and quiet storm conversations.', 'is_playing' => false]
+        ['time' => '06:00 AM - 10:00 AM', 'title' => 'The Morning Drive', 'desc' => 'Kickstart the day with updates and music.', 'is_playing' => false],
+        ['time' => '10:00 AM - 01:00 PM', 'title' => 'Midday Request Show', 'desc' => 'Listener choices, request lines, and interviews.', 'is_playing' => false],
+        ['time' => '01:00 PM - 04:00 PM', 'title' => 'Getembe Express Drive', 'desc' => 'Mid-afternoon drive show with regional topics and guest experts.', 'is_playing' => true],
+        ['time' => '04:00 PM - 08:00 PM', 'title' => 'Evening Jam & Sports', 'desc' => 'Local sports bulletins and afternoon reviews.', 'is_playing' => false],
+        ['time' => '08:00 PM - 12:00 AM', 'title' => 'Late Night Soul Session', 'desc' => 'Slow jams, classic tracks, and quiet storm conversations.', 'is_playing' => false]
     ];
 
     $normalizeSchedule = function ($schedule, $defaultFlat) {
@@ -692,19 +694,25 @@ $restoreBackup = function ($id, $name) use ($logAction) {
 
 $addTvProgram = function () {
     if (!$this->newTvTime || !$this->newTvTitle) return;
-    $day = $this->activeScheduleDay;
-    if (!isset($this->tv_schedule[$day])) {
-        $this->tv_schedule[$day] = [];
+    $days = $this->newTvDaily 
+        ? ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] 
+        : [$this->activeScheduleDay];
+
+    foreach ($days as $day) {
+        if (!isset($this->tv_schedule[$day])) {
+            $this->tv_schedule[$day] = [];
+        }
+        $this->tv_schedule[$day][] = [
+            'time' => $this->newTvTime,
+            'title' => $this->newTvTitle,
+            'desc' => $this->newTvDesc,
+            'is_playing' => false
+        ];
     }
-    $this->tv_schedule[$day][] = [
-        'time' => $this->newTvTime,
-        'title' => $this->newTvTitle,
-        'desc' => $this->newTvDesc,
-        'is_playing' => false
-    ];
     $this->newTvTime = '';
     $this->newTvTitle = '';
     $this->newTvDesc = '';
+    $this->newTvDaily = false;
 };
 
 $removeTvProgram = function ($index) {
@@ -724,19 +732,25 @@ $setTvPlaying = function ($index) {
 
 $addRadioProgram = function () {
     if (!$this->newRadioTime || !$this->newRadioTitle) return;
-    $day = $this->activeScheduleDay;
-    if (!isset($this->radio_schedule[$day])) {
-        $this->radio_schedule[$day] = [];
+    $days = $this->newRadioDaily 
+        ? ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] 
+        : [$this->activeScheduleDay];
+
+    foreach ($days as $day) {
+        if (!isset($this->radio_schedule[$day])) {
+            $this->radio_schedule[$day] = [];
+        }
+        $this->radio_schedule[$day][] = [
+            'time' => $this->newRadioTime,
+            'title' => $this->newRadioTitle,
+            'desc' => $this->newRadioDesc,
+            'is_playing' => false
+        ];
     }
-    $this->radio_schedule[$day][] = [
-        'time' => $this->newRadioTime,
-        'title' => $this->newRadioTitle,
-        'desc' => $this->newRadioDesc,
-        'is_playing' => false
-    ];
     $this->newRadioTime = '';
     $this->newRadioTitle = '';
     $this->newRadioDesc = '';
+    $this->newRadioDaily = false;
 };
 
 $removeRadioProgram = function ($index) {
@@ -2973,7 +2987,7 @@ $sendTestEmail = function () {
                                 <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Add TV Program Slot</h4>
                                 <div class="space-y-2">
                                     <div class="space-y-1">
-                                        <label class="text-[10px] font-bold text-gray-400">Time Slot (e.g. 12:00 - 14:00)</label>
+                                        <label class="text-[10px] font-bold text-gray-400">Time Slot (e.g. 12:00 PM - 02:00 PM)</label>
                                         <input type="text" wire:model="newTvTime" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                                     </div>
                                     <div class="space-y-1">
@@ -2984,7 +2998,11 @@ $sendTestEmail = function () {
                                         <label class="text-[10px] font-bold text-gray-400">Short Description</label>
                                         <textarea wire:model="newTvDesc" rows="2" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none"></textarea>
                                     </div>
-                                    <button type="button" wire:click="addTvProgram" class="w-full bg-gray-900 hover:bg-gray-850 text-white font-bold text-[11px] py-1.5 rounded transition">Add Program</button>
+                                    <div class="flex items-center space-x-2 py-1">
+                                        <input type="checkbox" id="newTvDaily" wire:model="newTvDaily" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E]">
+                                        <label for="newTvDaily" class="text-[10px] font-bold text-gray-600 dark:text-gray-400 cursor-pointer select-none">Apply to all days (Daily Show)</label>
+                                    </div>
+                                    <button type="button" wire:click="addTvProgram" class="w-full bg-gray-900 hover:bg-gray-855 text-white font-bold text-[11px] py-1.5 rounded transition">Add Program</button>
                                 </div>
                             </div>
                         </div>
@@ -3035,7 +3053,7 @@ $sendTestEmail = function () {
                                 <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Add Radio Program Slot</h4>
                                 <div class="space-y-2">
                                     <div class="space-y-1">
-                                        <label class="text-[10px] font-bold text-gray-400">Time Slot (e.g. 13:00 - 16:00)</label>
+                                        <label class="text-[10px] font-bold text-gray-400">Time Slot (e.g. 01:00 PM - 04:00 PM)</label>
                                         <input type="text" wire:model="newRadioTime" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                                     </div>
                                     <div class="space-y-1">
@@ -3046,7 +3064,11 @@ $sendTestEmail = function () {
                                         <label class="text-[10px] font-bold text-gray-400">Short Description</label>
                                         <textarea wire:model="newRadioDesc" rows="2" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none"></textarea>
                                     </div>
-                                    <button type="button" wire:click="addRadioProgram" class="w-full bg-gray-900 hover:bg-gray-850 text-white font-bold text-[11px] py-1.5 rounded transition">Add Program</button>
+                                    <div class="flex items-center space-x-2 py-1">
+                                        <input type="checkbox" id="newRadioDaily" wire:model="newRadioDaily" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E]">
+                                        <label for="newRadioDaily" class="text-[10px] font-bold text-gray-600 dark:text-gray-400 cursor-pointer select-none">Apply to all days (Daily Show)</label>
+                                    </div>
+                                    <button type="button" wire:click="addRadioProgram" class="w-full bg-gray-900 hover:bg-gray-855 text-white font-bold text-[11px] py-1.5 rounded transition">Add Program</button>
                                 </div>
                             </div>
                         </div>

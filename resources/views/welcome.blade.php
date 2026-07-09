@@ -459,16 +459,16 @@
                         </h3>
                         <div class="grid grid-cols-2 gap-2 text-[10px] font-black text-white">
                             @php
-                                $fbStats = \App\Support\SocialFetcher::getStats('facebook', \App\Models\Setting::get('facebook'));
-                                $twStats = \App\Support\SocialFetcher::getStats('twitter', \App\Models\Setting::get('twitter'));
-                                $igStats = \App\Support\SocialFetcher::getStats('instagram', \App\Models\Setting::get('instagram'));
-                                $ytStats = \App\Support\SocialFetcher::getStats('youtube', \App\Models\Setting::get('youtube'));
-                                $waStats = \App\Support\SocialFetcher::getStats('whatsapp', \App\Models\Setting::get('whatsapp'));
-                                $tkStats = \App\Support\SocialFetcher::getStats('tiktok', \App\Models\Setting::get('tiktok'));
-                                $tgStats = \App\Support\SocialFetcher::getStats('telegram', \App\Models\Setting::get('telegram'));
-                                $snapStats = \App\Support\SocialFetcher::getStats('snapchat', \App\Models\Setting::get('snapchat'));
-                                $pinStats = \App\Support\SocialFetcher::getStats('pinterest', \App\Models\Setting::get('pinterest'));
-                                $thStats = \App\Support\SocialFetcher::getStats('threads', \App\Models\Setting::get('threads'));
+                                $fbStats = \App\Models\Setting::getStats('facebook', \App\Models\Setting::get('facebook'));
+                                $twStats = \App\Models\Setting::getStats('twitter', \App\Models\Setting::get('twitter'));
+                                $igStats = \App\Models\Setting::getStats('instagram', \App\Models\Setting::get('instagram'));
+                                $ytStats = \App\Models\Setting::getStats('youtube', \App\Models\Setting::get('youtube'));
+                                $waStats = \App\Models\Setting::getStats('whatsapp', \App\Models\Setting::get('whatsapp'));
+                                $tkStats = \App\Models\Setting::getStats('tiktok', \App\Models\Setting::get('tiktok'));
+                                $tgStats = \App\Models\Setting::getStats('telegram', \App\Models\Setting::get('telegram'));
+                                $snapStats = \App\Models\Setting::getStats('snapchat', \App\Models\Setting::get('snapchat'));
+                                $pinStats = \App\Models\Setting::getStats('pinterest', \App\Models\Setting::get('pinterest'));
+                                $thStats = \App\Models\Setting::getStats('threads', \App\Models\Setting::get('threads'));
                             @endphp
 
                             <!-- X (Twitter) -->

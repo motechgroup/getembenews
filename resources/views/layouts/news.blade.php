@@ -436,10 +436,10 @@
                     {{ $siteName }} is a modern digital platform dedicated to bringing you timely, accurate, and independent news coverage from Kisii County, Kenya, and across the globe.
                 </p>
                 <div class="flex space-x-4 pt-2">
-                    <a href="{{ \App\Support\SocialFetcher::getStats('facebook', \App\Models\Setting::get('facebook'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Facebook</span>FB</a>
-                    <a href="{{ \App\Support\SocialFetcher::getStats('twitter', \App\Models\Setting::get('twitter'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Twitter</span>TW</a>
-                    <a href="{{ \App\Support\SocialFetcher::getStats('instagram', \App\Models\Setting::get('instagram'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Instagram</span>IG</a>
-                    <a href="{{ \App\Support\SocialFetcher::getStats('youtube', \App\Models\Setting::get('youtube'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">YouTube</span>YT</a>
+                    <a href="{{ \App\Models\Setting::getStats('facebook', \App\Models\Setting::get('facebook'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Facebook</span>FB</a>
+                    <a href="{{ \App\Models\Setting::getStats('twitter', \App\Models\Setting::get('twitter'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Twitter</span>TW</a>
+                    <a href="{{ \App\Models\Setting::getStats('instagram', \App\Models\Setting::get('instagram'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">Instagram</span>IG</a>
+                    <a href="{{ \App\Models\Setting::getStats('youtube', \App\Models\Setting::get('youtube'))['url'] }}" class="text-gray-400 hover:text-white" target="_blank" rel="noopener"><span class="sr-only">YouTube</span>YT</a>
                 </div>
             </div>
 

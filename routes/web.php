@@ -216,8 +216,7 @@ Route::get('/tag/{slug}', function ($slug) {
 Route::get('/run-migrations', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
-        return 'Migrations and seeders completed successfully! You can now delete this route from routes/web.php.';
+        return 'Migrations completed successfully! Your database schema has been updated. You can now access your homepage.';
     } catch (\Exception $e) {
         return 'Error during migrations: ' . $e->getMessage();
     }

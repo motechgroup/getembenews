@@ -149,14 +149,42 @@
                         $hasVideoPlaceholder = false;
                         $hasAudioPlaceholder = false;
 
-                        if (!empty($article->format_meta['video_url'])) {
-                            $videoUrl = $article->format_meta['video_url'];
-                            // YouTube Link Conversion
+                        // 1. Process inline [video url="..."] shortcodes with custom URLs
+                        $bodyContent = preg_replace_callback('/\[video\s+url=["\']([^"\']+)["\']\]/i', function($matches) {
+                            $videoUrl = $matches[1];
                             if (preg_match('%(?:youtube\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $videoUrl, $match)) {
                                 $videoUrl = "https://www.youtube.com/embed/" . $match[1];
+                            } elseif (preg_match('%vimeo\.com/(?:channels/(?:\w+/)?|groups/(?:[^\/]*)/videos/|album/(?:\d+)/video/|video/|)(\d+)(?:$|/|\?)%i', $videoUrl, $match)) {
+                                $videoUrl = "https://player.vimeo.com/video/" . $match[1];
                             }
-                            // Vimeo Link Conversion
-                            elseif (preg_match('%vimeo\.com/(?:channels/(?:\w+/)?|groups/(?:[^\/]*)/videos/|album/(?:\d+)/video/|video/|)(\d+)(?:$|/|\?)%i', $videoUrl, $match)) {
+                            return '
+                                <div class="aspect-video w-full rounded-lg overflow-hidden bg-black border border-gray-200 dark:border-gray-800 mb-6">
+                                    <iframe src="' . e($videoUrl) . '" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                </div>';
+                        }, $bodyContent);
+
+                        // 2. Process inline [audio url="..."] shortcodes with custom URLs
+                        $bodyContent = preg_replace_callback('/\[audio\s+url=["\']([^"\']+)["\']\]/i', function($matches) {
+                            $audioUrl = $matches[1];
+                            return '
+                                <div class="bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-855 rounded-lg p-4 mb-6 flex items-center space-x-4">
+                                    <div class="w-12 h-12 rounded-full bg-[#C8102E] text-white flex items-center justify-center font-bold text-lg shadow-md animate-pulse">🔊</div>
+                                    <div class="flex-grow space-y-1">
+                                        <div class="text-xs font-bold text-gray-550 uppercase">Listen to Podcast / Audio Stream</div>
+                                        <audio controls class="w-full h-8">
+                                            <source src="' . e($audioUrl) . '" type="audio/mpeg">
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                    </div>
+                                </div>';
+                        }, $bodyContent);
+
+                        // 3. Process classic metadata-based [video] / [audio] placeholders
+                        if (!empty($article->format_meta['video_url'])) {
+                            $videoUrl = $article->format_meta['video_url'];
+                            if (preg_match('%(?:youtube\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $videoUrl, $match)) {
+                                $videoUrl = "https://www.youtube.com/embed/" . $match[1];
+                            } elseif (preg_match('%vimeo\.com/(?:channels/(?:\w+/)?|groups/(?:[^\/]*)/videos/|album/(?:\d+)/video/|video/|)(\d+)(?:$|/|\?)%i', $videoUrl, $match)) {
                                 $videoUrl = "https://player.vimeo.com/video/" . $match[1];
                             }
                             $videoHtml = '
@@ -167,7 +195,7 @@
 
                         if (!empty($article->format_meta['audio_url'])) {
                             $audioHtml = '
-                                <div class="bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg p-4 mb-6 flex items-center space-x-4">
+                                <div class="bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-855 rounded-lg p-4 mb-6 flex items-center space-x-4">
                                     <div class="w-12 h-12 rounded-full bg-[#C8102E] text-white flex items-center justify-center font-bold text-lg shadow-md animate-pulse">🔊</div>
                                     <div class="flex-grow space-y-1">
                                         <div class="text-xs font-bold text-gray-550 uppercase">Listen to Podcast / Audio Stream</div>

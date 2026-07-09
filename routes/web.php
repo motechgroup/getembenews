@@ -228,6 +228,15 @@ Route::get('/run-migrations', function () {
     }
 });
 
+Route::get('/run-seeders', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        return 'Database seeders completed successfully! Default admin accounts, roles, categories, and settings have been generated.';
+    } catch (\Exception $e) {
+        return 'Error during seeding: ' . $e->getMessage();
+    }
+});
+
 Route::get('/debug-log', function () {
     $path = storage_path('logs/laravel.log');
     if (!file_exists($path)) {

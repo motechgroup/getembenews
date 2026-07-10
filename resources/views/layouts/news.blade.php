@@ -519,5 +519,17 @@
     <livewire:newsletter-popup />
 
     @livewireScripts
+
+    <!-- Fallback handler for broken images (e.g. broken storage links) -->
+    <script>
+        window.addEventListener('error', function (e) {
+            if (e.target.tagName === 'IMG') {
+                const fallback = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&q=80&w=600&h=400';
+                if (e.target.src !== fallback) {
+                    e.target.src = fallback;
+                }
+            }
+        }, true);
+    </script>
 </body>
 </html>

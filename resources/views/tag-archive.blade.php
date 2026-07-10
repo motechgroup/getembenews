@@ -20,7 +20,7 @@
                     <div class="flex-grow flex flex-col justify-between space-y-2">
                         <div>
                             <span class="text-[9px] font-bold text-[#C8102E] uppercase">{{ $post->category->name }}</span>
-                            <h3 class="text-base font-bold text-gray-955 dark:text-white mt-1 leading-snug hover:text-[#C8102E] transition">
+                            <h3 class="text-base font-bold text-gray-955 dark:text-white mt-1 leading-snug hover:text-[#C8102E] transition break-words">
                                 <a href="/articles/{{ $post->slug }}">{{ $post->title }}</a>
                             </h3>
                             <p class="text-xs text-gray-500 line-clamp-2 mt-2 leading-relaxed">

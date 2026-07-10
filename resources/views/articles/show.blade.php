@@ -28,13 +28,13 @@
                 </a>
 
                 <!-- Headline -->
-                <h1 class="text-3xl sm:text-4xl font-serif font-black tracking-tight text-gray-900 dark:text-white leading-tight">
+                <h1 class="text-3xl sm:text-4xl font-serif font-black tracking-tight text-gray-900 dark:text-white leading-tight break-words">
                     {{ $article->title }}
                 </h1>
 
                 <!-- Subtitle -->
                 @if($article->subtitle)
-                    <p class="text-lg text-gray-650 dark:text-gray-400 font-medium leading-relaxed">
+                    <p class="text-lg text-gray-650 dark:text-gray-400 font-medium leading-relaxed break-words">
                         {{ $article->subtitle }}
                     </p>
                 @endif
@@ -128,7 +128,7 @@
                 </div>
 
                 <!-- Article Body (Content-First Typography) -->
-                <div class="prose max-w-none dark:prose-invert prose-sm sm:prose-base leading-relaxed text-gray-800 dark:text-gray-200 space-y-4">
+                <div class="prose max-w-none dark:prose-invert prose-sm sm:prose-base leading-relaxed text-gray-800 dark:text-gray-200 space-y-4 break-words overflow-hidden">
                     @if($article->format === 'gallery' && !empty($article->format_meta['gallery']))
                         <!-- Gallery Post Format Display -->
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">

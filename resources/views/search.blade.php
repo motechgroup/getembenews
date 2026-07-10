@@ -35,7 +35,7 @@
                             <span>&bull;</span>
                             <span>{{ $article->published_at->diffForHumans() }}</span>
                         </div>
-                        <h2 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition line-clamp-2">
+                        <h2 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition line-clamp-2 break-words">
                             <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
                         </h2>
                         <p class="text-xs text-gray-650 dark:text-gray-400 line-clamp-2 leading-relaxed">

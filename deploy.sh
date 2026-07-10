@@ -20,9 +20,12 @@ echo "Building assets with Vite..."
 npm ci
 npm run build
 
-# 5. Run database migrations
+# 5. Run database migrations and setup storage symlink
 echo "Running database migrations..."
 php artisan migrate --force
+echo "Ensuring storage symlink exists..."
+php artisan storage:link || true
+
 
 # 6. Optimize and cache configurations, routes, and views
 echo "Optimizing application cache..."

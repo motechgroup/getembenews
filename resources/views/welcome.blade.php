@@ -217,7 +217,7 @@
                             {{ $featuredArticle->category->name }}
                         </span>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent flex flex-col justify-end p-6 space-y-2">
-                            <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-black text-white leading-tight group-hover:text-red-400 transition">
+                            <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-black text-white leading-tight group-hover:text-red-400 transition break-words">
                                 {{ $featuredArticle->title }}
                             </h2>
                             <div class="flex items-center space-x-3 text-[10px] text-gray-300 font-semibold">
@@ -254,7 +254,7 @@
                                 {{ $story->category->name }}
                             </span>
                             <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent flex flex-col justify-end p-4 space-y-1.5">
-                                <h3 class="text-xs sm:text-sm font-serif font-bold text-white leading-tight line-clamp-2 group-hover:text-red-400 transition">
+                                <h3 class="text-xs sm:text-sm font-serif font-bold text-white leading-tight line-clamp-2 group-hover:text-red-400 transition break-words">
                                     {{ $story->title }}
                                 </h3>
                                 <div class="flex items-center space-x-2 text-[9px] text-gray-350">

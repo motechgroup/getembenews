@@ -80,7 +80,7 @@
                             </div>
                             <div class="space-y-2">
                                 <span class="text-[10px] text-[#C8102E] font-bold uppercase tracking-wider block">From: {{ $spotlight->author_name ?? 'NewsFeed' }}</span>
-                                <h3 class="text-xl sm:text-2xl font-bold font-serif text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition">
+                                <h3 class="text-xl sm:text-2xl font-bold font-serif text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition break-words">
                                     <a href="/articles/{{ $spotlight->slug }}">{{ $spotlight->title }}</a>
                                 </h3>
                                 <p class="text-xs sm:text-sm text-gray-650 dark:text-gray-400 leading-relaxed font-medium line-clamp-3">
@@ -101,7 +101,7 @@
                             </div>
                             <div class="space-y-1">
                                 <span class="text-[9px] font-black text-yellow-600 dark:text-yellow-500 uppercase tracking-wider block">EXPLAINER</span>
-                                <h3 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition">
+                                <h3 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition break-words">
                                     <a href="/articles/{{ $centerFeatured->slug }}">{{ $centerFeatured->title }}</a>
                                 </h3>
                                 <span class="text-[10px] text-gray-400 font-bold block">{{ $centerFeatured->published_at->format('j M Y') }}</span>
@@ -116,7 +116,7 @@
                                             @if($loop->first)
                                                 <span class="text-[8px] font-black text-yellow-600 dark:text-yellow-500 uppercase tracking-widest block">EXPLAINER</span>
                                             @endif
-                                            <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-3">
+                                            <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-3 break-words">
                                                 <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
                                             </h4>
                                             <span class="text-[9px] text-gray-400 font-bold block">{{ $article->published_at->format('j M Y') }}</span>
@@ -139,7 +139,7 @@
                                 <img src="{{ $rightFeatured->featured_image }}" alt="{{ $rightFeatured->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
                             </div>
                             <div class="space-y-1">
-                                <h3 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition">
+                                <h3 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition break-words">
                                     <a href="/articles/{{ $rightFeatured->slug }}">{{ $rightFeatured->title }}</a>
                                 </h3>
                                 <span class="text-[10px] text-gray-400 font-bold block">{{ $rightFeatured->published_at->format('j M Y') }}</span>
@@ -151,7 +151,7 @@
                                 @foreach($rightList as $article)
                                     <article class="group flex items-start gap-4 pb-4 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
                                         <div class="space-y-1 flex-grow min-w-0">
-                                            <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-3">
+                                            <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-3 break-words">
                                                 <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
                                             </h4>
                                             <span class="text-[9px] text-gray-400 font-bold block">{{ $article->published_at->format('j M Y') }}</span>
@@ -189,7 +189,7 @@
                                             <span>&bull;</span>
                                             <span>{{ $article->read_time }} min read</span>
                                         </div>
-                                        <h2 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-2">
+                                        <h2 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-2 break-words">
                                             <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
                                         </h2>
                                         <p class="text-xs text-gray-650 dark:text-gray-400 line-clamp-2 leading-relaxed">

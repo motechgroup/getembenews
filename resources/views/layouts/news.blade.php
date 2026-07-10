@@ -104,7 +104,29 @@
         .hover\:bg-red-700:hover { background-color: var(--brand-color) !important; filter: brightness(0.95); }
     </style>
 
-    <!-- Scripts -->
+    <!-- Google Analytics (gtag.js) -->
+    @php
+        $googleAnalyticsId = \App\Models\Setting::get('google_analytics_id');
+    @endphp
+    @if(!empty($googleAnalyticsId))
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $googleAnalyticsId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ $googleAnalyticsId }}');
+        </script>
+    @endif
+
+    <!-- Google AdSense Auto Ads -->
+    @php
+        $adsenseEnabled = \App\Models\Setting::get('adsense_enabled', false);
+        $adsenseClientId = \App\Models\Setting::get('adsense_client_id');
+    @endphp
+    @if($adsenseEnabled && !empty($adsenseClientId))
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adsenseClientId }}" crossorigin="anonymous"></script>
+    @endif
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>

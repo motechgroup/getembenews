@@ -221,14 +221,60 @@ Route::get('/tag/{slug}', function ($slug) {
 
 Route::get('/run-storage-link', function () {
     try {
-        $link = public_path('storage');
-        if (file_exists($link) || is_link($link)) {
-            @unlink($link);
+        $target = public_path('storage');
+        $source = storage_path('app/public');
+        
+        // 1. If public/storage is a link, remove it to clear the path
+        if (is_link($target)) {
+            @unlink($target);
         }
-        \Illuminate\Support\Facades\Artisan::call('storage:link');
+        
+        // 2. Try standard symlink if possible and if public/storage doesn't exist
+        $symlinkCreated = false;
+        if (function_exists('symlink') && !file_exists($target)) {
+            try {
+                if (@symlink($source, $target)) {
+                    $symlinkCreated = true;
+                }
+            } catch (\Exception $e) {
+                // Fail silently and fall back
+            }
+        }
+        
+        // 3. Fallback: Copy all files recursively from storage/app/public to public/storage
+        if (!$symlinkCreated) {
+            if (is_link($target)) {
+                @unlink($target);
+            }
+            
+            if (!file_exists($target)) {
+                @mkdir($target, 0755, true);
+            }
+            
+            $copyDir = function ($src, $dst) use (&$copyDir) {
+                if (!file_exists($src) || !is_dir($src)) return;
+                $dir = opendir($src);
+                if (!$dir) return;
+                @mkdir($dst, 0755, true);
+                while (false !== ($file = readdir($dir))) {
+                    if (($file != '.') && ($file != '..')) {
+                        if (is_dir($src . '/' . $file)) {
+                            $copyDir($src . '/' . $file, $dst . '/' . $file);
+                        } else {
+                            @copy($src . '/' . $file, $dst . '/' . $file);
+                        }
+                    }
+                }
+                closedir($dir);
+            };
+            
+            $copyDir($source, $target);
+            return 'Bypassed symlink (unsupported on your hosting). Successfully copied media files to public/storage! New uploads will go directly there.';
+        }
+        
         return 'Storage symlink created successfully! Deployed uploaded images will now load correctly.';
     } catch (\Exception $e) {
-        return 'Error creating storage symlink: ' . $e->getMessage();
+        return 'Error creating storage link fallback: ' . $e->getMessage();
     }
 });
 

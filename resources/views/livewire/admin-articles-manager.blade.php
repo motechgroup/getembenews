@@ -725,19 +725,33 @@ $generateIdeas = function () {
 
                 <!-- Body (Rich Content) -->
                 <div class="space-y-1"
-                     x-data="{ value: @entangle('body') }"
+                     x-data="{ 
+                         value: @entangle('body'),
+                         isInitialized: false,
+                         initTrix() {
+                             if (this.isInitialized) return;
+                             const trixEl = this.$refs.trix;
+                             if (trixEl && trixEl.editor) {
+                                 trixEl.editor.loadHTML(this.value || '');
+                                 this.isInitialized = true;
+                             }
+                         }
+                     }"
                      x-init="
                          $watch('value', val => {
-                             if (val !== $refs.trix.value) {
-                                 $refs.trix.editor.loadHTML(val || '');
+                             const trixEl = $refs.trix;
+                             if (trixEl && trixEl.editor && val !== trixEl.value) {
+                                 trixEl.editor.loadHTML(val || '');
                              }
-                         })
+                         });
+                         this.$nextTick(() => { this.initTrix(); });
                      "
+                     @trix-initialize="initTrix()"
                      @trix-change="value = $event.target.value"
                      wire:ignore>
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Article Content (Advanced Formatting)</label>
-                    <input id="body_input" type="hidden" name="content" x-ref="trix" :value="value">
-                    <trix-editor input="body_input" placeholder="Write the full news story body here with rich formatting..." class="trix-content border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded p-2.5 min-h-[350px] text-sm focus:outline-none focus:ring-1 focus:ring-[#C8102E] focus:border-[#C8102E]"></trix-editor>
+                    <input id="body_input" type="hidden" name="content" :value="value">
+                    <trix-editor input="body_input" x-ref="trix" placeholder="Write the full news story body here with rich formatting..." class="trix-content border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded p-2.5 min-h-[350px] text-sm focus:outline-none focus:ring-1 focus:ring-[#C8102E] focus:border-[#C8102E]"></trix-editor>
                     @error('body') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>
 

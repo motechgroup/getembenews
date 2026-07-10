@@ -139,7 +139,7 @@ $edit = function ($id) {
     $this->body = $article->body;
     $this->featured_image = $article->featured_image;
     $this->category_id = $article->category_id;
-    $this->selectedCategories = $article->categories()->pluck('categories.id')->map(fn($id) => (string)$id)->toArray() ?: [];
+    $this->selectedCategories = $article->categories()->where('categories.id', '!=', $article->category_id)->pluck('categories.id')->map(fn($id) => (string)$id)->toArray() ?: [];
     $this->status = $article->status;
     $this->is_featured = $article->is_featured;
     $this->is_breaking = $article->is_breaking;
@@ -257,7 +257,8 @@ $save = function () {
     $article->tags()->sync($tagIds);
 
     // Sync categories
-    $allSelected = array_unique(array_filter(array_merge([$this->category_id], $this->selectedCategories)));
+    $additionalCategories = array_diff($this->selectedCategories, [$this->category_id]);
+    $allSelected = array_unique(array_filter(array_merge([$this->category_id], $additionalCategories)));
     $article->categories()->sync($allSelected);
 
     $this->isEditing = false;
@@ -968,7 +969,7 @@ $generateIdeas = function () {
                     <div class="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto border border-gray-355 dark:border-gray-700 rounded p-2.5 bg-gray-50 dark:bg-gray-955/20 font-mono">
                         @foreach(Category::getTree() as $cat)
                             @if($cat->id != $category_id)
-                                <label class="flex items-center text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                                <label wire:key="cat-checkbox-{{ $cat->id }}" class="flex items-center text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
                                     <input type="checkbox" wire:model="selectedCategories" value="{{ $cat->id }}" class="rounded text-[#C8102E] focus:ring-[#C8102E] mr-2">
                                     <span class="text-gray-400 select-none mr-1">{{ str_repeat('── ', $cat->depth) }}</span>
                                     <span>{{ $cat->name }}</span>

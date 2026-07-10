@@ -619,6 +619,16 @@ $generateIdeas = function () {
     @else
         <!-- FORM VIEW -->
         <form wire:submit.prevent="save" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            @if ($errors->any())
+                <div class="lg:col-span-3 p-4 bg-red-100 dark:bg-red-950/30 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-200 text-xs rounded-lg">
+                    <strong class="font-bold">Please correct the following errors:</strong>
+                    <ul class="mt-2 list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             
             <!-- Main Details (Left/Mid) -->
             <div class="lg:col-span-2 space-y-6">
@@ -722,37 +732,36 @@ $generateIdeas = function () {
                            class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
                     @error('subtitle') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>
-
-                <!-- Body (Rich Content) -->
+                
                 <div class="space-y-1"
                      x-data="{ 
-                         value: @entangle('body'),
-                         isInitialized: false,
-                         initTrix() {
-                             if (this.isInitialized) return;
-                             const trixEl = this.$refs.trix;
-                             if (trixEl && trixEl.editor) {
-                                 trixEl.editor.loadHTML(this.value || '');
-                                 this.isInitialized = true;
-                             }
-                         }
-                     }"
-                     x-init="
-                         $watch('value', val => {
-                             const trixEl = $refs.trix;
-                             if (trixEl && trixEl.editor && val !== trixEl.value) {
-                                 trixEl.editor.loadHTML(val || '');
-                             }
-                         });
-                         this.$nextTick(() => { this.initTrix(); });
-                     "
-                     @trix-initialize="initTrix()"
-                     @trix-change="value = $event.target.value"
-                     wire:ignore>
-                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Article Content (Advanced Formatting)</label>
-                    <input id="body_input" type="hidden" name="content" :value="value">
-                    <trix-editor input="body_input" x-ref="trix" placeholder="Write the full news story body here with rich formatting..." class="trix-content border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded p-2.5 min-h-[350px] text-sm focus:outline-none focus:ring-1 focus:ring-[#C8102E] focus:border-[#C8102E]"></trix-editor>
-                    @error('body') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                          value: @entangle('body'),
+                          isInitialized: false,
+                          initTrix(editorEl) {
+                              if (this.isInitialized) return;
+                              const el = editorEl || this.$refs.trix;
+                              if (el && el.editor) {
+                                  el.editor.loadHTML(this.value || '');
+                                  this.isInitialized = true;
+                              }
+                          }
+                      }"
+                      x-init="
+                          $watch('value', val => {
+                              const trixEl = $refs.trix;
+                              if (trixEl && trixEl.editor && val !== $refs.trixInput.value) {
+                                  trixEl.editor.loadHTML(val || '');
+                              }
+                          });
+                          this.$nextTick(() => { this.initTrix(); });
+                      "
+                      @trix-initialize="initTrix($event.target)"
+                      @trix-change="value = $refs.trixInput.value"
+                      wire:ignore>
+                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Article Content (Advanced Formatting)</label>
+                     <input id="body_input" type="hidden" name="content" x-ref="trixInput" :value="value">
+                     <trix-editor input="body_input" x-ref="trix" placeholder="Write the full news story body here with rich formatting..." class="trix-content border border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 rounded p-2.5 min-h-[350px] text-sm focus:outline-none focus:ring-1 focus:ring-[#C8102E] focus:border-[#C8102E]"></trix-editor>
+                     @error('body') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>
 
                 <!-- Format Specific Builders -->

@@ -219,6 +219,19 @@ Route::get('/tag/{slug}', function ($slug) {
     return view('tag-archive', compact('tag', 'articles'));
 })->name('tag.archive');
 
+Route::get('/run-storage-link', function () {
+    try {
+        $link = public_path('storage');
+        if (file_exists($link) || is_link($link)) {
+            @unlink($link);
+        }
+        \Illuminate\Support\Facades\Artisan::call('storage:link');
+        return 'Storage symlink created successfully! Deployed uploaded images will now load correctly.';
+    } catch (\Exception $e) {
+        return 'Error creating storage symlink: ' . $e->getMessage();
+    }
+});
+
 Route::get('/run-migrations', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);

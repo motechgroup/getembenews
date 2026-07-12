@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Advertisement;
+use App\Models\Announcement;
 use App\Models\Article;
+use App\Models\BreakingNews;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\ContactMessage;
@@ -63,6 +65,9 @@ class MobileAppController extends Controller
                 'mobile_app_admob_banner_id' => Setting::get('mobile_app_admob_banner_id', ''),
                 'mobile_app_admob_interstitial_id' => Setting::get('mobile_app_admob_interstitial_id', ''),
                 'mobile_app_maintenance_mode' => (bool) Setting::get('mobile_app_maintenance_mode', false),
+                'announcement_rate_tv' => (int) Setting::get('announcement_rate_tv', 5),
+                'announcement_rate_radio' => (int) Setting::get('announcement_rate_radio', 3),
+                'announcement_rate_both' => (int) Setting::get('announcement_rate_both', 7),
             ]
         ]);
     }
@@ -100,6 +105,11 @@ class MobileAppController extends Controller
             if ($category) {
                 $query->where('category_id', $category->id);
             }
+        }
+
+        // Filter by author ID
+        if ($request->filled('author_id')) {
+            $query->where('user_id', $request->author_id);
         }
 
         // Search in title/body
@@ -163,6 +173,22 @@ class MobileAppController extends Controller
                 'comments' => $comments,
                 'related_articles' => $related
             ]
+        ]);
+    }
+
+    /**
+     * Retrieve public author details.
+     */
+    public function authorProfile(int $id)
+    {
+        $this->checkMaintenance();
+
+        $author = User::select('id', 'name', 'bio', 'photo_url', 'role', 'created_at')
+            ->findOrFail($id);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $author
         ]);
     }
 
@@ -258,6 +284,30 @@ class MobileAppController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $request->user()
+        ]);
+    }
+
+    /**
+     * Update user profile details.
+     */
+    public function updateProfile(Request $request)
+    {
+        $this->checkMaintenance();
+
+        $user = $request->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'bio' => 'nullable|string|max:1000',
+            'photo_url' => 'nullable|string|max:2048',
+        ]);
+
+        $user->update($request->only('name', 'bio', 'photo_url'));
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Profile updated successfully.',
+            'data' => $user
         ]);
     }
 
@@ -462,6 +512,130 @@ class MobileAppController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $ads
+        ]);
+    }
+
+    /**
+     * Retrieve active breaking news alerts.
+     */
+    public function breakingNews()
+    {
+        $this->checkMaintenance();
+
+        $alerts = BreakingNews::active()->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $alerts
+        ]);
+    }
+
+    /**
+     * Retrieve approved & paid announcements.
+     */
+    public function announcements()
+    {
+        $this->checkMaintenance();
+
+        $announcements = Announcement::approved()->paid()->latest()->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $announcements
+        ]);
+    }
+
+    /**
+     * Submit a draft announcement.
+     */
+    public function submitAnnouncement(Request $request)
+    {
+        $this->checkMaintenance();
+
+        $request->validate([
+            'visitor_name' => 'required|string|max:255',
+            'visitor_email' => 'nullable|email|max:255',
+            'visitor_phone' => 'required|string|max:20',
+            'type' => 'required|in:funeral,general',
+            'media' => 'required|in:tv,radio,both',
+            'content' => 'required|string|min:5',
+            'days_count' => 'required|integer|min:1|max:30',
+        ]);
+
+        // Calculate rate based on media channel settings
+        $rate = 5;
+        if ($request->media === 'tv') {
+            $rate = (int) Setting::get('announcement_rate_tv', 5);
+        } elseif ($request->media === 'radio') {
+            $rate = (int) Setting::get('announcement_rate_radio', 3);
+        } else {
+            $rate = (int) Setting::get('announcement_rate_both', 7);
+        }
+
+        // Count words
+        $content = $request->content;
+        $wordCount = count(array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($content)))));
+        $totalAmount = $wordCount * $rate * (int) $request->days_count;
+
+        $announcement = Announcement::create([
+            'visitor_name' => $request->visitor_name,
+            'visitor_email' => $request->visitor_email ?: null,
+            'visitor_phone' => $request->visitor_phone,
+            'type' => $request->type,
+            'media' => $request->media,
+            'content' => $content,
+            'word_count' => $wordCount,
+            'days_count' => (int) $request->days_count,
+            'rate_per_word' => $rate,
+            'total_amount' => $totalAmount,
+            'payment_status' => 'pending',
+            'is_approved' => false,
+        ]);
+
+        // Create log notification
+        ContactMessage::create([
+            'name' => 'System Alert',
+            'email' => 'announcements@getembenews.com',
+            'subject' => 'Mobile App Announcement Drafted',
+            'message' => "A new announcement has been drafted via Mobile App by {$request->visitor_name} ({$request->visitor_phone}) with cost KSh {$totalAmount}."
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Announcement drafted successfully.',
+            'data' => $announcement
+        ], 201);
+    }
+
+    /**
+     * Process simulated payment.
+     */
+    public function payAnnouncement(Request $request, $id)
+    {
+        $this->checkMaintenance();
+
+        $announcement = Announcement::findOrFail($id);
+
+        $ref = 'MPESA-MOB-' . strtoupper(Str::random(10));
+
+        $announcement->update([
+            'payment_status' => 'paid',
+            'payment_reference' => $ref,
+            'is_approved' => true, // Auto approve mobile app submissions for instant feedback testing!
+        ]);
+
+        // Create log notification
+        ContactMessage::create([
+            'name' => 'System Alert',
+            'email' => 'announcements@getembenews.com',
+            'subject' => 'Mobile Announcement Paid (Ref: ' . $ref . ')',
+            'message' => "Mobile Announcement ID: {$announcement->id} has been paid successfully. Visitor: {$announcement->visitor_name} ({$announcement->visitor_phone}). Amount: KSh {$announcement->total_amount}."
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Simulated M-Pesa payment processed successfully.',
+            'data' => $announcement
         ]);
     }
 }

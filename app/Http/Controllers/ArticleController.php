@@ -107,4 +107,18 @@ class ArticleController extends Controller
 
         return view('search', compact('articles', 'query'));
     }
+
+    /**
+     * Display articles written by a specific author.
+     */
+    public function authorArchive(int $id)
+    {
+        $author = \App\Models\User::findOrFail($id);
+        
+        $articles = Article::published()
+            ->where('user_id', $id)
+            ->paginate(10);
+            
+        return view('author-archive', compact('author', 'articles'));
+    }
 }

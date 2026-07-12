@@ -42,21 +42,23 @@
                 <!-- Author, Date and Save button -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-y border-gray-100 dark:border-gray-800 gap-4">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-600 dark:text-gray-400 overflow-hidden border border-gray-200 dark:border-gray-750">
-                            @if($article->author->photo_url)
-                                <img src="{{ $article->author->photo_url }}" alt="{{ $article->author->name }}" class="w-full h-full object-cover">
-                            @else
-                                {{ strtoupper(substr($article->author->name, 0, 1)) }}
-                            @endif
-                        </div>
-                        <div>
-                            <div class="text-sm font-bold text-gray-900 dark:text-white">{{ $article->author->name }}</div>
-                            <div class="text-xs text-gray-500">
-                                <span>Published {{ $article->published_at->format('M j, Y \a\t g:i a') }}</span>
-                                <span class="mx-1.5">&bull;</span>
-                                <span>{{ $article->read_time }} min read</span>
+                        <a href="/author/{{ $article->author->id }}" class="flex items-center space-x-3 group">
+                            <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-600 dark:text-gray-400 overflow-hidden border border-gray-200 dark:border-gray-750 group-hover:border-[#C8102E] transition">
+                                @if($article->author->photo_url)
+                                    <img src="{{ $article->author->photo_url }}" alt="{{ $article->author->name }}" class="w-full h-full object-cover">
+                                @else
+                                    {{ strtoupper(substr($article->author->name, 0, 1)) }}
+                                @endif
                             </div>
-                        </div>
+                            <div>
+                                <div class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-[#C8102E] transition text-left">{{ $article->author->name }}</div>
+                                <div class="text-xs text-gray-550 text-left">
+                                    <span>Published {{ $article->published_at->format('M j, Y \a\t g:i a') }}</span>
+                                    <span class="mx-1.5">&bull;</span>
+                                    <span>{{ $article->read_time }} min read</span>
+                                </div>
+                            </div>
+                        </a>
                     </div>
 
                     <!-- Bookmark Action -->
@@ -354,15 +356,19 @@
 
                 <!-- Author Profile Card -->
                 <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-5 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-10">
-                    <div class="w-16 h-16 rounded-full bg-gray-250 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-600 dark:text-gray-400 overflow-hidden shrink-0 border border-gray-250 dark:border-gray-750">
-                        @if($article->author->photo_url)
-                            <img src="{{ $article->author->photo_url }}" alt="{{ $article->author->name }}" class="w-full h-full object-cover">
-                        @else
-                            {{ strtoupper(substr($article->author->name, 0, 1)) }}
-                        @endif
-                    </div>
-                    <div class="space-y-2">
-                        <div class="text-sm font-bold text-gray-900 dark:text-white">Written by {{ $article->author->name }}</div>
+                    <a href="/author/{{ $article->author->id }}" class="shrink-0">
+                        <div class="w-16 h-16 rounded-full bg-gray-250 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-600 dark:text-gray-400 overflow-hidden border border-gray-250 dark:border-gray-750 hover:border-[#C8102E] transition">
+                            @if($article->author->photo_url)
+                                <img src="{{ $article->author->photo_url }}" alt="{{ $article->author->name }}" class="w-full h-full object-cover">
+                            @else
+                                {{ strtoupper(substr($article->author->name, 0, 1)) }}
+                            @endif
+                        </div>
+                    </a>
+                    <div class="space-y-2 text-left">
+                        <div class="text-sm font-bold text-gray-900 dark:text-white">
+                            Written by <a href="/author/{{ $article->author->id }}" class="hover:text-[#C8102E] transition">{{ $article->author->name }}</a>
+                        </div>
                         <p class="text-xs text-gray-650 dark:text-gray-400 leading-relaxed">
                             {{ $article->author->bio ?? 'Reporter and staff writer at Getembe News.' }}
                         </p>

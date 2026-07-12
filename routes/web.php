@@ -143,6 +143,7 @@ use App\Http\Controllers\ArticleController;
 Route::get('/articles/{slug}', [ArticleController::class, 'show'])->name('articles.show');
 Route::post('/articles/{id}/view', [ArticleController::class, 'trackView'])->name('articles.track-view');
 Route::get('/search', [ArticleController::class, 'search'])->name('search');
+Route::get('/author/{id}', [ArticleController::class, 'authorArchive'])->name('author.archive');
 
 Route::get('/tv', function () {
     if (\App\Models\Setting::get('live_tv_active', '1') != '1') {

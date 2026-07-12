@@ -28,7 +28,7 @@
                             </p>
                         </div>
                         <div class="text-[10px] text-gray-400 flex items-center justify-between pt-2">
-                            <span>By {{ $post->author->name }}</span>
+                            <span>By <a href="/author/{{ $post->author->id }}" class="hover:text-[#C8102E] transition">{{ $post->author->name }}</a></span>
                             <span>{{ $post->published_at ? $post->published_at->diffForHumans() : $post->created_at->diffForHumans() }}</span>
                         </div>
                     </div>

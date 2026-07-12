@@ -221,7 +221,11 @@
                                 {{ $featuredArticle->title }}
                             </h2>
                             <div class="flex items-center space-x-3 text-[10px] text-gray-300 font-semibold">
-                                <span>{{ $featuredArticle->author->name ?? 'admin' }}</span>
+                                @if($featuredArticle->author)
+                                    <a href="/author/{{ $featuredArticle->author->id }}" class="hover:text-red-450 transition">{{ $featuredArticle->author->name }}</a>
+                                @else
+                                    <span>admin</span>
+                                @endif
                                 <span>&bull;</span>
                                 <span>{{ $featuredArticle->published_at->format('M j, Y') }}</span>
                                 <span>&bull;</span>
@@ -258,7 +262,11 @@
                                     {{ $story->title }}
                                 </h3>
                                 <div class="flex items-center space-x-2 text-[9px] text-gray-350">
-                                    <span>{{ $story->author->name ?? 'staff' }}</span>
+                                    @if($story->author)
+                                        <a href="/author/{{ $story->author->id }}" class="hover:text-red-400 transition">{{ $story->author->name }}</a>
+                                    @else
+                                        <span>staff</span>
+                                    @endif
                                     <span>&bull;</span>
                                     <span>{{ $story->published_at->format('M j, Y') }}</span>
                                     <span>&bull;</span>
@@ -318,7 +326,11 @@
                                                     <a href="/articles/{{ $medItem->slug }}">{{ $medItem->title }}</a>
                                                 </h3>
                                                 <div class="flex items-center space-x-2 text-[9px] text-gray-500 dark:text-gray-400 font-semibold">
-                                                    <span>{{ $medItem->author->name ?? 'staff' }}</span>
+                                                    @if($medItem->author)
+                                                        <a href="/author/{{ $medItem->author->id }}" class="hover:text-[#C8102E] transition">{{ $medItem->author->name }}</a>
+                                                    @else
+                                                        <span>staff</span>
+                                                    @endif
                                                     <span>&bull;</span>
                                                     <span>{{ $medItem->published_at->format('M j, Y') }}</span>
                                                     <span>&bull;</span>
@@ -359,7 +371,11 @@
                                                         <a href="/articles/{{ $item->slug }}">{{ $item->title }}</a>
                                                     </h4>
                                                     <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-500 dark:text-gray-400 font-semibold">
-                                                        <span>{{ $item->author->name ?? 'staff' }}</span>
+                                                        @if($item->author)
+                                                            <a href="/author/{{ $item->author->id }}" class="hover:text-[#C8102E] transition">{{ $item->author->name }}</a>
+                                                        @else
+                                                            <span>staff</span>
+                                                        @endif
                                                         <span>&bull;</span>
                                                         <span>{{ $item->published_at->format('M j, Y') }}</span>
                                                     </div>
@@ -385,7 +401,11 @@
                                                         <a href="/articles/{{ $item->slug }}">{{ $item->title }}</a>
                                                     </h4>
                                                     <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-500 dark:text-gray-400 font-semibold">
-                                                        <span>{{ $item->author->name ?? 'staff' }}</span>
+                                                        @if($item->author)
+                                                            <a href="/author/{{ $item->author->id }}" class="hover:text-[#C8102E] transition">{{ $item->author->name }}</a>
+                                                        @else
+                                                            <span>staff</span>
+                                                        @endif
                                                         <span>&bull;</span>
                                                         <span>{{ $item->published_at->format('M j, Y') }}</span>
                                                     </div>
@@ -437,7 +457,11 @@
                                             <a href="/articles/{{ $popItem->slug }}">{{ $popItem->title }}</a>
                                         </h4>
                                         <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-500 dark:text-gray-400 font-semibold">
-                                            <span>{{ $popItem->author->name ?? 'admin' }}</span>
+                                            @if($popItem->author)
+                                                <a href="/author/{{ $popItem->author->id }}" class="hover:text-[#C8102E] transition">{{ $popItem->author->name }}</a>
+                                            @else
+                                                <span>admin</span>
+                                            @endif
                                             <span>&bull;</span>
                                             <span>{{ $popItem->published_at->format('M j, Y') }}</span>
                                             <span>&bull;</span>

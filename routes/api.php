@@ -9,6 +9,11 @@ Route::prefix('v1')->group(function () {
     Route::get('/categories', [MobileAppController::class, 'categories']);
     Route::get('/articles', [MobileAppController::class, 'articles']);
     Route::get('/articles/{slug}', [MobileAppController::class, 'article']);
+    Route::get('/videos', [MobileAppController::class, 'videos']);
+    Route::get('/live-streams', [MobileAppController::class, 'liveStreams']);
+    Route::post('/contact', [MobileAppController::class, 'contact']);
+    Route::post('/newsletter/subscribe', [MobileAppController::class, 'subscribeNewsletter']);
+    Route::get('/advertisements', [MobileAppController::class, 'advertisements']);
     
     // Auth endpoints
     Route::post('/auth/register', [MobileAppController::class, 'register']);

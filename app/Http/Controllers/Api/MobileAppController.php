@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Advertisement;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Comment;
+use App\Models\ContactMessage;
+use App\Models\Newsletter;
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\Video;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -328,5 +332,136 @@ class MobileAppController extends Controller
             'message' => 'Comment posted successfully.',
             'data' => $comment->load('user:id,name,photo_url')
         ], 201);
+    }
+
+    /**
+     * Retrieve published videos feed.
+     */
+    public function videos(Request $request)
+    {
+        $this->checkMaintenance();
+
+        $query = Video::where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->with('category:id,name,slug')
+            ->orderBy('published_at', 'desc');
+
+        if ($request->filled('category')) {
+            $category = Category::where('slug', $request->category)->first();
+            if ($category) {
+                $query->where('category_id', $category->id);
+            }
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $videos = $query->paginate($request->integer('per_page', 15));
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $videos
+        ]);
+    }
+
+    /**
+     * Retrieve live streams configurations.
+     */
+    public function liveStreams()
+    {
+        $this->checkMaintenance();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'live_tv_url' => Setting::get('live_tv_url', ''),
+                'live_tv_active' => (bool) Setting::get('live_tv_active', false),
+                'live_radio_url' => Setting::get('live_radio_url', ''),
+                'live_radio_active' => (bool) Setting::get('live_radio_active', false),
+                'tv_schedule' => Setting::get('tv_schedule', []),
+                'radio_schedule' => Setting::get('radio_schedule', []),
+            ]
+        ]);
+    }
+
+    /**
+     * Submit contact / feedback message.
+     */
+    public function contact(Request $request)
+    {
+        $this->checkMaintenance();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string|min:10'
+        ]);
+
+        $message = ContactMessage::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'subject' => $request->subject,
+            'message' => $request->message,
+            'is_read' => false
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Feedback submitted successfully.',
+            'data' => $message
+        ], 201);
+    }
+
+    /**
+     * Subscribe to email newsletter.
+     */
+    public function subscribeNewsletter(Request $request)
+    {
+        $this->checkMaintenance();
+
+        $request->validate([
+            'email' => 'required|email|max:255'
+        ]);
+
+        $existing = Newsletter::where('email', $request->email)->first();
+        if ($existing) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'You are already subscribed to our newsletter!'
+            ]);
+        }
+
+        $subscriber = Newsletter::create([
+            'email' => $request->email,
+            'is_active' => true
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Subscribed to newsletter successfully.',
+            'data' => $subscriber
+        ], 201);
+    }
+
+    /**
+     * Retrieve active advertisements.
+     */
+    public function advertisements()
+    {
+        $this->checkMaintenance();
+
+        $ads = Advertisement::active()->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $ads
+        ]);
     }
 }

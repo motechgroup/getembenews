@@ -109,12 +109,20 @@
         $googleAnalyticsId = \App\Models\Setting::get('google_analytics_id');
     @endphp
     @if(!empty($googleAnalyticsId))
-        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $googleAnalyticsId }}"></script>
         <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '{{ $googleAnalyticsId }}');
+            window.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    const script = document.createElement('script');
+                    script.src = "https://www.googletagmanager.com/gtag/js?id={{ $googleAnalyticsId }}";
+                    script.async = true;
+                    document.head.appendChild(script);
+
+                    window.dataLayer = window.dataLayer || [];
+                    window.gtag = function(){dataLayer.push(arguments);}
+                    window.gtag('js', new Date());
+                    window.gtag('config', '{{ $googleAnalyticsId }}');
+                }, 3000);
+            });
         </script>
     @endif
 
@@ -124,7 +132,17 @@
         $adsenseClientId = \App\Models\Setting::get('adsense_client_id');
     @endphp
     @if($adsenseEnabled && !empty($adsenseClientId))
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adsenseClientId }}" crossorigin="anonymous"></script>
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    const script = document.createElement('script');
+                    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adsenseClientId }}";
+                    script.async = true;
+                    script.crossOrigin = "anonymous";
+                    document.head.appendChild(script);
+                }, 4000);
+            });
+        </script>
     @endif
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -263,7 +281,7 @@
 
 
                 <!-- Theme Toggle -->
-                <button @click="$store.theme.toggle()" class="p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#cc6c3b] focus:outline-none transition">
+                <button @click="$store.theme.toggle()" class="p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#cc6c3b] focus:outline-none transition" aria-label="Toggle dark mode">
                     <svg x-show="!$store.theme.darkMode" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                     </svg>
@@ -274,7 +292,7 @@
 
                 <!-- Inline Search Form / Toggle -->
                 <div class="relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#cc6c3b] focus:outline-none transition">
+                    <button @click="open = !open" class="p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#cc6c3b] focus:outline-none transition" aria-label="Toggle search bar">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
@@ -320,7 +338,7 @@
                 @endauth
 
                 <!-- Mobile Menu Toggle Button -->
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#cc6c3b] focus:outline-none transition">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden p-1.5 text-gray-700 dark:text-gray-300 hover:text-[#cc6c3b] focus:outline-none transition" aria-label="Toggle mobile menu">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" x-show="!mobileMenuOpen"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" x-show="mobileMenuOpen" style="display: none;"/>
@@ -344,7 +362,7 @@
                             </button>
                             <div x-show="open" class="pl-4 space-y-1" style="display: none;">
                                 @foreach($link['children'] as $child)
-                                    <a href="{{ $child['url'] }}" class="block px-3 py-1.5 rounded text-xs font-bold text-gray-655 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#cc6c3b] uppercase">{{ $child['label'] }}</a>
+                                    <a href="{{ $child['url'] }}" class="block px-3 py-1.5 rounded text-xs font-bold text-gray-650 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#cc6c3b] uppercase">{{ $child['label'] }}</a>
                                 @endforeach
                             </div>
                         </div>

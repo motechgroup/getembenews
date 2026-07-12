@@ -123,69 +123,71 @@ $delete = function ($id) {
     @if(!$isEditing)
         <!-- TABLE LIST -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden shadow-sm">
-            <table class="w-full text-left border-collapse text-xs">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-850 text-gray-550 border-b border-gray-200 dark:border-gray-800 font-bold">
-                        <th class="p-3">Ad Title</th>
-                        <th class="p-3">Location Spot</th>
-                        <th class="p-3">Ad Type</th>
-                        <th class="p-3 text-center">Status</th>
-                        <th class="p-3 text-center">Impressions</th>
-                        <th class="p-3 text-center">Clicks</th>
-                        <th class="p-3 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                    @forelse($advertisements as $ad)
-                        <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-850/50">
-                            <td class="p-3 font-semibold text-gray-900 dark:text-white">
-                                <div class="flex items-center space-x-3">
-                                    @if($ad->image_url)
-                                        <img src="{{ $ad->image_url }}" class="w-12 h-8 object-cover rounded border border-gray-200 dark:border-gray-700 bg-white">
-                                    @else
-                                        <div class="w-12 h-8 rounded border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-mono text-[9px] text-gray-400">
-                                            HTML
-                                        </div>
-                                    @endif
-                                    <div>
-                                        <span class="block font-bold">{{ $ad->title }}</span>
-                                        @if($ad->destination_url)
-                                            <span class="block text-[10px] text-gray-450 truncate max-w-xs">{{ $ad->destination_url }}</span>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-gray-50 dark:bg-gray-850 text-gray-550 border-b border-gray-200 dark:border-gray-800 font-bold">
+                            <th class="p-3">Ad Title</th>
+                            <th class="p-3">Location Spot</th>
+                            <th class="p-3">Ad Type</th>
+                            <th class="p-3 text-center">Status</th>
+                            <th class="p-3 text-center">Impressions</th>
+                            <th class="p-3 text-center">Clicks</th>
+                            <th class="p-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @forelse($advertisements as $ad)
+                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-850/50">
+                                <td class="p-3 font-semibold text-gray-900 dark:text-white">
+                                    <div class="flex items-center space-x-3">
+                                        @if($ad->image_url)
+                                            <img src="{{ $ad->image_url }}" class="w-12 h-8 object-cover rounded border border-gray-200 dark:border-gray-700 bg-white">
+                                        @else
+                                            <div class="w-12 h-8 rounded border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-mono text-[9px] text-gray-400">
+                                                HTML
+                                            </div>
                                         @endif
+                                        <div>
+                                            <span class="block font-bold">{{ $ad->title }}</span>
+                                            @if($ad->destination_url)
+                                                <span class="block text-[10px] text-gray-450 truncate max-w-xs">{{ $ad->destination_url }}</span>
+                                            @endif
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="p-3 font-semibold text-gray-700 dark:text-gray-300">
-                                <span class="bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded capitalize">
-                                    {{ str_replace('_', ' ', $ad->location) }}
-                                </span>
-                            </td>
-                            <td class="p-3 text-gray-500 font-medium">
-                                {{ $ad->script_code ? 'Script/AdSense' : 'Image Banner' }}
-                            </td>
-                            <td class="p-3 text-center">
-                                <button wire:click="toggleActive({{ $ad->id }})" class="focus:outline-none">
-                                    @if($ad->is_active)
-                                        <span class="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300 text-[10px] font-bold px-2 py-0.5 rounded-full">Active</span>
-                                    @else
-                                        <span class="bg-gray-100 dark:bg-gray-800 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-full">Inactive</span>
-                                    @endif
-                                </button>
-                            </td>
-                            <td class="p-3 text-center text-gray-550 dark:text-gray-450 font-bold font-mono">{{ number_format($ad->impressions) }}</td>
-                            <td class="p-3 text-center text-gray-550 dark:text-gray-450 font-bold font-mono">{{ number_format($ad->clicks) }}</td>
-                            <td class="p-3 text-right space-x-2">
-                                <button wire:click="edit({{ $ad->id }})" class="text-[#C8102E] font-bold hover:underline">Edit</button>
-                                <button wire:click="delete({{ $ad->id }})" wire:confirm="Are you sure you want to delete this ad placement?" class="text-red-500 font-bold hover:underline">Delete</button>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="p-8 text-center text-gray-400">No custom advertisements managed yet.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                </td>
+                                <td class="p-3 font-semibold text-gray-700 dark:text-gray-300">
+                                    <span class="bg-blue-50 dark:bg-blue-955/40 text-blue-700 dark:text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded capitalize">
+                                        {{ str_replace('_', ' ', $ad->location) }}
+                                    </span>
+                                </td>
+                                <td class="p-3 text-gray-550 font-medium">
+                                    {{ $ad->script_code ? 'Script/AdSense' : 'Image Banner' }}
+                                </td>
+                                <td class="p-3 text-center">
+                                    <button wire:click="toggleActive({{ $ad->id }})" class="focus:outline-none">
+                                        @if($ad->is_active)
+                                            <span class="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300 text-[10px] font-bold px-2 py-0.5 rounded-full">Active</span>
+                                        @else
+                                            <span class="bg-gray-100 dark:bg-gray-800 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-full">Inactive</span>
+                                        @endif
+                                    </button>
+                                </td>
+                                <td class="p-3 text-center text-gray-550 dark:text-gray-455 font-bold font-mono">{{ number_format($ad->impressions) }}</td>
+                                <td class="p-3 text-center text-gray-555 dark:text-gray-455 font-bold font-mono">{{ number_format($ad->clicks) }}</td>
+                                <td class="p-3 text-right space-x-2">
+                                    <button wire:click="edit({{ $ad->id }})" class="text-[#C8102E] font-bold hover:underline">Edit</button>
+                                    <button wire:click="delete({{ $ad->id }})" wire:confirm="Are you sure you want to delete this ad placement?" class="text-red-500 font-bold hover:underline">Delete</button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="p-8 text-center text-gray-400">No custom advertisements managed yet.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     @else

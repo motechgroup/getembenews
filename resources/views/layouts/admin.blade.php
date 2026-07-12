@@ -66,7 +66,7 @@
 <body class="font-sans text-gray-900 bg-gray-50 dark:bg-gray-950 dark:text-gray-100 antialiased min-h-screen flex flex-col md:flex-row transition-colors duration-200">
 
     <!-- Sidebar Navigation -->
-    <aside class="w-full md:w-64 bg-gray-900 text-gray-300 flex flex-col border-r border-gray-800 shrink-0">
+    <aside x-data="{ sidebarOpen: false }" class="w-full md:w-64 bg-gray-900 text-gray-300 flex flex-col border-r border-gray-800 shrink-0">
         <!-- Sidebar Brand Header -->
         <div class="h-16 px-6 border-b border-gray-800 flex items-center justify-between">
             <a href="/" class="flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-sm">
@@ -79,15 +79,25 @@
                     {{ $secondWord }}
                 </div>
             </a>
-            @if(auth()->user()->isAdmin())
-            <span class="text-[9px] bg-gray-800 text-gray-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">ADMIN</span>
-            @else
-            <span class="text-[9px] bg-gray-800 text-gray-500 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">{{ strtoupper(str_replace('-', ' ', auth()->user()->role)) }}</span>
-            @endif
+            <div class="flex items-center space-x-2">
+                @if(auth()->user()->isAdmin())
+                <span class="text-[9px] bg-gray-800 text-gray-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">ADMIN</span>
+                @else
+                <span class="text-[9px] bg-gray-800 text-gray-500 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">{{ strtoupper(str_replace('-', ' ', auth()->user()->role)) }}</span>
+                @endif
+
+                <!-- Hamburger button for mobile -->
+                <button @click="sidebarOpen = !sidebarOpen" class="md:hidden text-gray-400 hover:text-white focus:outline-none transition" aria-label="Toggle sidebar navigation">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" x-show="!sidebarOpen"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" x-show="sidebarOpen" style="display: none;"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <!-- Navigation Links -->
-        <nav class="flex-grow p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-8rem)] scrollbar-thin scrollbar-thumb-gray-800">
+        <nav :class="{ 'hidden': !sidebarOpen, 'block': sidebarOpen }" class="hidden md:block flex-grow p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-8rem)] scrollbar-thin scrollbar-thumb-gray-800">
             
             <!-- Category: Content & Core -->
             <div class="space-y-1">
@@ -425,7 +435,7 @@
         </nav>
 
         <!-- User Profile Footer in Sidebar -->
-        <div class="p-4 border-t border-gray-800 flex items-center justify-between text-xs">
+        <div :class="{ 'hidden': !sidebarOpen, 'flex': sidebarOpen }" class="hidden md:flex p-4 border-t border-gray-800 items-center justify-between text-xs">
             <a href="{{ route('profile') }}" class="flex items-center space-x-3 group hover:opacity-80 transition cursor-pointer">
                 <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center font-bold text-white overflow-hidden group-hover:ring-2 group-hover:ring-[#C8102E] transition">
                     @if(auth()->user()->photo_url)
@@ -442,7 +452,7 @@
             
             <form method="POST" action="{{ route('logout') }}" class="inline">
                 @csrf
-                <button type="submit" class="text-gray-500 hover:text-white transition">
+                <button type="submit" class="text-gray-500 hover:text-white transition" aria-label="Logout">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                     </svg>
@@ -461,7 +471,7 @@
             </div>
             
             <!-- Dark mode toggle -->
-            <button @click="$store.theme.toggle()" class="p-2 text-gray-550 hover:text-gray-750 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <button @click="$store.theme.toggle()" class="p-2 text-gray-550 hover:text-gray-755 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700" aria-label="Toggle dark mode">
                 <svg x-show="!$store.theme.darkMode" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
                 </svg>

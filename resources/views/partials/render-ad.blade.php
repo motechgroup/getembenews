@@ -27,7 +27,7 @@
         <!-- Custom Advertisement Banner -->
         <div class="w-full text-center my-4">
             <a href="{{ $bannerLink ?: '/contact' }}" target="_blank" class="inline-block relative group">
-                <img src="{{ $bannerImage }}" alt="Advertisement" class="mx-auto rounded max-h-36 object-cover shadow-sm hover:opacity-95 transition">
+                <img src="{{ $bannerImage }}" alt="Advertisement" class="mx-auto rounded max-h-36 object-cover shadow-sm hover:opacity-95 transition" loading="lazy">
                 <span class="absolute top-1 left-1 bg-black/60 text-white text-[8px] px-1 rounded uppercase tracking-wider font-semibold">ADVERTISEMENT</span>
             </a>
         </div>

@@ -22,7 +22,7 @@
                                     <div class="flex items-center space-x-2 text-[10px] font-bold text-[#C8102E] uppercase">
                                         <span>{{ $featuredArticle->category->name }}</span>
                                         <span class="text-gray-300 font-normal">&bull;</span>
-                                        <span class="text-gray-400 font-normal">{{ $featuredArticle->published_at->diffForHumans() }}</span>
+                                        <span class="text-gray-500 dark:text-gray-400 font-normal">{{ $featuredArticle->published_at->diffForHumans() }}</span>
                                     </div>
                                     <h3 class="text-lg font-serif font-bold text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition">
                                         <a href="/articles/{{ $featuredArticle->slug }}">{{ $featuredArticle->title }}</a>
@@ -35,13 +35,13 @@
                         @foreach($topStories as $story)
                             <article class="pt-6 group flex flex-col sm:flex-row gap-6">
                                 <div class="w-full sm:w-1/3 aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800">
-                                    <img src="{{ $story->featured_image }}" alt="{{ $story->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
+                                    <img src="{{ $story->featured_image }}" alt="{{ $story->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500" loading="lazy">
                                 </div>
                                 <div class="space-y-1.5 flex-grow">
-                                    <div class="flex items-center space-x-2 text-[10px] font-bold text-[#C8102E] uppercase">
+                                    <div class="flex items-center space-x-2 text-[9px] font-bold text-[#C8102E] uppercase">
                                         <span>{{ $story->category->name }}</span>
                                         <span class="text-gray-300 font-normal">&bull;</span>
-                                        <span class="text-gray-400 font-normal">{{ $story->published_at->diffForHumans() }}</span>
+                                        <span class="text-gray-500 dark:text-gray-400 font-normal">{{ $story->published_at->diffForHumans() }}</span>
                                     </div>
                                     <h3 class="text-base font-serif font-bold text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition">
                                         <a href="/articles/{{ $story->slug }}">{{ $story->title }}</a>
@@ -98,7 +98,7 @@
                                 <div class="py-3 first:pt-0 last:pb-0 group">
                                     <div class="flex items-center justify-between text-[10px] mb-1">
                                         <span class="text-[#C8102E] font-bold uppercase">{{ $latest->category->name }}</span>
-                                        <span class="text-gray-400 font-medium">{{ $latest->published_at->diffForHumans() }}</span>
+                                        <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $latest->published_at->diffForHumans() }}</span>
                                     </div>
                                     <h4 class="text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition">
                                         <a href="/articles/{{ $latest->slug }}">{{ $latest->title }}</a>
@@ -134,7 +134,7 @@
 
                             @foreach($topStories as $story)
                                 <article class="relative aspect-[16/10] overflow-hidden rounded-lg group shadow-sm border border-gray-250 dark:border-gray-800 bg-gray-950">
-                                    <img src="{{ $story->featured_image }}" alt="{{ $story->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 opacity-85 group-hover:opacity-75 transition duration-500">
+                                    <img src="{{ $story->featured_image }}" alt="{{ $story->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 opacity-85 group-hover:opacity-75 transition duration-500" loading="lazy">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent flex flex-col justify-end p-4 space-y-1">
                                         <span class="text-[9px] font-bold text-red-500 uppercase tracking-widest">{{ $story->category->name }}</span>
                                         <h3 class="text-sm font-serif font-bold text-white leading-tight line-clamp-2">
@@ -191,7 +191,7 @@
                                     <div class="py-3 first:pt-0 last:pb-0 group">
                                         <div class="flex items-center justify-between text-[10px] mb-1">
                                             <span class="text-[#C8102E] font-bold uppercase">{{ $latest->category->name }}</span>
-                                            <span class="text-gray-400 font-medium">{{ $latest->published_at->diffForHumans() }}</span>
+                                            <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $latest->published_at->diffForHumans() }}</span>
                                         </div>
                                         <h4 class="text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition">
                                             <a href="/articles/{{ $latest->slug }}">{{ $latest->title }}</a>
@@ -306,7 +306,7 @@
                                     @foreach($block['articles']->take(2) as $medItem)
                                         <article class="group space-y-3">
                                             <a href="/articles/{{ $medItem->slug }}" class="block aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-855 border border-gray-150 dark:border-gray-850 relative">
-                                                <img src="{{ $medItem->featured_image }}" alt="{{ $medItem->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
+                                                <img src="{{ $medItem->featured_image }}" alt="{{ $medItem->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500" loading="lazy">
                                                 @if($medItem->is_featured)
                                                     <span class="absolute top-2.5 right-2.5 bg-yellow-500 text-white p-0.5 rounded-full shadow-md z-10">
                                                         <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -317,7 +317,7 @@
                                                 <h3 class="text-sm font-bold font-serif text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] transition line-clamp-2">
                                                     <a href="/articles/{{ $medItem->slug }}">{{ $medItem->title }}</a>
                                                 </h3>
-                                                <div class="flex items-center space-x-2 text-[9px] text-gray-400 font-semibold">
+                                                <div class="flex items-center space-x-2 text-[9px] text-gray-500 dark:text-gray-400 font-semibold">
                                                     <span>{{ $medItem->author->name ?? 'staff' }}</span>
                                                     <span>&bull;</span>
                                                     <span>{{ $medItem->published_at->format('M j, Y') }}</span>
@@ -347,7 +347,7 @@
                                         @foreach($col1 as $item)
                                             <article class="group flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
                                                 <div class="w-20 h-14 overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800 relative">
-                                                    <img src="{{ $item->featured_image }}" alt="{{ $item->title }}" class="w-full h-full object-cover">
+                                                    <img src="{{ $item->featured_image }}" alt="{{ $item->title }}" class="w-full h-full object-cover" loading="lazy">
                                                     @if($item->is_featured)
                                                         <span class="absolute top-1 right-1 bg-yellow-500 text-white p-0.5 rounded-full shadow z-10 scale-75">
                                                             <svg class="h-2 w-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -358,7 +358,7 @@
                                                     <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] transition line-clamp-2">
                                                         <a href="/articles/{{ $item->slug }}">{{ $item->title }}</a>
                                                     </h4>
-                                                    <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-400 font-semibold">
+                                                    <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-500 dark:text-gray-400 font-semibold">
                                                         <span>{{ $item->author->name ?? 'staff' }}</span>
                                                         <span>&bull;</span>
                                                         <span>{{ $item->published_at->format('M j, Y') }}</span>
@@ -373,7 +373,7 @@
                                         @foreach($col2 as $item)
                                             <article class="group flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
                                                 <div class="w-20 h-14 overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800 relative">
-                                                    <img src="{{ $item->featured_image }}" alt="{{ $item->title }}" class="w-full h-full object-cover">
+                                                    <img src="{{ $item->featured_image }}" alt="{{ $item->title }}" class="w-full h-full object-cover" loading="lazy">
                                                     @if($item->is_featured)
                                                         <span class="absolute top-1 right-1 bg-yellow-500 text-white p-0.5 rounded-full shadow z-10 scale-75">
                                                             <svg class="h-2 w-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -384,7 +384,7 @@
                                                     <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] transition line-clamp-2">
                                                         <a href="/articles/{{ $item->slug }}">{{ $item->title }}</a>
                                                     </h4>
-                                                    <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-400 font-semibold">
+                                                    <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-500 dark:text-gray-400 font-semibold">
                                                         <span>{{ $item->author->name ?? 'staff' }}</span>
                                                         <span>&bull;</span>
                                                         <span>{{ $item->published_at->format('M j, Y') }}</span>
@@ -425,7 +425,7 @@
                             @foreach($trendingArticles->take(5) as $popItem)
                                 <article class="group flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
                                     <div class="w-20 h-14 overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800 relative">
-                                        <img src="{{ $popItem->featured_image }}" alt="{{ $popItem->title }}" class="w-full h-full object-cover">
+                                        <img src="{{ $popItem->featured_image }}" alt="{{ $popItem->title }}" class="w-full h-full object-cover" loading="lazy">
                                         @if($popItem->is_featured)
                                             <span class="absolute top-1 right-1 bg-yellow-500 text-white p-0.5 rounded-full shadow z-10 scale-75">
                                                 <svg class="h-2 w-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -436,7 +436,7 @@
                                         <h4 class="text-xs font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] transition line-clamp-2">
                                             <a href="/articles/{{ $popItem->slug }}">{{ $popItem->title }}</a>
                                         </h4>
-                                        <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-400 font-semibold">
+                                        <div class="flex items-center space-x-1.5 text-[8.5px] text-gray-500 dark:text-gray-400 font-semibold">
                                             <span>{{ $popItem->author->name ?? 'admin' }}</span>
                                             <span>&bull;</span>
                                             <span>{{ $popItem->published_at->format('M j, Y') }}</span>
@@ -564,7 +564,7 @@
                             @endphp
                             @if($recItem)
                                 <a href="/articles/{{ $recItem->slug }}" class="relative block aspect-[16/10] overflow-hidden rounded group bg-gray-950 shadow border border-gray-150 dark:border-gray-855">
-                                    <img src="{{ $recItem->featured_image }}" alt="{{ $recItem->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85">
+                                    <img src="{{ $recItem->featured_image }}" alt="{{ $recItem->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85" loading="lazy">
                                     <div class="absolute bottom-3 left-3 bg-[#C8102E] text-white text-[8px] font-black uppercase px-2 py-0.5 tracking-wider rounded z-20">
                                         {{ $recItem->category->name }}
                                     </div>

@@ -2580,30 +2580,32 @@ $sendTestEmail = function () {
 
                     <!-- Database subscribers list -->
                     <div class="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
-                        <table class="w-full text-left border-collapse text-xs">
-                            <thead>
-                                <tr class="bg-gray-50 dark:bg-gray-950 text-gray-500 font-bold border-b border-gray-200 dark:border-gray-800">
-                                    <th class="p-3">Subscriber Email</th>
-                                    <th class="p-3">Date Subscribed</th>
-                                    <th class="p-3 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-150 dark:divide-gray-850">
-                                @forelse(\App\Models\Newsletter::query()->when(data_get($this, 'newsletterSearch') ?? data_get($this, 'newsletter_search'), fn($q) => $q->where('email', 'like', "%" . (data_get($this, 'newsletterSearch') ?? data_get($this, 'newsletter_search')) . "%"))->orderBy('created_at', 'desc')->get() as $sub)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-950/50">
-                                        <td class="p-3 font-bold text-gray-900 dark:text-white">{{ $sub->email }}</td>
-                                        <td class="p-3 text-gray-400">{{ $sub->created_at->format('Y-m-d H:i') }}</td>
-                                        <td class="p-3 text-right">
-                                            <button type="button" wire:click="deleteSubscriber({{ $sub->id }})" class="text-red-550 font-bold hover:underline">Remove</button>
-                                        </td>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="bg-gray-50 dark:bg-gray-950 text-gray-500 font-bold border-b border-gray-200 dark:border-gray-800">
+                                        <th class="p-3">Subscriber Email</th>
+                                        <th class="p-3">Date Subscribed</th>
+                                        <th class="p-3 text-right">Actions</th>
                                     </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" class="p-8 text-center text-gray-400">No active subscribers found in register database.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody class="divide-y divide-gray-150 dark:divide-gray-850">
+                                    @forelse(\App\Models\Newsletter::query()->when(data_get($this, 'newsletterSearch') ?? data_get($this, 'newsletter_search'), fn($q) => $q->where('email', 'like', "%" . (data_get($this, 'newsletterSearch') ?? data_get($this, 'newsletter_search')) . "%"))->orderBy('created_at', 'desc')->get() as $sub)
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-950/50">
+                                            <td class="p-3 font-bold text-gray-900 dark:text-white">{{ $sub->email }}</td>
+                                            <td class="p-3 text-gray-400">{{ $sub->created_at->format('Y-m-d H:i') }}</td>
+                                            <td class="p-3 text-right">
+                                                <button type="button" wire:click="deleteSubscriber({{ $sub->id }})" class="text-red-550 font-bold hover:underline">Remove</button>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="3" class="p-8 text-center text-gray-400">No active subscribers found in register database.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     @endcan
                 </div>

@@ -566,51 +566,53 @@ $generateIdeas = function () {
 
         <!-- Table -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden shadow-sm">
-            <table class="w-full text-left border-collapse text-xs">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-850 text-gray-500 border-b border-gray-200 dark:border-gray-800 font-bold">
-                        <th class="p-3">Title</th>
-                        <th class="p-3">Author</th>
-                        <th class="p-3">Category</th>
-                        <th class="p-3">Status</th>
-                        <th class="p-3 text-right">Views</th>
-                        <th class="p-3 text-right">Date</th>
-                        <th class="p-3 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                    @forelse($this->articles() as $article)
-                        <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-850/50">
-                            <td class="p-3 font-bold text-gray-900 dark:text-white truncate max-w-xs">
-                                <a href="/articles/{{ $article->slug }}" target="_blank" class="hover:underline">{{ $article->title }}</a>
-                            </td>
-                            <td class="p-3 text-gray-500">{{ $article->author->name }}</td>
-                            <td class="p-3 text-gray-500">{{ $article->category->name }}</td>
-                            <td class="p-3">
-                                <span class="px-2 py-0.5 rounded font-bold uppercase text-[9px] {{ $article->status === 'published' ? 'bg-green-100 text-green-800 dark:bg-green-950/20 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/20 dark:text-yellow-400' }}">
-                                    {{ $article->status }}
-                                </span>
-                            </td>
-                            <td class="p-3 text-right text-gray-500">{{ number_format($article->views_count) }}</td>
-                            <td class="p-3 text-right text-gray-400">{{ $article->created_at->format('M j, Y') }}</td>
-                            <td class="p-3 text-right space-x-2">
-                                @if($article->status === 'pending' && (auth()->user()->isAdmin() || auth()->user()->isEditor()))
-                                    <button type="button" wire:click="approve({{ $article->id }})" class="text-green-600 font-bold hover:underline">Approve</button>
-                                @endif
-                                @if($article->status === 'published' && (auth()->user()->isAdmin() || auth()->user()->isEditor()))
-                                    <button type="button" wire:click="sendNewsletter({{ $article->id }})" wire:confirm="Are you sure you want to send this article to all newsletter subscribers?" class="text-blue-650 font-bold hover:underline">Send Newsletter</button>
-                                @endif
-                                <button type="button" wire:click="edit({{ $article->id }})" class="text-[#C8102E] font-bold hover:underline">Edit</button>
-                                <button type="button" wire:click="delete({{ $article->id }})" wire:confirm="Are you sure you want to delete this article?" class="text-red-500 font-bold hover:underline">Delete</button>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-gray-50 dark:bg-gray-850 text-gray-550 border-b border-gray-200 dark:border-gray-800 font-bold">
+                            <th class="p-3">Title</th>
+                            <th class="p-3">Author</th>
+                            <th class="p-3">Category</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3 text-right">Views</th>
+                            <th class="p-3 text-right">Date</th>
+                            <th class="p-3 text-right">Actions</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="p-8 text-center text-gray-400">No articles found.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @forelse($this->articles() as $article)
+                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-850/50">
+                                <td class="p-3 font-bold text-gray-900 dark:text-white truncate max-w-xs">
+                                    <a href="/articles/{{ $article->slug }}" target="_blank" class="hover:underline">{{ $article->title }}</a>
+                                </td>
+                                <td class="p-3 text-gray-500">{{ $article->author->name }}</td>
+                                <td class="p-3 text-gray-500">{{ $article->category->name }}</td>
+                                <td class="p-3">
+                                    <span class="px-2 py-0.5 rounded font-bold uppercase text-[9px] {{ $article->status === 'published' ? 'bg-green-100 text-green-800 dark:bg-green-950/20 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/20 dark:text-yellow-400' }}">
+                                        {{ $article->status }}
+                                    </span>
+                                </td>
+                                <td class="p-3 text-right text-gray-500">{{ number_format($article->views_count) }}</td>
+                                <td class="p-3 text-right text-gray-400">{{ $article->created_at->format('M j, Y') }}</td>
+                                <td class="p-3 text-right space-x-2 whitespace-nowrap">
+                                    @if($article->status === 'pending' && (auth()->user()->isAdmin() || auth()->user()->isEditor()))
+                                        <button type="button" wire:click="approve({{ $article->id }})" class="text-green-600 font-bold hover:underline">Approve</button>
+                                    @endif
+                                    @if($article->status === 'published' && (auth()->user()->isAdmin() || auth()->user()->isEditor()))
+                                        <button type="button" wire:click="sendNewsletter({{ $article->id }})" wire:confirm="Are you sure you want to send this article to all newsletter subscribers?" class="text-blue-650 font-bold hover:underline">Send Newsletter</button>
+                                    @endif
+                                    <button type="button" wire:click="edit({{ $article->id }})" class="text-[#C8102E] font-bold hover:underline">Edit</button>
+                                    <button type="button" wire:click="delete({{ $article->id }})" wire:confirm="Are you sure you want to delete this article?" class="text-red-500 font-bold hover:underline">Delete</button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="p-8 text-center text-gray-400">No articles found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div>

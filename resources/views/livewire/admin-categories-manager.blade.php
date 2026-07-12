@@ -117,46 +117,48 @@ $delete = function ($id) {
     @if(!$isEditing)
         <!-- TABLE LIST -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden shadow-sm">
-            <table class="w-full text-left border-collapse text-xs">
-                <thead>
-                    <tr class="bg-gray-50 dark:bg-gray-850 text-gray-500 border-b border-gray-200 dark:border-gray-800 font-bold">
-                        <th class="p-3 w-16 text-center">Order</th>
-                        <th class="p-3">Category Name</th>
-                        <th class="p-3 w-40">Slug</th>
-                        <th class="p-3">Description</th>
-                        <th class="p-3 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                    @forelse($categories as $category)
-                        <!-- Tree Category -->
-                        <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-850/50">
-                            <td class="p-3 text-center font-bold text-gray-900 dark:text-white">{{ $category->order }}</td>
-                            <td class="p-3 font-semibold text-gray-950 dark:text-white flex items-center">
-                                <div style="margin-left: {{ $category->depth * 1.5 }}rem" class="flex items-center space-x-1.5">
-                                    @if($category->depth === 0)
-                                        <span class="bg-gray-250 dark:bg-gray-800 text-[9px] text-gray-750 dark:text-gray-300 px-1 py-0.5 rounded font-mono font-bold uppercase tracking-wider">Parent</span>
-                                    @else
-                                        <span class="text-gray-400 select-none font-mono">└─</span>
-                                        <span class="bg-red-50 dark:bg-red-950/20 text-[9px] text-red-700 dark:text-red-400 px-1 py-0.5 rounded font-mono font-bold uppercase tracking-wider">Sub (Lvl {{ $category->depth }})</span>
-                                    @endif
-                                    <span>{{ $category->name }}</span>
-                                </div>
-                            </td>
-                            <td class="p-3 text-gray-550 dark:text-gray-450 font-mono">{{ $category->slug }}</td>
-                            <td class="p-3 text-gray-400 max-w-sm truncate">{{ $category->description ?? '-' }}</td>
-                            <td class="p-3 text-right space-x-2">
-                                <button wire:click="edit({{ $category->id }})" class="text-[#C8102E] font-bold hover:underline">Edit</button>
-                                <button wire:click="delete({{ $category->id }})" wire:confirm="Are you sure you want to delete this category? All subcategories and associated articles will also be deleted." class="text-red-500 font-bold hover:underline">Delete</button>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-gray-50 dark:bg-gray-850 text-gray-550 border-b border-gray-200 dark:border-gray-800 font-bold">
+                            <th class="p-3 w-16 text-center">Order</th>
+                            <th class="p-3">Category Name</th>
+                            <th class="p-3 w-40">Slug</th>
+                            <th class="p-3">Description</th>
+                            <th class="p-3 text-right">Actions</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="p-8 text-center text-gray-400">No categories found.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @forelse($categories as $category)
+                            <!-- Tree Category -->
+                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-850/50">
+                                <td class="p-3 text-center font-bold text-gray-900 dark:text-white">{{ $category->order }}</td>
+                                <td class="p-3 font-semibold text-gray-955 dark:text-white flex items-center">
+                                    <div style="margin-left: {{ $category->depth * 1.5 }}rem" class="flex items-center space-x-1.5">
+                                        @if($category->depth === 0)
+                                            <span class="bg-gray-250 dark:bg-gray-800 text-[9px] text-gray-750 dark:text-gray-300 px-1 py-0.5 rounded font-mono font-bold uppercase tracking-wider">Parent</span>
+                                        @else
+                                            <span class="text-gray-400 select-none font-mono">└─</span>
+                                            <span class="bg-red-50 dark:bg-red-955/20 text-[9px] text-red-700 dark:text-red-400 px-1 py-0.5 rounded font-mono font-bold uppercase tracking-wider">Sub (Lvl {{ $category->depth }})</span>
+                                        @endif
+                                        <span>{{ $category->name }}</span>
+                                    </div>
+                                </td>
+                                <td class="p-3 text-gray-550 dark:text-gray-450 font-mono">{{ $category->slug }}</td>
+                                <td class="p-3 text-gray-400 max-w-sm truncate">{{ $category->description ?? '-' }}</td>
+                                <td class="p-3 text-right space-x-2">
+                                    <button wire:click="edit({{ $category->id }})" class="text-[#C8102E] font-bold hover:underline">Edit</button>
+                                    <button wire:click="delete({{ $category->id }})" wire:confirm="Are you sure you want to delete this category? All subcategories and associated articles will also be deleted." class="text-red-500 font-bold hover:underline">Delete</button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="p-8 text-center text-gray-400">No categories found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     @else

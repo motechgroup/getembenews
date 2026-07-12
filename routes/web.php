@@ -201,6 +201,26 @@ Route::get('/sitemap.xml', [SeoSitemapController::class, 'sitemap'])->name('site
 Route::get('/news-sitemap.xml', [SeoSitemapController::class, 'newsSitemap'])->name('sitemap.news');
 Route::get('/feed/google-news', [SeoSitemapController::class, 'googleNewsFeed'])->name('feed.google-news');
 
+Route::get('/robots.txt', function () {
+    $siteUrl = rtrim(url('/'), '/');
+    $default = "User-agent: *\nDisallow: /admin\nDisallow: /login\nDisallow: /register\n\nSitemap: {$siteUrl}/sitemap.xml\nSitemap: {$siteUrl}/news-sitemap.xml";
+    $content = trim(\App\Models\Setting::get('robots_txt_content', $default));
+    
+    if (empty($content)) {
+        $content = $default;
+    }
+    
+    // If Sitemap reference is missing, append it
+    if (!str_contains(strtolower($content), 'sitemap:')) {
+        $content .= "\n\nSitemap: {$siteUrl}/sitemap.xml\nSitemap: {$siteUrl}/news-sitemap.xml";
+    } else {
+        // Dynamically replace localhost or wrong domains in existing sitemap references
+        $content = preg_replace('/Sitemap:\s*\S+/i', "Sitemap: {$siteUrl}/sitemap.xml\nSitemap: {$siteUrl}/news-sitemap.xml", $content);
+    }
+    
+    return response($content, 200, ['Content-Type' => 'text/plain']);
+});
+
 Route::view('/about', 'about')->name('about');
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/privacy', 'privacy')->name('privacy');

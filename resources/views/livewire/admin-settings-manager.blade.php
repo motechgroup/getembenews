@@ -54,6 +54,17 @@ state([
     'app_app_store_url' => fn() => Setting::get('app_app_store_url', 'https://www.apple.com/app-store'),
     'app_banner_title' => fn() => Setting::get('app_banner_title', 'Download Getembe News Mobile App'),
     'app_banner_desc' => fn() => Setting::get('app_banner_desc', 'Get fast, reliable, and breaking news alerts directly on your smartphone. Available now for Android and iOS devices.'),
+    
+    // API & Mobile Companion Configurations
+    'mobile_app_version_ios' => fn() => Setting::get('mobile_app_version_ios', '1.0.0'),
+    'mobile_app_version_android' => fn() => Setting::get('mobile_app_version_android', '1.0.0'),
+    'mobile_app_force_update' => fn() => (bool) Setting::get('mobile_app_force_update', false),
+    'mobile_app_ios_link' => fn() => Setting::get('mobile_app_ios_link', 'https://www.apple.com/app-store'),
+    'mobile_app_android_link' => fn() => Setting::get('mobile_app_android_link', 'https://play.google.com/store'),
+    'mobile_app_ads_enabled' => fn() => (bool) Setting::get('mobile_app_ads_enabled', false),
+    'mobile_app_admob_banner_id' => fn() => Setting::get('mobile_app_admob_banner_id', ''),
+    'mobile_app_admob_interstitial_id' => fn() => Setting::get('mobile_app_admob_interstitial_id', ''),
+    'mobile_app_maintenance_mode' => fn() => (bool) Setting::get('mobile_app_maintenance_mode', false),
 
     // 2. Social Links
     'website' => fn() => Setting::get('website', ''),
@@ -878,6 +889,7 @@ $save = function () use ($logAction) {
         'live_tv_url', 'live_radio_url', 'live_tv_active', 'live_radio_active', 'weather_city', 'homepage_categories',
         'app_play_store_url', 'app_app_store_url', 'app_banner_title', 'app_banner_desc',
         'tv_schedule', 'radio_schedule',
+        'mobile_app_version_ios', 'mobile_app_version_android', 'mobile_app_force_update', 'mobile_app_ios_link', 'mobile_app_android_link', 'mobile_app_ads_enabled', 'mobile_app_admob_banner_id', 'mobile_app_admob_interstitial_id', 'mobile_app_maintenance_mode',
         'adsense_enabled', 'adsense_client_id', 'adsense_code',
         'facebook_ads_enabled', 'facebook_ads_code',
         'custom_ads_enabled',
@@ -2319,6 +2331,80 @@ $sendTestEmail = function () {
 
                     <div class="pt-4">
                         <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save Settings</button>
+                    </div>
+                </div>
+
+                <!-- MOBILE APP SETTINGS TAB -->
+                <div x-show="activeTab === 'mobile-app'" class="space-y-6" style="display: none;">
+                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">Mobile Companion Application Settings</h3>
+                    
+                    <!-- App Version & Info -->
+                    <div class="bg-gray-50 dark:bg-gray-955 border border-gray-150 dark:border-gray-850 p-4 rounded-lg space-y-4">
+                        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Application Versions & Stores</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">iOS App Version</label>
+                                <input type="text" wire:model="mobile_app_version_ios" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Android App Version</label>
+                                <input type="text" wire:model="mobile_app_version_android" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">App Store Download URL (iOS)</label>
+                                <input type="url" wire:model="mobile_app_ios_link" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Play Store Download URL (Android)</label>
+                                <input type="url" wire:model="mobile_app_android_link" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                        </div>
+
+                        <!-- Force Update Toggle -->
+                        <div class="flex items-center space-x-3 pt-2">
+                            <input type="checkbox" id="mobile_app_force_update" wire:model="mobile_app_force_update" class="h-4 w-4 rounded border-gray-300 text-[#C8102E] focus:ring-[#C8102E]">
+                            <label for="mobile_app_force_update" class="text-xs font-bold text-gray-700 dark:text-gray-300">Force Upgrade (Require users to update the mobile application to continue)</label>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Advertising Settings -->
+                    <div class="bg-gray-50 dark:bg-gray-955 border border-gray-150 dark:border-gray-850 p-4 rounded-lg space-y-4">
+                        <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-2">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Mobile Monetization & Advertising</h4>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" id="mobile_app_ads_enabled" wire:model="mobile_app_ads_enabled" class="h-4 w-4 rounded border-gray-300 text-[#C8102E] focus:ring-[#C8102E]">
+                                <label for="mobile_app_ads_enabled" class="text-xs font-bold text-gray-700 dark:text-gray-300">Enable Mobile Ads</label>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">AdMob Banner Unit ID</label>
+                                <input type="text" wire:model="mobile_app_admob_banner_id" placeholder="ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">AdMob Interstitial Unit ID</label>
+                                <input type="text" wire:model="mobile_app_admob_interstitial_id" placeholder="ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- App Maintenance Mode -->
+                    <div class="bg-gray-50 dark:bg-gray-955 border border-gray-150 dark:border-gray-850 p-4 rounded-lg space-y-4">
+                        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">System Operations</h4>
+                        <div class="flex items-start space-x-3">
+                            <input type="checkbox" id="mobile_app_maintenance_mode" wire:model="mobile_app_maintenance_mode" class="h-4 w-4 mt-0.5 rounded border-gray-300 text-[#C8102E] focus:ring-[#C8102E]">
+                            <div class="space-y-0.5">
+                                <label for="mobile_app_maintenance_mode" class="text-xs font-bold text-gray-700 dark:text-gray-300">App Maintenance Offline Mode</label>
+                                <p class="text-[10px] text-gray-400">When enabled, the mobile application will display a placeholder maintenance screen and block all internal API requests.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs py-2 px-6 rounded transition">
+                            Save Mobile App Settings
+                        </button>
                     </div>
                 </div>
 

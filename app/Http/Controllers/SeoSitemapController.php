@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Setting;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class SeoSitemapController extends Controller
 {

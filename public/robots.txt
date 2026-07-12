@@ -1,4 +1,0 @@
-User-agent: *
-Disallow:
-
-Sitemap: https://gifty.co.ke/sitemap.xml

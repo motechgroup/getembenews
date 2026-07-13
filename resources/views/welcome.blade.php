@@ -235,11 +235,13 @@
                                     <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                                     <span>{{ $featuredArticle->comments->count() }}</span>
                                 </span>
-                                <span>&bull;</span>
-                                <span class="flex items-center space-x-1">
-                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                    <span>{{ number_format($featuredArticle->views_count) }}</span>
-                                </span>
+                                @if(\App\Models\Setting::get('show_views_count', true))
+                                    <span>&bull;</span>
+                                    <span class="flex items-center space-x-1">
+                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <span>{{ number_format($featuredArticle->views_count) }}</span>
+                                    </span>
+                                @endif
                             </div>
                         </div>
                         @if($featuredArticle->is_featured)
@@ -273,11 +275,13 @@
                                     @endif
                                     <span>&bull;</span>
                                     <span>{{ $story->published_at->format('M j, Y') }}</span>
-                                    <span>&bull;</span>
-                                    <span class="flex items-center space-x-0.5">
-                                        <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                        <span>{{ number_format($story->views_count) }}</span>
-                                    </span>
+                                    @if(\App\Models\Setting::get('show_views_count', true))
+                                        <span>&bull;</span>
+                                        <span class="flex items-center space-x-0.5">
+                                            <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                            <span>{{ number_format($story->views_count) }}</span>
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                             @if($story->is_featured)
@@ -337,11 +341,13 @@
                                                     @endif
                                                     <span>&bull;</span>
                                                     <span>{{ $medItem->published_at->format('M j, Y') }}</span>
-                                                    <span>&bull;</span>
-                                                    <span class="flex items-center space-x-0.5">
-                                                        <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                                        <span>{{ number_format($medItem->views_count) }}</span>
-                                                    </span>
+                                                    @if(\App\Models\Setting::get('show_views_count', true))
+                                                        <span>&bull;</span>
+                                                        <span class="flex items-center space-x-0.5">
+                                                            <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                            <span>{{ number_format($medItem->views_count) }}</span>
+                                                        </span>
+                                                    @endif
                                                 </div>
                                                 <p class="text-[11px] text-gray-550 dark:text-gray-400 leading-relaxed line-clamp-2">
                                                     {{ $medItem->subtitle }}
@@ -468,11 +474,13 @@
                                             @endif
                                             <span>&bull;</span>
                                             <span>{{ $popItem->published_at->format('M j, Y') }}</span>
-                                            <span>&bull;</span>
-                                            <span class="flex items-center space-x-0.5">
-                                                <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                                <span>{{ number_format($popItem->views_count) }}</span>
-                                            </span>
+                                            @if(\App\Models\Setting::get('show_views_count', true))
+                                                <span>&bull;</span>
+                                                <span class="flex items-center space-x-0.5">
+                                                    <svg class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                    <span>{{ number_format($popItem->views_count) }}</span>
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
                                 </article>

@@ -48,6 +48,7 @@ state([
     'live_radio_url' => fn() => Setting::get('live_radio_url', 'http://stream.zeno.fm/f5r7x1t1zv8uv'),
     'live_tv_active' => fn() => (bool) Setting::get('live_tv_active', true),
     'live_radio_active' => fn() => (bool) Setting::get('live_radio_active', true),
+    'show_views_count' => fn() => (bool) Setting::get('show_views_count', true),
 
     // Mobile App Settings
     'app_play_store_url' => fn() => Setting::get('app_play_store_url', 'https://play.google.com/store'),
@@ -889,7 +890,7 @@ $save = function () use ($logAction) {
         'google_login', 'facebook_login', 'twitter_login', 'github_login', 'linkedin_login', 'whatsapp_login', 'apple_login', 'pinterest_login', 'threads_login',
         'google_client_id', 'google_client_secret', 'facebook_client_id', 'facebook_client_secret', 'github_client_id', 'github_client_secret', 'twitter_client_id', 'twitter_client_secret',
         'notifications_enabled', 'notifications_push', 'notifications_in_app', 'notifications_email',
-        'live_tv_url', 'live_radio_url', 'live_tv_active', 'live_radio_active', 'weather_city', 'homepage_categories',
+        'live_tv_url', 'live_radio_url', 'live_tv_active', 'live_radio_active', 'weather_city', 'homepage_categories', 'show_views_count',
         'app_play_store_url', 'app_app_store_url', 'app_banner_title', 'app_banner_desc',
         'tv_schedule', 'radio_schedule',
         'mobile_app_version_ios', 'mobile_app_version_android', 'mobile_app_force_update', 'mobile_app_ios_link', 'mobile_app_android_link', 'mobile_app_ads_enabled', 'mobile_app_admob_banner_id', 'mobile_app_admob_interstitial_id', 'mobile_app_facebook_ads_enabled', 'mobile_app_facebook_banner_id', 'mobile_app_facebook_interstitial_id', 'mobile_app_maintenance_mode',
@@ -1321,6 +1322,17 @@ $sendTestEmail = function () {
                             <div class="flex items-center space-x-2 pt-1">
                                 <input type="checkbox" wire:model="live_radio_active" id="live_radio_active" class="rounded text-[#C8102E] focus:ring-[#C8102E] h-3.5 w-3.5 border-gray-300 dark:border-gray-700 dark:bg-gray-800">
                                 <label for="live_radio_active" class="text-[10px] font-bold text-gray-600 dark:text-gray-400">Enable Live Radio page & links</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visibility Settings -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Visitor Settings</label>
+                            <div class="flex items-center space-x-2 pt-1">
+                                <input type="checkbox" wire:model="show_views_count" id="show_views_count" class="rounded text-[#C8102E] focus:ring-[#C8102E] h-3.5 w-3.5 border-gray-300 dark:border-gray-700 dark:bg-gray-800">
+                                <label for="show_views_count" class="text-[10px] font-bold text-gray-600 dark:text-gray-400">Show article views count to visitors</label>
                             </div>
                         </div>
                     </div>

@@ -71,6 +71,7 @@ class MobileAppController extends Controller
                 'mobile_app_facebook_banner_id' => Setting::get('mobile_app_facebook_banner_id', ''),
                 'mobile_app_facebook_interstitial_id' => Setting::get('mobile_app_facebook_interstitial_id', ''),
                 'mobile_app_maintenance_mode' => (bool) Setting::get('mobile_app_maintenance_mode', false),
+                'show_views_count' => (bool) Setting::get('show_views_count', true),
                 'announcement_rate_tv' => (int) Setting::get('announcement_rate_tv', 5),
                 'announcement_rate_radio' => (int) Setting::get('announcement_rate_radio', 3),
                 'announcement_rate_both' => (int) Setting::get('announcement_rate_both', 7),

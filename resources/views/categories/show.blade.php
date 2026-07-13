@@ -68,7 +68,7 @@
                         <article class="group space-y-3">
                             <div class="aspect-[16/10] overflow-hidden rounded-lg bg-gray-105 dark:bg-gray-850 border border-gray-200 dark:border-gray-800 relative z-10">
                                 <img src="{{ $spotlight->featured_image }}" alt="{{ $spotlight->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
-                                @if($spotlight->views_count > 100)
+                                @if(\App\Models\Setting::get('show_views_count', true) && $spotlight->views_count > 100)
                                     <!-- Dynamic Premium Live/Video aesthetic Badge -->
                                     <div class="absolute bottom-3 left-3 bg-black/80 text-white text-[10px] font-bold px-2 py-0.5 rounded flex items-center space-x-1 shadow">
                                         <svg class="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">

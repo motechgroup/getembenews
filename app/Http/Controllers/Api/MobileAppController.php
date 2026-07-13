@@ -75,6 +75,8 @@ class MobileAppController extends Controller
                 'announcement_rate_tv' => (int) Setting::get('announcement_rate_tv', 5),
                 'announcement_rate_radio' => (int) Setting::get('announcement_rate_radio', 3),
                 'announcement_rate_both' => (int) Setting::get('announcement_rate_both', 7),
+                'simulated_polls' => json_decode(Setting::get('simulated_polls', '[]'), true),
+                'simulated_quizzes' => json_decode(Setting::get('simulated_quizzes', '[]'), true),
             ]
         ]);
     }

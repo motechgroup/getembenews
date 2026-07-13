@@ -64,6 +64,9 @@ state([
     'mobile_app_ads_enabled' => fn() => (bool) Setting::get('mobile_app_ads_enabled', false),
     'mobile_app_admob_banner_id' => fn() => Setting::get('mobile_app_admob_banner_id', ''),
     'mobile_app_admob_interstitial_id' => fn() => Setting::get('mobile_app_admob_interstitial_id', ''),
+    'mobile_app_facebook_ads_enabled' => fn() => (bool) Setting::get('mobile_app_facebook_ads_enabled', false),
+    'mobile_app_facebook_banner_id' => fn() => Setting::get('mobile_app_facebook_banner_id', ''),
+    'mobile_app_facebook_interstitial_id' => fn() => Setting::get('mobile_app_facebook_interstitial_id', ''),
     'mobile_app_maintenance_mode' => fn() => (bool) Setting::get('mobile_app_maintenance_mode', false),
 
     // 2. Social Links
@@ -889,7 +892,7 @@ $save = function () use ($logAction) {
         'live_tv_url', 'live_radio_url', 'live_tv_active', 'live_radio_active', 'weather_city', 'homepage_categories',
         'app_play_store_url', 'app_app_store_url', 'app_banner_title', 'app_banner_desc',
         'tv_schedule', 'radio_schedule',
-        'mobile_app_version_ios', 'mobile_app_version_android', 'mobile_app_force_update', 'mobile_app_ios_link', 'mobile_app_android_link', 'mobile_app_ads_enabled', 'mobile_app_admob_banner_id', 'mobile_app_admob_interstitial_id', 'mobile_app_maintenance_mode',
+        'mobile_app_version_ios', 'mobile_app_version_android', 'mobile_app_force_update', 'mobile_app_ios_link', 'mobile_app_android_link', 'mobile_app_ads_enabled', 'mobile_app_admob_banner_id', 'mobile_app_admob_interstitial_id', 'mobile_app_facebook_ads_enabled', 'mobile_app_facebook_banner_id', 'mobile_app_facebook_interstitial_id', 'mobile_app_maintenance_mode',
         'adsense_enabled', 'adsense_client_id', 'adsense_code',
         'facebook_ads_enabled', 'facebook_ads_code',
         'custom_ads_enabled',
@@ -2385,6 +2388,27 @@ $sendTestEmail = function () {
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-gray-700 dark:text-gray-300">AdMob Interstitial Unit ID</label>
                                 <input type="text" wire:model="mobile_app_admob_interstitial_id" placeholder="ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                        </div>
+
+                        <!-- Facebook Audience Network Settings -->
+                        <div class="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-4">
+                            <div class="flex items-center justify-between pb-2">
+                                <h5 class="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Facebook Audience Network (Mobile)</h5>
+                                <div class="flex items-center space-x-2">
+                                    <input type="checkbox" id="mobile_app_facebook_ads_enabled" wire:model="mobile_app_facebook_ads_enabled" class="h-4 w-4 rounded border-gray-300 text-[#C8102E] focus:ring-[#C8102E]">
+                                    <label for="mobile_app_facebook_ads_enabled" class="text-xs font-bold text-gray-700 dark:text-gray-300">Enable Facebook Ads</label>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Facebook Banner Placement ID</label>
+                                    <input type="text" wire:model="mobile_app_facebook_banner_id" placeholder="IMG_16_9_APP_INSTALL#YOUR_PLACEMENT_ID" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Facebook Interstitial Placement ID</label>
+                                    <input type="text" wire:model="mobile_app_facebook_interstitial_id" placeholder="YOUR_PLACEMENT_ID" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                </div>
                             </div>
                         </div>
                     </div>

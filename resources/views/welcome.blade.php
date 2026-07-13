@@ -210,19 +210,21 @@
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 <!-- Left: Large Featured Article Card (Spans 2 columns) -->
                 @if($featuredArticle)
-                    <a href="/articles/{{ $featuredArticle->slug }}" class="lg:col-span-2 relative block aspect-[16/10] lg:aspect-auto lg:h-[450px] overflow-hidden rounded group bg-gray-950 shadow-md">
-                        <img src="{{ $featuredArticle->featured_image }}" alt="{{ $featuredArticle->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85">
+                    <div class="lg:col-span-2 relative block aspect-[16/10] lg:aspect-auto lg:h-[450px] overflow-hidden rounded group bg-gray-950 shadow-md">
+                        <a href="/articles/{{ $featuredArticle->slug }}" class="absolute inset-0 z-0">
+                            <img src="{{ $featuredArticle->featured_image }}" alt="{{ $featuredArticle->title }}" class="w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85">
+                        </a>
                         <!-- Red category tag on top-left -->
-                        <span class="absolute top-4 left-4 px-3 py-1 bg-[#C8102E] text-white text-[10px] font-black uppercase tracking-widest rounded shadow">
+                        <span class="absolute top-4 left-4 px-3 py-1 bg-[#C8102E] text-white text-[10px] font-black uppercase tracking-widest rounded shadow z-10">
                             {{ $featuredArticle->category->name }}
                         </span>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent flex flex-col justify-end p-6 space-y-2">
-                            <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-black text-white leading-tight group-hover:text-red-400 transition break-words">
-                                {{ $featuredArticle->title }}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent flex flex-col justify-end p-6 space-y-2 pointer-events-none z-10">
+                            <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-black text-white leading-tight group-hover:text-red-400 transition break-words pointer-events-auto">
+                                <a href="/articles/{{ $featuredArticle->slug }}">{{ $featuredArticle->title }}</a>
                             </h2>
-                            <div class="flex items-center space-x-3 text-[10px] text-gray-300 font-semibold">
+                            <div class="flex items-center space-x-3 text-[10px] text-gray-300 font-semibold pointer-events-auto">
                                 @if($featuredArticle->author)
-                                    <a href="/author/{{ $featuredArticle->author->id }}" class="hover:text-red-450 transition">{{ $featuredArticle->author->name }}</a>
+                                    <a href="/author/{{ $featuredArticle->author->id }}" class="hover:text-red-455 transition">{{ $featuredArticle->author->name }}</a>
                                 @else
                                     <span>admin</span>
                                 @endif
@@ -245,23 +247,25 @@
                                 <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                             </span>
                         @endif
-                    </a>
+                    </div>
                 @endif
 
                 <!-- Right: 2x2 Grid of 4 spotlight cards (Spans 2 columns) -->
                 <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     @foreach($topStories->take(4) as $story)
-                        <a href="/articles/{{ $story->slug }}" class="relative block aspect-[16/10] overflow-hidden rounded group bg-gray-950 shadow border border-gray-150 dark:border-gray-855">
-                            <img src="{{ $story->featured_image }}" alt="{{ $story->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85">
+                        <div class="relative block aspect-[16/10] overflow-hidden rounded group bg-gray-950 shadow border border-gray-150 dark:border-gray-855">
+                            <a href="/articles/{{ $story->slug }}" class="absolute inset-0 z-0">
+                                <img src="{{ $story->featured_image }}" alt="{{ $story->title }}" class="w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85">
+                            </a>
                             <!-- Category tag with custom color overlay -->
-                            <span class="absolute top-3 left-3 px-2 py-0.5 bg-[#FF7900] text-white text-[9px] font-black uppercase tracking-wider rounded shadow">
+                            <span class="absolute top-3 left-3 px-2 py-0.5 bg-[#FF7900] text-white text-[9px] font-black uppercase tracking-wider rounded shadow z-10">
                                 {{ $story->category->name }}
                             </span>
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent flex flex-col justify-end p-4 space-y-1.5">
-                                <h3 class="text-xs sm:text-sm font-serif font-bold text-white leading-tight line-clamp-2 group-hover:text-red-400 transition break-words">
-                                    {{ $story->title }}
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent flex flex-col justify-end p-4 space-y-1.5 pointer-events-none z-10">
+                                <h3 class="text-xs sm:text-sm font-serif font-bold text-white leading-tight line-clamp-2 group-hover:text-red-400 transition break-words pointer-events-auto">
+                                    <a href="/articles/{{ $story->slug }}">{{ $story->title }}</a>
                                 </h3>
-                                <div class="flex items-center space-x-2 text-[9px] text-gray-350">
+                                <div class="flex items-center space-x-2 text-[9px] text-gray-355 pointer-events-auto">
                                     @if($story->author)
                                         <a href="/author/{{ $story->author->id }}" class="hover:text-red-400 transition">{{ $story->author->name }}</a>
                                     @else
@@ -281,7 +285,7 @@
                                     <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                 </span>
                             @endif
-                        </a>
+                        </div>
                     @endforeach
                 </div>
             </div>

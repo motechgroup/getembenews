@@ -48,7 +48,10 @@ class MobileAppController extends Controller
             'data' => [
                 'site_name' => Setting::get('site_name', 'Getembe News'),
                 'site_logo' => Setting::get('site_logo', ''),
-                'brand_color' => Setting::get('brand_color', '#cc6c3b'),
+                'brand_color' => Setting::get('brand_color', '#C8102E'),
+                'theme_color_secondary' => Setting::get('theme_color_secondary', '#222222'),
+                'theme_color_success' => Setting::get('theme_color_success', '#10B981'),
+                'theme_color_warning' => Setting::get('theme_color_warning', '#F59E0B'),
                 'favicon' => Setting::get('favicon', ''),
                 'app_play_store_url' => Setting::get('app_play_store_url', 'https://play.google.com/store'),
                 'app_app_store_url' => Setting::get('app_app_store_url', 'https://www.apple.com/app-store'),
@@ -64,10 +67,73 @@ class MobileAppController extends Controller
                 'mobile_app_ads_enabled' => (bool) Setting::get('mobile_app_ads_enabled', false),
                 'mobile_app_admob_banner_id' => Setting::get('mobile_app_admob_banner_id', ''),
                 'mobile_app_admob_interstitial_id' => Setting::get('mobile_app_admob_interstitial_id', ''),
+                'mobile_app_facebook_ads_enabled' => (bool) Setting::get('mobile_app_facebook_ads_enabled', false),
+                'mobile_app_facebook_banner_id' => Setting::get('mobile_app_facebook_banner_id', ''),
+                'mobile_app_facebook_interstitial_id' => Setting::get('mobile_app_facebook_interstitial_id', ''),
                 'mobile_app_maintenance_mode' => (bool) Setting::get('mobile_app_maintenance_mode', false),
                 'announcement_rate_tv' => (int) Setting::get('announcement_rate_tv', 5),
                 'announcement_rate_radio' => (int) Setting::get('announcement_rate_radio', 3),
                 'announcement_rate_both' => (int) Setting::get('announcement_rate_both', 7),
+            ]
+        ]);
+    }
+
+    /**
+     * Retrieve homepage data for mobile app (featured, latest, and category blocks).
+     */
+    public function homeFeed(Request $request)
+    {
+        $this->checkMaintenance();
+
+        $now = now();
+        $baseQuery = Article::where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', $now)
+            ->with(['author:id,name,photo_url', 'category:id,name,slug'])
+            ->orderBy('published_at', 'desc');
+
+        $featuredArticle = (clone $baseQuery)->where('is_featured', true)->first() ?? (clone $baseQuery)->first();
+        $featuredId = $featuredArticle ? $featuredArticle->id : 0;
+
+        $latestArticles = (clone $baseQuery)
+            ->where('id', '!=', $featuredId)
+            ->take(6)
+            ->get();
+
+        // Load category blocks
+        $homepageCategoriesSlugsString = Setting::get('homepage_categories', 'politics,business,technology,sports');
+        $selectedCategorySlugs = array_filter(array_map('trim', explode(',', $homepageCategoriesSlugsString)));
+        
+        $categories = Category::whereIn('slug', $selectedCategorySlugs)->get()->sortBy(function ($cat) use ($selectedCategorySlugs) {
+            return array_search($cat->slug, $selectedCategorySlugs);
+        });
+
+        $categorySections = [];
+        foreach ($categories as $cat) {
+            $articles = (clone $baseQuery)
+                ->forCategory($cat->id)
+                ->where('id', '!=', $featuredId)
+                ->take(4)
+                ->get();
+
+            if ($articles->isNotEmpty()) {
+                $categorySections[] = [
+                    'category' => [
+                        'id' => $cat->id,
+                        'name' => $cat->name,
+                        'slug' => $cat->slug,
+                    ],
+                    'articles' => $articles
+                ];
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'featured_article' => $featuredArticle,
+                'latest_articles' => $latestArticles,
+                'category_sections' => $categorySections
             ]
         ]);
     }
@@ -560,7 +626,21 @@ class MobileAppController extends Controller
             'media' => 'required|in:tv,radio,both',
             'content' => 'required|string|min:5',
             'days_count' => 'required|integer|min:1|max:30',
+            'submitter_type' => 'nullable|in:self,agent',
+            'agent_pin' => 'required_if:submitter_type,agent|nullable|string|size:4',
         ]);
+
+        $selectedAgentId = null;
+        if ($request->submitter_type === 'agent') {
+            $agent = \App\Models\Agent::where('pin', $request->agent_pin)->first();
+            if (!$agent) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid Agent PIN code.'
+                ], 422);
+            }
+            $selectedAgentId = $agent->id;
+        }
 
         // Calculate rate based on media channel settings
         $rate = 5;
@@ -578,6 +658,7 @@ class MobileAppController extends Controller
         $totalAmount = $wordCount * $rate * (int) $request->days_count;
 
         $announcement = Announcement::create([
+            'agent_id' => $selectedAgentId,
             'visitor_name' => $request->visitor_name,
             'visitor_email' => $request->visitor_email ?: null,
             'visitor_phone' => $request->visitor_phone,
@@ -618,9 +699,18 @@ class MobileAppController extends Controller
 
         $ref = 'MPESA-MOB-' . strtoupper(Str::random(10));
 
+        $commissionAmount = 0;
+        if ($announcement->agent_id) {
+            $agent = \App\Models\Agent::find($announcement->agent_id);
+            if ($agent) {
+                $commissionAmount = (int) round(($announcement->total_amount * $agent->commission_percentage) / 100);
+            }
+        }
+
         $announcement->update([
             'payment_status' => 'paid',
             'payment_reference' => $ref,
+            'commission_amount' => $commissionAmount,
             'is_approved' => true, // Auto approve mobile app submissions for instant feedback testing!
         ]);
 

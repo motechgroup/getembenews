@@ -8,6 +8,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/app-settings', [MobileAppController::class, 'settings']);
     Route::get('/categories', [MobileAppController::class, 'categories']);
     Route::get('/articles', [MobileAppController::class, 'articles']);
+    Route::get('/home-feed', [MobileAppController::class, 'homeFeed']);
     Route::get('/authors/{id}', [MobileAppController::class, 'authorProfile']);
     Route::get('/videos', [MobileAppController::class, 'videos']);
     Route::get('/live-streams', [MobileAppController::class, 'liveStreams']);

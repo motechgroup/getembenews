@@ -26,6 +26,8 @@ class Sms
                 return self::sendTwilio($to, $message);
             case 'africastalking':
                 return self::sendAfricasTalking($to, $message);
+            case 'textsms':
+                return self::sendTextSms($to, $message);
             case 'mock':
             default:
                 return self::sendMock($to, $message);
@@ -145,6 +147,57 @@ class Sms
         } catch (\Exception $e) {
             Log::error("Exception occurred sending Africa's Talking SMS: " . $e->getMessage());
             return self::sendMock($to, $message . " [Africa's Talking Exception]");
+        }
+    }
+
+    /**
+     * TextSMS Kenya Gateway Integration.
+     */
+    protected static function sendTextSms(string $to, string $message): bool
+    {
+        $apiKey = Setting::get('sms_textsms_api_key');
+        $partnerId = Setting::get('sms_textsms_partner_id');
+        $shortcode = Setting::get('sms_textsms_shortcode'); // sender id
+
+        if (empty($apiKey) || empty($partnerId) || empty($shortcode)) {
+            Log::error("TextSMS Kenya credentials missing. Falling back to Mock.");
+            return self::sendMock($to, $message . " [TextSMS Config Error]");
+        }
+
+        try {
+            $url = "https://sms.textsms.co.ke/api/services/sendsms/";
+            $data = [
+                'apikey'    => $apiKey,
+                'partnerID' => $partnerId,
+                'message'   => $message,
+                'shortcode' => $shortcode,
+                'mobile'    => $to,
+            ];
+
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                "Content-Type: application/json",
+                "Accept: application/json",
+            ]);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode >= 200 && $httpCode < 300) {
+                Log::info("SMS successfully sent via TextSMS to {$to}");
+                return true;
+            }
+
+            Log::error("TextSMS API failed with code {$httpCode}: {$response}");
+            return self::sendMock($to, $message . " [TextSMS Gateway Failure]");
+        } catch (\Exception $e) {
+            Log::error("Exception occurred sending TextSMS: " . $e->getMessage());
+            return self::sendMock($to, $message . " [TextSMS Exception]");
         }
     }
 

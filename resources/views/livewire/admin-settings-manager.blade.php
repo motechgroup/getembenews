@@ -328,6 +328,9 @@ state([
     'sms_at_username' => fn() => Setting::get('sms_at_username', ''),
     'sms_at_api_key' => fn() => Setting::get('sms_at_api_key', ''),
     'sms_at_from' => fn() => Setting::get('sms_at_from', ''),
+    'sms_textsms_api_key' => fn() => Setting::get('sms_textsms_api_key', ''),
+    'sms_textsms_partner_id' => fn() => Setting::get('sms_textsms_partner_id', ''),
+    'sms_textsms_shortcode' => fn() => Setting::get('sms_textsms_shortcode', ''),
 ]);
 
 mount(function ($activeTab = 'identity') {
@@ -928,7 +931,8 @@ $save = function () use ($logAction) {
         'email_template_new_account_subject', 'email_template_new_account_body',
         'sms_notifications_enabled', 'sms_provider', 'sms_admin_phone',
         'sms_twilio_sid', 'sms_twilio_token', 'sms_twilio_from',
-        'sms_at_username', 'sms_at_api_key', 'sms_at_from'
+        'sms_at_username', 'sms_at_api_key', 'sms_at_from',
+        'sms_textsms_api_key', 'sms_textsms_partner_id', 'sms_textsms_shortcode'
     ];
 
     foreach ($fields as $field) {
@@ -3583,6 +3587,7 @@ $sendTestEmail = function () {
                                     <option value="mock">Simulated / Mock Gateway (Logs to files + Web Inbox)</option>
                                     <option value="twilio">Twilio SMS Gateway</option>
                                     <option value="africastalking">Africa's Talking API</option>
+                                    <option value="textsms">TextSMS Kenya Gateway (textsms.co.ke)</option>
                                 </select>
                             </div>
                         </div>
@@ -3620,6 +3625,23 @@ $sendTestEmail = function () {
                                 <div class="space-y-1">
                                     <label class="text-[11px] font-bold text-gray-400">AT Sender ID / From (Optional)</label>
                                     <input type="text" wire:model="sms_at_from" placeholder="GETEMBE" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                            </div>
+
+                            <!-- TextSMS Config Panel -->
+                            <div x-show="sms_provider === 'textsms'" class="space-y-4">
+                                <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">TextSMS Kenya API Settings</h4>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">Partner ID</label>
+                                    <input type="text" wire:model="sms_textsms_partner_id" placeholder="e.g. 1234" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">API Key</label>
+                                    <input type="password" wire:model="sms_textsms_api_key" placeholder="••••••••••••••••••••••••••••••••" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">Sender ID / Shortcode</label>
+                                    <input type="text" wire:model="sms_textsms_shortcode" placeholder="e.g. TextSMS" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
                                 </div>
                             </div>
 

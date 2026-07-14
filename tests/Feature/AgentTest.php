@@ -431,4 +431,21 @@ class AgentTest extends TestCase
                 ->exists()
         );
     }
+
+    public function test_textsms_gateway_trigger(): void
+    {
+        Setting::set('sms_notifications_enabled', true);
+        Setting::set('sms_admin_phone', '+254711111111');
+        Setting::set('sms_provider', 'textsms');
+        
+        // When config is missing, it should fall back to mock
+        \App\Support\Sms::sendAdminNotification("Hello via TextSMS");
+
+        $this->assertTrue(
+            \App\Models\ContactMessage::where('name', 'SMS Gateway (Simulated)')
+                ->where('subject', 'Admin SMS Notification (Recipient: +254711111111)')
+                ->where('message', 'like', '%Hello via TextSMS [TextSMS Config Error]%')
+                ->exists()
+        );
+    }
 }

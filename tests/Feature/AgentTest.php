@@ -288,4 +288,147 @@ class AgentTest extends TestCase
             ->assertRedirect('/announcements')
             ->assertSessionMissing('agent_logged_in');
     }
+
+    public function test_admin_can_record_and_delete_agent_payouts(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $agent = Agent::create([
+            'name' => 'Samuel Mogaka',
+            'location' => 'Kisii Town',
+            'commission_percentage' => 20,
+        ]);
+
+        // Mock a paid announcement to give the agent commission
+        Announcement::create([
+            'visitor_name' => 'Emma Nyabera',
+            'visitor_phone' => '+254712345678',
+            'type' => 'funeral',
+            'media' => 'tv',
+            'content' => 'This is a test message.',
+            'word_count' => 10,
+            'days_count' => 1,
+            'rate_per_word' => 5,
+            'total_amount' => 50,
+            'commission_amount' => 10, // 20% of 50
+            'payment_status' => 'paid',
+            'is_approved' => true,
+            'agent_id' => $agent->id,
+        ]);
+
+        $this->assertEquals(10, $agent->fresh()->total_commission);
+        $this->assertEquals(10, $agent->fresh()->commission_balance);
+
+        // 1. Record Payout
+        $component = Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminAgents::class)
+            ->call('viewDetails', $agent->id)
+            ->set('payout_amount', 6)
+            ->set('payout_method', 'M-Pesa')
+            ->set('payout_reference', 'TESTTX12345')
+            ->call('recordPayout');
+
+        $component->assertHasNoErrors();
+        $this->assertDatabaseHas('payouts', [
+            'agent_id' => $agent->id,
+            'amount' => 6,
+            'payment_method' => 'M-Pesa',
+            'reference' => 'TESTTX12345',
+            'status' => 'completed',
+        ]);
+
+        $this->assertEquals(6, $agent->fresh()->total_payouts);
+        $this->assertEquals(4, $agent->fresh()->commission_balance);
+
+        $payout = \App\Models\Payout::where('reference', 'TESTTX12345')->first();
+
+        // 2. Delete Payout
+        $component->call('deletePayout', $payout->id);
+        $component->assertHasNoErrors();
+        
+        $this->assertDatabaseMissing('payouts', [
+            'id' => $payout->id
+        ]);
+
+        $this->assertEquals(0, $agent->fresh()->total_payouts);
+        $this->assertEquals(10, $agent->fresh()->commission_balance);
+    }
+
+    public function test_agent_can_submit_disputes_and_admin_can_resolve(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $agent = Agent::create([
+            'name' => 'Samuel Mogaka',
+            'location' => 'Kisii Town',
+            'pin' => '2468',
+            'commission_percentage' => 20,
+        ]);
+
+        // 1. Submit Dispute from Agent Dashboard
+        session(['agent_logged_in' => $agent->id]);
+        $component = Livewire::test(\App\Livewire\AgentDashboard::class)
+            ->set('dispute_subject', 'Commission missing for order #123')
+            ->set('dispute_description', 'I submitted announcement #123 but did not receive commission.')
+            ->call('fileDispute');
+
+        $component->assertHasNoErrors();
+        $this->assertDatabaseHas('disputes', [
+            'agent_id' => $agent->id,
+            'subject' => 'Commission missing for order #123',
+            'description' => 'I submitted announcement #123 but did not receive commission.',
+            'status' => 'open',
+        ]);
+
+        $dispute = \App\Models\Dispute::where('subject', 'Commission missing for order #123')->first();
+
+        // 2. Admin Resolves the Dispute
+        $adminComponent = Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminAgents::class)
+            ->call('viewDetails', $agent->id)
+            ->set('dispute_resolution', 'Verified and added KSh 50 commission manually.')
+            ->call('resolveDispute', $dispute->id, 'resolved');
+
+        $adminComponent->assertHasNoErrors();
+        $this->assertDatabaseHas('disputes', [
+            'id' => $dispute->id,
+            'status' => 'resolved',
+            'resolution' => 'Verified and added KSh 50 commission manually.',
+        ]);
+    }
+
+    public function test_sms_notification_triggers_on_announcement_submission_and_payment(): void
+    {
+        Setting::set('sms_notifications_enabled', true);
+        Setting::set('sms_admin_phone', '+254711111111');
+        Setting::set('sms_provider', 'mock');
+
+        // Verify draft submission triggers SMS mock
+        $component = Livewire::test(\App\Livewire\AnnouncementSubmit::class)
+            ->set('visitor_name', 'Emma Nyabera')
+            ->set('visitor_phone', '+254712345678')
+            ->set('type', 'funeral')
+            ->set('media', 'tv')
+            ->set('days_count', 2)
+            ->set('content', 'Draft content representing funeral announcement.')
+            ->call('submitAnnouncement');
+
+        $this->assertTrue(
+            \App\Models\ContactMessage::where('name', 'SMS Gateway (Simulated)')
+                ->where('subject', 'Admin SMS Notification (Recipient: +254711111111)')
+                ->where('message', 'like', '%New announcement drafted%')
+                ->exists()
+        );
+
+        // Verify payment confirmation triggers SMS mock
+        $component->call('triggerMpesaStkPush');
+        $component->call('confirmPaymentSuccess');
+
+        $this->assertTrue(
+            \App\Models\ContactMessage::where('name', 'SMS Gateway (Simulated)')
+                ->where('subject', 'Admin SMS Notification (Recipient: +254711111111)')
+                ->where('message', 'like', '%Payment received%')
+                ->exists()
+        );
+    }
 }

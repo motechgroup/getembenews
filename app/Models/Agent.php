@@ -29,6 +29,22 @@ class Agent extends Model
     }
 
     /**
+     * Relationship: Payouts received by this agent.
+     */
+    public function payouts()
+    {
+        return $this->hasMany(Payout::class);
+    }
+
+    /**
+     * Relationship: Disputes raised by this agent.
+     */
+    public function disputes()
+    {
+        return $this->hasMany(Dispute::class);
+    }
+
+    /**
      * Paid announcements.
      */
     public function paidAnnouncements()
@@ -58,5 +74,21 @@ class Agent extends Model
     public function getTotalCommissionAttribute()
     {
         return (int) $this->paidAnnouncements()->sum('commission_amount');
+    }
+
+    /**
+     * Attribute: total commission paid out to this agent.
+     */
+    public function getTotalPayoutsAttribute()
+    {
+        return (int) $this->payouts()->where('status', 'completed')->sum('amount');
+    }
+
+    /**
+     * Attribute: remaining unpaid commission balance.
+     */
+    public function getCommissionBalanceAttribute()
+    {
+        return $this->total_commission - $this->total_payouts;
     }
 }

@@ -59,6 +59,10 @@ class AdminAnnouncements extends Component
         // Trigger user email notification
         \App\Support\Mailer::sendAnnouncementStatus($announcement);
 
+        \App\Support\Sms::sendAdminNotification(
+            "[Getembe News] Announcement ID {$announcement->id} manually marked as Paid by Admin. Submitter: {$announcement->visitor_name}. Amount: KSh {$announcement->total_amount}."
+        );
+
         session()->flash('message', 'Announcement marked as Paid.');
     }
 

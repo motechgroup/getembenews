@@ -24,6 +24,15 @@ class AdminAgents extends Component
     // Details state
     public $selectedAgentForDetails = null;
     public $isDetailsOpen = false;
+    public $activeDetailsTab = 'announcements'; // announcements, payouts, disputes
+
+    // Payout Form inputs
+    public $payout_amount = '';
+    public $payout_method = 'M-Pesa';
+    public $payout_reference = '';
+
+    // Dispute Resolution inputs
+    public $dispute_resolution = '';
 
     protected $messages = [
         'pin.regex' => 'The PIN must consist of exactly 4 digits.',
@@ -112,13 +121,69 @@ class AdminAgents extends Component
     public function viewDetails($id)
     {
         $this->selectedAgentForDetails = Agent::findOrFail($id);
+        $this->activeDetailsTab = 'announcements';
         $this->isDetailsOpen = true;
+        $this->reset(['payout_amount', 'payout_reference', 'dispute_resolution']);
     }
 
     public function closeDetails()
     {
         $this->isDetailsOpen = false;
         $this->selectedAgentForDetails = null;
+    }
+
+    public function setDetailsTab($tab)
+    {
+        $this->activeDetailsTab = $tab;
+        $this->reset(['payout_amount', 'payout_reference', 'dispute_resolution']);
+    }
+
+    public function recordPayout()
+    {
+        $this->validate([
+            'payout_amount' => 'required|integer|min:1',
+            'payout_method' => 'required|string',
+            'payout_reference' => 'nullable|string|max:100',
+        ]);
+
+        \App\Models\Payout::create([
+            'agent_id' => $this->selectedAgentForDetails->id,
+            'amount' => (int) $this->payout_amount,
+            'payment_method' => $this->payout_method,
+            'reference' => $this->payout_reference ?: 'MANUAL-' . strtoupper(uniqid()),
+            'status' => 'completed',
+            'paid_at' => now(),
+        ]);
+
+        $this->reset(['payout_amount', 'payout_reference']);
+        $this->selectedAgentForDetails = Agent::findOrFail($this->selectedAgentForDetails->id);
+        session()->flash('payout_message', 'Payout recorded successfully.');
+    }
+
+    public function deletePayout($payoutId)
+    {
+        $payout = \App\Models\Payout::findOrFail($payoutId);
+        $payout->delete();
+
+        $this->selectedAgentForDetails = Agent::findOrFail($this->selectedAgentForDetails->id);
+        session()->flash('payout_message', 'Payout removed/voided successfully.');
+    }
+
+    public function resolveDispute($disputeId, $resolutionStatus)
+    {
+        $this->validate([
+            'dispute_resolution' => 'required|string|min:3',
+        ]);
+
+        $dispute = \App\Models\Dispute::findOrFail($disputeId);
+        $dispute->update([
+            'status' => $resolutionStatus,
+            'resolution' => $this->dispute_resolution,
+        ]);
+
+        $this->reset('dispute_resolution');
+        $this->selectedAgentForDetails = Agent::findOrFail($this->selectedAgentForDetails->id);
+        session()->flash('dispute_message', 'Dispute ticket status updated.');
     }
 
     public function render()

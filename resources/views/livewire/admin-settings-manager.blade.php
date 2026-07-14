@@ -317,6 +317,17 @@ state([
 
     'email_template_new_account_subject' => fn() => Setting::get('email_template_new_account_subject', 'Staff Account Created - Getembe News'),
     'email_template_new_account_body' => fn() => Setting::get('email_template_new_account_body', "Hello [Name],\n\nAn administrator has created a staff account for you on the Getembe News platform.\n\nHere are your access credentials:\n- **Login Email:** [Email]\n- **Temporary Password:** [Password]\n\n**Role Assigned:** [Role]\n\nPlease log in and change your password immediately for security purposes."),
+
+    // SMS Notifications Configuration
+    'sms_notifications_enabled' => fn() => (bool) Setting::get('sms_notifications_enabled', false),
+    'sms_provider' => fn() => Setting::get('sms_provider', 'mock'),
+    'sms_admin_phone' => fn() => Setting::get('sms_admin_phone', ''),
+    'sms_twilio_sid' => fn() => Setting::get('sms_twilio_sid', ''),
+    'sms_twilio_token' => fn() => Setting::get('sms_twilio_token', ''),
+    'sms_twilio_from' => fn() => Setting::get('sms_twilio_from', ''),
+    'sms_at_username' => fn() => Setting::get('sms_at_username', ''),
+    'sms_at_api_key' => fn() => Setting::get('sms_at_api_key', ''),
+    'sms_at_from' => fn() => Setting::get('sms_at_from', ''),
 ]);
 
 mount(function ($activeTab = 'identity') {
@@ -399,6 +410,7 @@ mount(function ($activeTab = 'identity') {
         'audit' => 'audit logs management',
         'schedules' => 'settings management',
         'security' => 'settings management',
+        'sms' => 'settings management',
     ];
 
     if (isset($permissionMap[$activeTab])) {
@@ -913,7 +925,10 @@ $save = function () use ($logAction) {
         'email_template_breaking_subject', 'email_template_breaking_body',
         'email_template_password_reset_subject', 'email_template_password_reset_body',
         'email_template_verification_subject', 'email_template_verification_body',
-        'email_template_new_account_subject', 'email_template_new_account_body'
+        'email_template_new_account_subject', 'email_template_new_account_body',
+        'sms_notifications_enabled', 'sms_provider', 'sms_admin_phone',
+        'sms_twilio_sid', 'sms_twilio_token', 'sms_twilio_from',
+        'sms_at_username', 'sms_at_api_key', 'sms_at_from'
     ];
 
     foreach ($fields as $field) {
@@ -3539,6 +3554,86 @@ $sendTestEmail = function () {
                                 </table>
                             </div>
                         </div>
+                <!-- SMS NOTIFICATIONS CONFIG TAB -->
+                <div x-show="activeTab === 'sms'" class="space-y-6" style="display: none;">
+                    <div class="border-b border-gray-100 dark:border-gray-800 pb-2">
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">SMS Alert Settings</h3>
+                        <p class="text-[10px] text-gray-550 mt-1">Configure real-time SMS notifications for system administrators and managers.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Panel: General SMS Controls -->
+                        <div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-lg border border-gray-100 dark:border-gray-850 space-y-4">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">General SMS Settings</h4>
+                            
+                            <div class="flex items-center space-x-2 pt-2">
+                                <input type="checkbox" wire:model="sms_notifications_enabled" id="sms_notifications_enabled" class="rounded text-[#C8102E] focus:ring-[#C8102E] border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                <label for="sms_notifications_enabled" class="text-xs font-semibold text-gray-750 dark:text-gray-300">Enable SMS Notifications</label>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-bold text-gray-400">Admin Recipient Phone Numbers (Comma-separated)</label>
+                                <input type="text" wire:model="sms_admin_phone" placeholder="+254712345678, +254787654321" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                <span class="text-[9px] text-gray-500 block">Include country codes (e.g., +254 for Kenya).</span>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-bold text-gray-400">SMS Gateway Provider</label>
+                                <select wire:model="sms_provider" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                    <option value="mock">Simulated / Mock Gateway (Logs to files + Web Inbox)</option>
+                                    <option value="twilio">Twilio SMS Gateway</option>
+                                    <option value="africastalking">Africa's Talking API</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Gateway Credentials -->
+                        <div class="bg-gray-50 dark:bg-gray-955 p-4 rounded-lg border border-gray-100 dark:border-gray-850 space-y-4">
+                            <!-- Twilio Config Panel -->
+                            <div x-show="sms_provider === 'twilio'" class="space-y-4">
+                                <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Twilio API Settings</h4>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">Twilio Account SID</label>
+                                    <input type="text" wire:model="sms_twilio_sid" placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">Twilio Auth Token</label>
+                                    <input type="password" wire:model="sms_twilio_token" placeholder="••••••••••••••••••••••••••••••••" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">Twilio From Phone Number (or Sender ID)</label>
+                                    <input type="text" wire:model="sms_twilio_from" placeholder="+1234567890" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                            </div>
+
+                            <!-- Africa's Talking Config Panel -->
+                            <div x-show="sms_provider === 'africastalking'" class="space-y-4">
+                                <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Africa's Talking API Settings</h4>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">AT Username</label>
+                                    <input type="text" wire:model="sms_at_username" placeholder="sandbox" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">AT API Key</label>
+                                    <input type="password" wire:model="sms_at_api_key" placeholder="••••••••••••••••••••••••••••••••" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">AT Sender ID / From (Optional)</label>
+                                    <input type="text" wire:model="sms_at_from" placeholder="GETEMBE" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+                            </div>
+
+                            <!-- Mock Config Panel -->
+                            <div x-show="sms_provider === 'mock'" class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                                <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Mock Gateway Details</h4>
+                                <p>This provider logs all outgoing SMS messages directly to standard Laravel storage log files under `storage/logs/laravel.log` and automatically logs a visible system event in your **Contact Inbox** table as a simulated message.</p>
+                                <p class="text-green-600 font-bold">✓ Active, no credentials required</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save SMS Configuration</button>
                     </div>
                 </div>
 

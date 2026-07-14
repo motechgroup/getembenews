@@ -1249,6 +1249,7 @@ $sendTestEmail = function () {
     adsense_enabled: @entangle('adsense_enabled'),
     facebook_ads_enabled: @entangle('facebook_ads_enabled'),
     captcha_driver: @entangle('captcha_driver'),
+    sms_provider: @entangle('sms_provider'),
     saved: false
 }" @settings-saved.window="saved = true; setTimeout(() => saved = false, 3000)">
     
@@ -1259,6 +1260,64 @@ $sendTestEmail = function () {
         <div x-show="saved" x-transition class="text-xs font-bold text-green-600 bg-green-50 dark:bg-green-950/20 px-3 py-1.5 rounded border border-green-200 dark:border-green-900" style="display: none;">
             Configuration options updated successfully!
         </div>
+    </div>
+
+    <!-- Horizontal Settings Sub-Navigation -->
+    <div class="flex overflow-x-auto space-x-1 p-1 bg-gray-100 dark:bg-gray-950 rounded-lg border border-gray-200 dark:border-gray-850 mb-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-800">
+        <a href="/admin/settings/identity" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'identity' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            General
+        </a>
+        <a href="/admin/settings/featured" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'featured' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Homepage & Sliders
+        </a>
+        <a href="/admin/settings/socials" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'socials' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Social Links
+        </a>
+        <a href="/admin/settings/contact" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'contact' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Contact Info
+        </a>
+        <a href="/admin/settings/pages" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'pages' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Pages & Footer
+        </a>
+        <a href="/admin/settings/schedules" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'schedules' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Stream Schedules
+        </a>
+        <a href="/admin/settings/email" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'email' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            SMTP Mail
+        </a>
+        <a href="/admin/settings/email-templates" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'email-templates' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Email Templates
+        </a>
+        <a href="/admin/settings/social-login" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'social-login' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Social OAuth
+        </a>
+        <a href="/admin/settings/payments" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'payments' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Payments & Currency
+        </a>
+        <a href="/admin/settings/seo" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'seo' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            SEO & Cookies
+        </a>
+        <a href="/admin/settings/advertising" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'advertising' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Ads & Banners
+        </a>
+        <a href="/admin/settings/mobile-app" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'mobile-app' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Mobile App
+        </a>
+        <a href="/admin/settings/sms" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'sms' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            SMS Alert Gateway
+        </a>
+        <a href="/admin/settings/security" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'security' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Security & Privacy
+        </a>
+        <a href="/admin/settings/cache" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'cache' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            System Cache
+        </a>
+        <a href="/admin/settings/backup" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'backup' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Backups
+        </a>
+        <a href="/admin/settings/audit" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'audit' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Audit Trail
+        </a>
     </div>
 
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 shadow-sm">
@@ -3603,6 +3662,8 @@ $sendTestEmail = function () {
                                 </table>
                             </div>
                         </div>
+                    </div>
+                </div>
                 <!-- SMS NOTIFICATIONS CONFIG TAB -->
                 <div x-show="activeTab === 'sms'" class="space-y-6" style="display: none;">
                     <div class="border-b border-gray-100 dark:border-gray-800 pb-2">

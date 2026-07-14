@@ -48,13 +48,16 @@ class AnnouncementTest extends TestCase
             'payment_status' => 'pending',
         ]);
 
+        $announcementId = $component->get('currentAnnouncementId');
+        $ann = Announcement::findOrFail($announcementId);
+        $this->assertEquals(now()->toDateString(), $ann->airing_date->toDateString());
+        $this->assertEquals(now()->addDays(3)->toDateString(), $ann->expiry_date->toDateString());
+
         // Verify system draft alert was logged to contact messages
         $this->assertDatabaseHas('contact_messages', [
             'name' => 'System Alert',
             'subject' => 'New Announcement Submitted (Pending Payment)',
         ]);
-
-        $announcementId = $component->get('currentAnnouncementId');
 
         $component->call('triggerMpesaStkPush');
         $component->assertSet('mpesa_status', 'sending');
@@ -72,6 +75,80 @@ class AnnouncementTest extends TestCase
             'name' => 'System Alert',
             'subject' => 'Announcement Paid (Ref: ' . Announcement::find($announcementId)->payment_reference . ')',
         ]);
+    }
+
+    public function test_active_announcements_scope(): void
+    {
+        // 1. Airing today, 2 days count (expires in 2 days) -> active
+        $activeAnn = Announcement::create([
+            'visitor_name' => 'Active Sub',
+            'visitor_phone' => '123456',
+            'type' => 'general',
+            'media' => 'tv',
+            'content' => 'This is active.',
+            'word_count' => 3,
+            'days_count' => 2,
+            'rate_per_word' => 5,
+            'total_amount' => 30,
+            'payment_status' => 'paid',
+            'is_approved' => true,
+            'airing_date' => now()->toDateString(),
+        ]);
+
+        // 2. Airing tomorrow -> not active today
+        $futureAnn = Announcement::create([
+            'visitor_name' => 'Future Sub',
+            'visitor_phone' => '123456',
+            'type' => 'general',
+            'media' => 'tv',
+            'content' => 'This is future.',
+            'word_count' => 3,
+            'days_count' => 2,
+            'rate_per_word' => 5,
+            'total_amount' => 30,
+            'payment_status' => 'paid',
+            'is_approved' => true,
+            'airing_date' => now()->addDay()->toDateString(),
+        ]);
+
+        // 3. Airing yesterday for 1 day (expired today) -> not active
+        $expiredAnn = Announcement::create([
+            'visitor_name' => 'Expired Sub',
+            'visitor_phone' => '123456',
+            'type' => 'general',
+            'media' => 'tv',
+            'content' => 'This is expired.',
+            'word_count' => 3,
+            'days_count' => 1,
+            'rate_per_word' => 5,
+            'total_amount' => 15,
+            'payment_status' => 'paid',
+            'is_approved' => true,
+            'airing_date' => now()->subDay()->toDateString(),
+        ]);
+
+        // 4. No airing date -> active (backward compatibility)
+        $noDateAnn = Announcement::create([
+            'visitor_name' => 'No Date Sub',
+            'visitor_phone' => '123456',
+            'type' => 'general',
+            'media' => 'tv',
+            'content' => 'This has no date.',
+            'word_count' => 4,
+            'days_count' => 2,
+            'rate_per_word' => 5,
+            'total_amount' => 40,
+            'payment_status' => 'paid',
+            'is_approved' => true,
+            'airing_date' => null,
+        ]);
+
+        $activeAnnouncements = Announcement::active()->get();
+
+        $this->assertTrue($activeAnnouncements->contains($activeAnn));
+        $this->assertFalse($activeAnnouncements->contains($futureAnn));
+        $this->assertFalse($activeAnnouncements->contains($expiredAnn));
+        $this->assertTrue($activeAnnouncements->contains($noDateAnn));
     }
 
     public function test_manager_role_can_manage_announcements_but_nothing_else(): void

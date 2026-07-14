@@ -606,7 +606,7 @@ class MobileAppController extends Controller
     {
         $this->checkMaintenance();
 
-        $announcements = Announcement::approved()->paid()->latest()->get();
+        $announcements = Announcement::active()->latest()->get();
 
         return response()->json([
             'status' => 'success',
@@ -629,6 +629,7 @@ class MobileAppController extends Controller
             'media' => 'required|in:tv,radio,both',
             'content' => 'required|string|min:5',
             'days_count' => 'required|integer|min:1|max:30',
+            'airing_date' => 'nullable|date|after_or_equal:today',
             'submitter_type' => 'nullable|in:self,agent',
             'agent_pin' => 'required_if:submitter_type,agent|nullable|string|size:4',
         ]);
@@ -668,6 +669,7 @@ class MobileAppController extends Controller
             'type' => $request->type,
             'media' => $request->media,
             'content' => $content,
+            'airing_date' => $request->input('airing_date', now()->toDateString()),
             'word_count' => $wordCount,
             'days_count' => (int) $request->days_count,
             'rate_per_word' => $rate,

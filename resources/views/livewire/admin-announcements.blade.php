@@ -67,6 +67,7 @@
                     <tr class="bg-gray-50 dark:bg-gray-850 text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
                         <th class="py-3.5 px-4">Visitor</th>
                         <th class="py-3.5 px-4">Type / Media</th>
+                        <th class="py-3.5 px-4">Schedule</th>
                         <th class="py-3.5 px-4 w-96">Content</th>
                         <th class="py-3.5 px-4 text-center">Cost Details</th>
                         <th class="py-3.5 px-4">Payment</th>
@@ -101,6 +102,20 @@
                                 <div class="text-[10px] text-gray-400 font-medium">
                                     Target: <span class="uppercase font-bold text-gray-650 dark:text-gray-300">{{ $ann->media }}</span>
                                 </div>
+                            </td>
+
+                            <!-- Schedule -->
+                            <td class="py-4 px-4 space-y-1">
+                                @if($ann->airing_date)
+                                    <div class="font-bold text-gray-900 dark:text-white">
+                                        Start: <span class="font-normal font-mono text-[10px] text-gray-500 dark:text-gray-400">{{ $ann->airing_date->format('Y-m-d') }}</span>
+                                    </div>
+                                    <div class="font-bold text-gray-900 dark:text-white">
+                                        End: <span class="font-normal font-mono text-[10px] text-gray-500 dark:text-gray-400">{{ $ann->expiry_date->format('Y-m-d') }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 italic font-medium">Not set</span>
+                                @endif
                             </td>
 
                             <!-- Content -->
@@ -166,7 +181,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-12 text-gray-400 font-bold">
+                            <td colspan="8" class="text-center py-12 text-gray-400 font-bold">
                                 No announcements found matching filters.
                             </td>
                         </tr>

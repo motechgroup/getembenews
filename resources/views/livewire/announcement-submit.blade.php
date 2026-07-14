@@ -65,7 +65,7 @@
                         @endif
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                         <div class="space-y-1">
                             <label class="text-gray-700 dark:text-gray-300 uppercase tracking-wide text-[10px] font-bold">Announcement Type</label>
                             <select wire:model="type" class="w-full bg-gray-55 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-2.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#cc6c3b]">
@@ -83,6 +83,13 @@
                                 <option value="both">Both TV & Radio (KSh {{ \App\Models\Setting::get('announcement_rate_both', 7) }}/word)</option>
                             </select>
                             @error('media') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-gray-700 dark:text-gray-300 uppercase tracking-wide text-[10px] font-bold">Airing Date</label>
+                            <input type="date" wire:model="airing_date" required 
+                                   class="w-full bg-gray-55 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-2.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#cc6c3b]">
+                            @error('airing_date') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
                         </div>
 
                         <div class="space-y-1">
@@ -192,7 +199,13 @@
                             </p>
                             <div class="flex justify-between items-center text-[9px] text-gray-400 font-semibold pt-1.5 border-t border-gray-50 dark:border-gray-850">
                                 <span>By: {{ $ann->visitor_name }}</span>
-                                <span>Runs: {{ $ann->days_count }} days</span>
+                                <span>
+                                    @if($ann->airing_date)
+                                        Airing: {{ $ann->airing_date->format('M d, Y') }} ({{ $ann->days_count }} {{ Str::plural('day', $ann->days_count) }})
+                                    @else
+                                        Runs: {{ $ann->days_count }} {{ Str::plural('day', $ann->days_count) }}
+                                    @endif
+                                </span>
                             </div>
                         </div>
                     @empty

@@ -338,4 +338,31 @@ class PublishingAndMediaTest extends TestCase
             ->assertOk()
             ->assertDontSee('SHOULD BE SHOWN LINK');
     }
+
+    /**
+     * Test rendering of inline image shortcodes in articles.
+     */
+    public function test_inline_image_shortcode_rendering(): void
+    {
+        $author = User::factory()->create(['role' => 'admin']);
+        $category = Category::create([
+            'name' => 'General',
+            'slug' => 'general',
+            'order' => 1
+        ]);
+
+        $article = Article::create([
+            'title' => 'Article with Inline Image',
+            'slug' => 'article-with-inline-image',
+            'body' => 'Before the image [image url="https://example.com/test-image.jpg"] and after the image.',
+            'category_id' => $category->id,
+            'user_id' => $author->id,
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+
+        $this->get('/articles/article-with-inline-image')
+            ->assertOk()
+            ->assertSeeHtml('<img src="https://example.com/test-image.jpg" alt="Article Inline Image"');
+    }
 }

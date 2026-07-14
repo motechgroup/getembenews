@@ -20,6 +20,7 @@ class AnnouncementSubmit extends Component
     public $media = 'tv'; // tv, radio, both
     public $content = '';
     public $days_count = 1;
+    public $airing_date = '';
     public $submitter_type = 'self'; // self, agent
     public $agent_pin = '';
 
@@ -46,12 +47,14 @@ class AnnouncementSubmit extends Component
         'media' => 'required|in:tv,radio,both',
         'content' => 'required|string|min:5',
         'days_count' => 'required|integer|min:1|max:30',
+        'airing_date' => 'required|date|after_or_equal:today',
         'submitter_type' => 'required|in:self,agent',
         'agent_pin' => 'required_if:submitter_type,agent|nullable|string|size:4',
     ];
 
     public function mount()
     {
+        $this->airing_date = now()->toDateString();
         $this->updateCalculations();
     }
 
@@ -120,6 +123,7 @@ class AnnouncementSubmit extends Component
             'type' => $this->type,
             'media' => $this->media,
             'content' => $this->content,
+            'airing_date' => $this->airing_date,
             'word_count' => $this->word_count,
             'days_count' => (int) $this->days_count,
             'rate_per_word' => $this->rate,
@@ -204,6 +208,7 @@ class AnnouncementSubmit extends Component
             
             // Reset input values
             $this->reset(['visitor_name', 'visitor_email', 'visitor_phone', 'content', 'days_count', 'submitter_type', 'agent_pin']);
+            $this->airing_date = now()->toDateString();
             $this->updateCalculations();
         }
     }
@@ -244,7 +249,7 @@ class AnnouncementSubmit extends Component
 
     public function render()
     {
-        $publishedAnnouncements = Announcement::approved()->paid()->latest()->paginate(10);
+        $publishedAnnouncements = Announcement::active()->latest()->paginate(10);
 
         return view('livewire.announcement-submit', [
             'announcements' => $publishedAnnouncements,

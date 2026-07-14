@@ -65,8 +65,13 @@
                 <tbody class="divide-y divide-gray-150 dark:divide-gray-800 font-semibold text-gray-700 dark:text-gray-300">
                     @forelse($announcements as $ann)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-850/50 transition">
-                            <td class="py-4 px-4 text-gray-500 font-mono">
-                                {{ $ann->created_at->format('M d, Y H:i') }}
+                            <td class="py-4 px-4 space-y-1">
+                                <div class="text-gray-550 dark:text-gray-405 font-mono">{{ $ann->created_at->format('M d, Y H:i') }}</div>
+                                @if($ann->airing_date)
+                                    <div class="text-[9px] text-gray-450 dark:text-gray-400 font-semibold">
+                                        Airing: <span class="font-mono text-[#cc6c3b] font-bold">{{ $ann->airing_date->format('M d') }} - {{ $ann->expiry_date->format('M d') }}</span>
+                                    </div>
+                                @endif
                             </td>
                             <td class="py-4 px-4 font-bold text-gray-900 dark:text-white">
                                 {{ $ann->visitor_name }}

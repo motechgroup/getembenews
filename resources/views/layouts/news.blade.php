@@ -307,7 +307,7 @@
 
                 <!-- Sign In / Dashboard Button (Vibrant screenshot match) -->
                 @auth
-                    <div class="relative shrink-0" x-data="{ open: false }" @click.outside="open = false">
+                    <div class="relative shrink-0 hidden sm:block" x-data="{ open: false }" @click.outside="open = false">
                         <button @click="open = !open" type="button" class="bg-gray-105 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 font-bold text-xs px-4 py-2.5 rounded-lg transition border border-gray-200 dark:border-gray-700 shadow-sm flex items-center space-x-1.5 focus:outline-none uppercase tracking-wider">
                             <span>Profile</span>
                             <svg class="h-3.5 w-3.5 transform transition-transform" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -325,14 +325,14 @@
                             <hr class="border-gray-100 dark:border-gray-800 my-1">
                             <form method="POST" action="{{ route('logout') }}" class="block">
                                 @csrf
-                                <button type="submit" class="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition">
+                                <button type="submit" class="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-955/20 transition">
                                     🚪 Sign Out
                                 </button>
                             </form>
                         </div>
                     </div>
                 @else
-                    <a href="{{ route('login') }}" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg transition shadow-sm shrink-0 uppercase tracking-wider">
+                    <a href="{{ route('login') }}" class="hidden sm:inline-block bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg transition shadow-sm shrink-0 uppercase tracking-wider">
                         Sign In
                     </a>
                 @endauth

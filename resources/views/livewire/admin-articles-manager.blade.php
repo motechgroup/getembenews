@@ -1112,6 +1112,22 @@ $generateIdeas = function () {
                 audioButton.style.justifyContent = "center";
                 audioButton.innerHTML = "🔊 Audio";
 
+                // Create image button
+                var imageButton = document.createElement("button");
+                imageButton.setAttribute("type", "button");
+                imageButton.setAttribute("class", "trix-button trix-custom-embed-btn");
+                imageButton.setAttribute("title", "Insert Image");
+                imageButton.style.backgroundImage = "none";
+                imageButton.style.textIndent = "0px";
+                imageButton.style.fontSize = "11px";
+                imageButton.style.fontWeight = "bold";
+                imageButton.style.width = "auto";
+                imageButton.style.padding = "0 8px";
+                imageButton.style.display = "inline-flex";
+                imageButton.style.alignItems = "center";
+                imageButton.style.justifyContent = "center";
+                imageButton.innerHTML = "📷 Image";
+
                 // Bind click event listeners directly
                 videoButton.addEventListener("click", function(e) {
                     e.preventDefault();
@@ -1135,11 +1151,23 @@ $generateIdeas = function () {
                     }
                 });
 
+                imageButton.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    var url = prompt("Enter Image URL:");
+                    if (url && url.trim()) {
+                        var editorObj = event.target.editor || (document.querySelector('trix-editor') ? document.querySelector('trix-editor').editor : null);
+                        if (editorObj) {
+                            editorObj.insertString('[image url="' + url.trim() + '"]');
+                        }
+                    }
+                });
+
                 // Insert into file-tools or block-tools group
                 var group = toolbar.querySelector(".trix-button-group--file-tools") || toolbar.querySelector(".trix-button-group--block-tools");
                 if (group) {
                     group.appendChild(videoButton);
                     group.appendChild(audioButton);
+                    group.appendChild(imageButton);
                 }
             }
 

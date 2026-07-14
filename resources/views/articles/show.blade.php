@@ -181,6 +181,15 @@
                                 </div>';
                         }, $bodyContent);
 
+                        // 3. Process inline [image url="..."] shortcodes
+                        $bodyContent = preg_replace_callback('/\[image\s+url=["\']([^"\']+)["\']\]/i', function($matches) {
+                            $imageUrl = $matches[1];
+                            return '
+                                <div class="my-6 flex flex-col items-center justify-center">
+                                    <img src="' . e($imageUrl) . '" alt="Article Inline Image" class="rounded-lg max-w-full h-auto border border-gray-200 dark:border-gray-800 shadow-sm">
+                                </div>';
+                        }, $bodyContent);
+
                         // 3. Process classic metadata-based [video] / [audio] placeholders
                         if (!empty($article->format_meta['video_url'])) {
                             $videoUrl = $article->format_meta['video_url'];

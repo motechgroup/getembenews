@@ -686,9 +686,7 @@ class MobileAppController extends Controller
             'message' => "A new announcement has been drafted via Mobile App by {$request->visitor_name} ({$request->visitor_phone}) with cost KSh {$totalAmount}."
         ]);
 
-        \App\Support\Sms::sendAdminNotification(
-            "[Getembe News] [Mobile App] New announcement drafted by {$request->visitor_name} ({$request->visitor_phone}). Amount: KSh {$totalAmount} for {$request->days_count} days."
-        );
+        \App\Support\Sms::sendAdminDraftNotification($announcement);
 
         return response()->json([
             'status' => 'success',
@@ -731,9 +729,7 @@ class MobileAppController extends Controller
             'message' => "Mobile Announcement ID: {$announcement->id} has been paid successfully. Visitor: {$announcement->visitor_name} ({$announcement->visitor_phone}). Amount: KSh {$announcement->total_amount}."
         ]);
 
-        \App\Support\Sms::sendAdminNotification(
-            "[Getembe News] [Mobile App] Payment received: KSh {$announcement->total_amount} for announcement ID {$announcement->id} (Ref: {$ref}). Submitter: {$announcement->visitor_name}."
-        );
+        \App\Support\Sms::sendAdminPaymentNotification($announcement, $ref);
 
         return response()->json([
             'status' => 'success',

@@ -448,4 +448,38 @@ class AgentTest extends TestCase
                 ->exists()
         );
     }
+
+    public function test_admin_can_save_sms_templates_and_run_test_sms(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        // 1. Save SMS Templates and Credentials via Livewire settings component
+        $component = Livewire::actingAs($admin)
+            ->test('admin-settings-manager', ['activeTab' => 'sms'])
+            ->set('sms_notifications_enabled', true)
+            ->set('sms_provider', 'mock')
+            ->set('sms_admin_phone', '+254711223344')
+            ->set('sms_template_draft', 'Custom Draft alert for [VisitorName]')
+            ->set('sms_template_payment', 'Custom Payment alert for [VisitorName] ID: [AnnouncementId]')
+            ->call('save');
+
+        $component->assertHasNoErrors();
+        $this->assertEquals('Custom Draft alert for [VisitorName]', Setting::get('sms_template_draft'));
+        $this->assertEquals('Custom Payment alert for [VisitorName] ID: [AnnouncementId]', Setting::get('sms_template_payment'));
+
+        // 2. Trigger Send Test SMS
+        $component->set('test_sms_phone', '+254799887766')
+            ->set('test_sms_message', 'Hello Test Message')
+            ->call('sendTestSms');
+
+        $component->assertHasNoErrors();
+        $component->assertSet('test_sms_success', 'Test SMS successfully sent to +254799887766!');
+
+        $this->assertTrue(
+            \App\Models\ContactMessage::where('name', 'SMS Gateway (Simulated)')
+                ->where('subject', 'Admin SMS Notification (Recipient: +254799887766)')
+                ->where('message', 'like', '%Hello Test Message%')
+                ->exists()
+        );
+    }
 }

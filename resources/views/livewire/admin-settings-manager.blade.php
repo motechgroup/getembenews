@@ -331,6 +331,16 @@ state([
     'sms_textsms_api_key' => fn() => Setting::get('sms_textsms_api_key', ''),
     'sms_textsms_partner_id' => fn() => Setting::get('sms_textsms_partner_id', ''),
     'sms_textsms_shortcode' => fn() => Setting::get('sms_textsms_shortcode', ''),
+    
+    // SMS Templates
+    'sms_template_draft' => fn() => Setting::get('sms_template_draft', "New announcement drafted: [VisitorName] ([VisitorPhone]). Target: [Media]/[Type]. Price: KSh [Amount]."),
+    'sms_template_payment' => fn() => Setting::get('sms_template_payment', "[Getembe News] Payment received: KSh [Amount] for announcement ID [AnnouncementId] (Ref: [TxRef]). Submitter: [VisitorName]."),
+    
+    // Testing SMS
+    'test_sms_phone' => '',
+    'test_sms_message' => 'Hello! This is a test SMS alert from Getembe News admin panel.',
+    'test_sms_success' => '',
+    'test_sms_error' => '',
 ]);
 
 mount(function ($activeTab = 'identity') {
@@ -932,7 +942,8 @@ $save = function () use ($logAction) {
         'sms_notifications_enabled', 'sms_provider', 'sms_admin_phone',
         'sms_twilio_sid', 'sms_twilio_token', 'sms_twilio_from',
         'sms_at_username', 'sms_at_api_key', 'sms_at_from',
-        'sms_textsms_api_key', 'sms_textsms_partner_id', 'sms_textsms_shortcode'
+        'sms_textsms_api_key', 'sms_textsms_partner_id', 'sms_textsms_shortcode',
+        'sms_template_draft', 'sms_template_payment'
     ];
 
     foreach ($fields as $field) {
@@ -943,6 +954,40 @@ $save = function () use ($logAction) {
 
     $logAction("Saved general website settings configurations");
     $this->dispatch('settings-saved');
+};
+
+$sendTestSms = function () {
+    $this->validate([
+        'test_sms_phone' => 'required|string',
+        'test_sms_message' => 'required|string|max:160',
+    ]);
+
+    // Save configurations first to ensure current settings are used
+    $fields = [
+        'sms_notifications_enabled', 'sms_provider', 'sms_admin_phone',
+        'sms_twilio_sid', 'sms_twilio_token', 'sms_twilio_from',
+        'sms_at_username', 'sms_at_api_key', 'sms_at_from',
+        'sms_textsms_api_key', 'sms_textsms_partner_id', 'sms_textsms_shortcode',
+        'sms_template_draft', 'sms_template_payment'
+    ];
+    foreach ($fields as $field) {
+        Setting::set($field, $this->{$field});
+    }
+
+    try {
+        // Force send even if disabled globally so they can test credentials
+        $success = \App\Support\Sms::send($this->test_sms_phone, $this->test_sms_message, true);
+        if ($success) {
+            $this->test_sms_success = "Test SMS successfully sent to {$this->test_sms_phone}!";
+            $this->test_sms_error = '';
+        } else {
+            $this->test_sms_error = "Failed to send Test SMS. Check logs or provider credentials.";
+            $this->test_sms_success = '';
+        }
+    } catch (\Exception $e) {
+        $this->test_sms_error = "Error sending SMS: " . $e->getMessage();
+        $this->test_sms_success = '';
+    }
 };
 
 $clearCache = function () use ($logAction) {
@@ -3567,7 +3612,7 @@ $sendTestEmail = function () {
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Left Panel: General SMS Controls -->
-                        <div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-lg border border-gray-100 dark:border-gray-850 space-y-4">
+                        <div class="bg-gray-50 dark:bg-gray-955 p-4 rounded-lg border border-gray-100 dark:border-gray-850 space-y-4">
                             <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">General SMS Settings</h4>
                             
                             <div class="flex items-center space-x-2 pt-2">
@@ -3589,6 +3634,38 @@ $sendTestEmail = function () {
                                     <option value="africastalking">Africa's Talking API</option>
                                     <option value="textsms">TextSMS Kenya Gateway (textsms.co.ke)</option>
                                 </select>
+                            </div>
+
+                            <!-- Test SMS Gateway -->
+                            <div class="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-3">
+                                <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Test SMS Gateway</h4>
+                                <p class="text-[10px] text-gray-500">Verify your current credentials and connection to the selected gateway.</p>
+                                
+                                @if($test_sms_success)
+                                    <div class="bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-400 p-2.5 rounded font-bold text-[10px] border border-green-200 dark:border-green-800/30">
+                                        {{ $test_sms_success }}
+                                    </div>
+                                @endif
+
+                                @if($test_sms_error)
+                                    <div class="bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 p-2.5 rounded font-bold text-[10px] border border-red-200 dark:border-red-800/30">
+                                        {{ $test_sms_error }}
+                                    </div>
+                                @endif
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-400">Recipient Phone Number</label>
+                                    <input type="text" wire:model="test_sms_phone" placeholder="e.g. +254712345678" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-400">Test Message Content</label>
+                                    <textarea wire:model="test_sms_message" rows="2" max="160" placeholder="Type test message..." class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white"></textarea>
+                                </div>
+
+                                <button type="button" wire:click="sendTestSms" class="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-bold text-xs py-2 rounded transition uppercase tracking-wider">
+                                    Send Test SMS
+                                </button>
                             </div>
                         </div>
 
@@ -3650,6 +3727,27 @@ $sendTestEmail = function () {
                                 <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Mock Gateway Details</h4>
                                 <p>This provider logs all outgoing SMS messages directly to standard Laravel storage log files under `storage/logs/laravel.log` and automatically logs a visible system event in your **Contact Inbox** table as a simulated message.</p>
                                 <p class="text-green-600 font-bold">✓ Active, no credentials required</p>
+                            </div>
+
+                            <!-- Manage SMS Templates -->
+                            <div class="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-4">
+                                <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">SMS Alert Templates</h4>
+                                
+                                <div class="space-y-1">
+                                    <div class="flex justify-between items-center">
+                                        <label class="text-[11px] font-bold text-gray-400">Draft Announcement Template</label>
+                                    </div>
+                                    <textarea wire:model="sms_template_draft" rows="2" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white"></textarea>
+                                    <span class="text-[9px] text-gray-500 block font-mono">Placeholders: [VisitorName], [VisitorPhone], [Media], [Type], [Amount]</span>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <div class="flex justify-between items-center">
+                                        <label class="text-[11px] font-bold text-gray-400">Payment Received Template</label>
+                                    </div>
+                                    <textarea wire:model="sms_template_payment" rows="2" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white"></textarea>
+                                    <span class="text-[9px] text-gray-500 block font-mono">Placeholders: [Amount], [AnnouncementId], [TxRef], [VisitorName]</span>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -11,10 +11,10 @@ class Sms
     /**
      * Send an SMS message using the configured provider.
      */
-    public static function send(string $to, string $message): bool
+    public static function send(string $to, string $message, bool $force = false): bool
     {
         $enabled = (bool) Setting::get('sms_notifications_enabled', false);
-        if (!$enabled) {
+        if (!$enabled && !$force) {
             Log::info("SMS sending disabled. Recipient: {$to}, Message: {$message}");
             return false;
         }
@@ -49,6 +49,38 @@ class Sms
         foreach ($numbers as $number) {
             self::send($number, $message);
         }
+    }
+
+    /**
+     * Send an admin notification using the draft template.
+     */
+    public static function sendAdminDraftNotification(\App\Models\Announcement $announcement): void
+    {
+        $template = Setting::get('sms_template_draft', "New announcement drafted: [VisitorName] ([VisitorPhone]). Target: [Media]/[Type]. Price: KSh [Amount].");
+
+        $message = str_replace(
+            ['[VisitorName]', '[VisitorPhone]', '[Media]', '[Type]', '[Amount]'],
+            [$announcement->visitor_name, $announcement->visitor_phone, $announcement->media, $announcement->type, $announcement->total_amount],
+            $template
+        );
+
+        self::sendAdminNotification($message);
+    }
+
+    /**
+     * Send an admin notification using the payment template.
+     */
+    public static function sendAdminPaymentNotification(\App\Models\Announcement $announcement, string $ref): void
+    {
+        $template = Setting::get('sms_template_payment', "[Getembe News] Payment received: KSh [Amount] for announcement ID [AnnouncementId] (Ref: [TxRef]). Submitter: [VisitorName].");
+
+        $message = str_replace(
+            ['[Amount]', '[AnnouncementId]', '[TxRef]', '[VisitorName]'],
+            [$announcement->total_amount, $announcement->id, $ref, $announcement->visitor_name],
+            $template
+        );
+
+        self::sendAdminNotification($message);
     }
 
     /**

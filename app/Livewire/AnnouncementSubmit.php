@@ -141,9 +141,7 @@ class AnnouncementSubmit extends Component
             'message' => "A new announcement has been drafted by {$this->visitor_name} ({$this->visitor_phone}) with cost KSh {$this->total_price} for {$this->days_count} days."
         ]);
 
-        \App\Support\Sms::sendAdminNotification(
-            "[Getembe News] New announcement drafted by {$this->visitor_name} ({$this->visitor_phone}). Amount: KSh {$this->total_price} for {$this->days_count} days."
-        );
+        \App\Support\Sms::sendAdminDraftNotification($announcement);
 
         $this->currentAnnouncementId = $announcement->id;
         $this->phone_for_mpesa = $this->visitor_phone;
@@ -208,9 +206,7 @@ class AnnouncementSubmit extends Component
                 'message' => "Announcement ID: {$announcement->id} has been paid successfully. Visitor: {$announcement->visitor_name} ({$announcement->visitor_phone}). Amount: KSh {$announcement->total_amount}."
             ]);
 
-            \App\Support\Sms::sendAdminNotification(
-                "[Getembe News] Payment received: KSh {$announcement->total_amount} for announcement ID {$announcement->id} (Ref: {$ref}). Submitter: {$announcement->visitor_name}."
-            );
+            \App\Support\Sms::sendAdminPaymentNotification($announcement, $ref);
 
             $this->mpesa_status = 'success';
             

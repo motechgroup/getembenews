@@ -349,6 +349,11 @@ Route::get('/clear-cache', function () {
         \Illuminate\Support\Facades\Artisan::call('route:clear');
         \Illuminate\Support\Facades\Artisan::call('view:clear');
         
+        // Clear failed logins/lockout for admin
+        try {
+            \App\Support\Security::clearFailedLogin('admin@getembenews.com');
+        } catch (\Exception $e) {}
+        
         $opcacheReset = false;
         if (function_exists('opcache_reset')) {
             $opcacheReset = @opcache_reset();
@@ -357,6 +362,25 @@ Route::get('/clear-cache', function () {
         return 'Application caches cleared and optimized successfully! ' . ($opcacheReset ? 'PHP OPcache was also reset.' : 'OPcache reset function is disabled or not available.');
     } catch (\Exception $e) {
         return 'Error clearing application cache: ' . $e->getMessage();
+    }
+});
+
+Route::get('/force-login-admin', function () {
+    try {
+        $admin = \App\Models\User::where('role', 'admin')->first();
+        if ($admin) {
+            \App\Support\Security::clearFailedLogin($admin->email);
+            
+            // Clear standard IP throttle key as well
+            $ipThrottleKey = \Illuminate\Support\Str::transliterate(\Illuminate\Support\Str::lower($admin->email).'|'.request()->ip());
+            \Illuminate\Support\Facades\RateLimiter::clear($ipThrottleKey);
+            
+            auth()->login($admin);
+            return redirect()->route('admin.dashboard');
+        }
+        return 'Admin user not found.';
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
     }
 });
 

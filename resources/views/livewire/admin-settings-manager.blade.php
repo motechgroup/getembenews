@@ -106,8 +106,15 @@ state([
     'contact_address' => fn() => Setting::get('contact_address', 'Kisii, Kenya'),
 
     // 4. Payment Settings
-    'payment_methods' => fn() => Setting::get('payment_methods', 'M-Pesa, Card'),
-    'payment_gateways' => fn() => Setting::get('payment_gateways', 'Flutterwave, Stripe'),
+    'payment_methods' => fn() => Setting::get('payment_methods', 'M-Pesa'),
+    'payment_gateways' => fn() => Setting::get('payment_gateways', 'M-Pesa'),
+    'mpesa_env' => fn() => Setting::get('mpesa_env', 'sandbox'),
+    'mpesa_consumer_key' => fn() => Setting::get('mpesa_consumer_key', ''),
+    'mpesa_consumer_secret' => fn() => Setting::get('mpesa_consumer_secret', ''),
+    'mpesa_shortcode' => fn() => Setting::get('mpesa_shortcode', '174379'),
+    'mpesa_passkey' => fn() => Setting::get('mpesa_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'),
+    'mpesa_initiator_name' => fn() => Setting::get('mpesa_initiator_name', ''),
+    'mpesa_initiator_password' => fn() => Setting::get('mpesa_initiator_password', ''),
 
     // 5. Currency Settings
     'currency' => fn() => Setting::get('currency', 'KES'),
@@ -943,7 +950,9 @@ $save = function () use ($logAction) {
         'sms_twilio_sid', 'sms_twilio_token', 'sms_twilio_from',
         'sms_at_username', 'sms_at_api_key', 'sms_at_from',
         'sms_textsms_api_key', 'sms_textsms_partner_id', 'sms_textsms_shortcode',
-        'sms_template_draft', 'sms_template_payment'
+        'sms_template_draft', 'sms_template_payment',
+        'mpesa_env', 'mpesa_consumer_key', 'mpesa_consumer_secret',
+        'mpesa_shortcode', 'mpesa_passkey', 'mpesa_initiator_name', 'mpesa_initiator_password'
     ];
 
     foreach ($fields as $field) {
@@ -2177,12 +2186,68 @@ $sendTestEmail = function () {
                             <input type="text" wire:model="currency_symbol" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
                         <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Active Gateways (comma separated)</label>
-                            <input type="text" wire:model="payment_gateways" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">Active Gateway</label>
+                            <span class="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-bold bg-[#C8102E]/10 text-[#C8102E] border border-[#C8102E]/20">
+                                🟢 M-Pesa (Daraja Portal)
+                            </span>
                         </div>
                         <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Allowed Payment Methods (comma separated)</label>
-                            <input type="text" wire:model="payment_methods" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">Active Payment Methods</label>
+                            <span class="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-bold bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/30">
+                                📱 Lipa Na M-Pesa STK Push
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- M-Pesa API Gateway Settings -->
+                    <div class="border-t border-gray-150 dark:border-gray-800 pt-4 space-y-4">
+                        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">M-Pesa API Credentials</h4>
+                        
+                        <div class="p-4 bg-gray-50 dark:bg-gray-955 rounded-lg border border-gray-250 dark:border-gray-850 space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">API Environment</label>
+                                    <select wire:model="mpesa_env" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                        <option value="sandbox">Sandbox (Testing / Daraja Simulator)</option>
+                                        <option value="production">Production (Live Payments)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Business Shortcode / Paybill</label>
+                                    <input type="text" wire:model="mpesa_shortcode" placeholder="e.g. 174379" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Consumer Key</label>
+                                    <input type="password" wire:model="mpesa_consumer_key" placeholder="Enter Consumer Key" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Consumer Secret</label>
+                                    <input type="password" wire:model="mpesa_consumer_secret" placeholder="Enter Consumer Secret" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                </div>
+
+                                <div class="space-y-1 md:col-span-2">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Lipa Na M-Pesa Online Passkey</label>
+                                    <input type="password" wire:model="mpesa_passkey" placeholder="Enter Lipa Na M-Pesa online passkey" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Initiator Name (Optional)</label>
+                                    <input type="text" wire:model="mpesa_initiator_name" placeholder="e.g. initiator_user" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Initiator Password (Optional)</label>
+                                    <input type="password" wire:model="mpesa_initiator_password" placeholder="Enter Initiator Password" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                </div>
+
+                                <div class="space-y-1 md:col-span-2">
+                                    <label class="text-[10px] font-bold text-gray-500">M-Pesa Webhook Callback URL (Read-only)</label>
+                                    <input type="text" readonly value="{{ url('/api/payments/mpesa/callback') }}" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-400 font-mono select-all">
+                                </div>
+                            </div>
                         </div>
                     </div>
 

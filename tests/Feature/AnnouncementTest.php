@@ -263,4 +263,31 @@ class AnnouncementTest extends TestCase
         $this->assertEquals('https://example.com/footer', Setting::get('ad_footer_link'));
         $this->assertEquals('https://example.com/mobile', Setting::get('ad_mobile_sticky_link'));
     }
+
+    public function test_admin_can_save_mpesa_settings(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
+        Livewire::test('admin-settings-manager')
+            ->set('activeTab', 'payments')
+            ->set('mpesa_env', 'production')
+            ->set('mpesa_shortcode', '654321')
+            ->set('mpesa_consumer_key', 'testConsumerKey')
+            ->set('mpesa_consumer_secret', 'testConsumerSecret')
+            ->set('mpesa_passkey', 'testPasskey123')
+            ->set('mpesa_initiator_name', 'testInitiator')
+            ->set('mpesa_initiator_password', 'testInitiatorPassword')
+            ->call('save');
+
+        $this->assertEquals('production', Setting::get('mpesa_env'));
+        $this->assertEquals('654321', Setting::get('mpesa_shortcode'));
+        $this->assertEquals('testConsumerKey', Setting::get('mpesa_consumer_key'));
+        $this->assertEquals('testConsumerSecret', Setting::get('mpesa_consumer_secret'));
+        $this->assertEquals('testPasskey123', Setting::get('mpesa_passkey'));
+        $this->assertEquals('testInitiator', Setting::get('mpesa_initiator_name'));
+        $this->assertEquals('testInitiatorPassword', Setting::get('mpesa_initiator_password'));
+        $this->assertEquals('M-Pesa', Setting::get('payment_methods'));
+        $this->assertEquals('M-Pesa', Setting::get('payment_gateways'));
+    }
 }

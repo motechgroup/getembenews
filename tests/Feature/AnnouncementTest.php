@@ -563,4 +563,51 @@ class AnnouncementTest extends TestCase
             ->assertSet('showCheckoutModal', false)
             ->assertSet('mpesa_status', 'idle');
     }
+
+    public function test_sidebar_unapproved_announcements_badge_count(): void
+    {
+        Announcement::truncate();
+
+        // Create paid but unapproved announcement
+        Announcement::create([
+            'visitor_name' => 'Emma Unapproved',
+            'visitor_phone' => '254712345678',
+            'type' => 'funeral',
+            'media' => 'both',
+            'content' => 'funeral content text',
+            'word_count' => 2,
+            'rate_per_word' => 3,
+            'days_count' => 1,
+            'airing_date' => now()->toDateString(),
+            'total_amount' => 6,
+            'payment_status' => 'paid',
+            'commission_amount' => 1,
+            'is_approved' => false,
+            'submitter_type' => 'self',
+        ]);
+
+        // Create approved announcement
+        Announcement::create([
+            'visitor_name' => 'Emma Approved',
+            'visitor_phone' => '254712345678',
+            'type' => 'funeral',
+            'media' => 'both',
+            'content' => 'funeral content text',
+            'word_count' => 2,
+            'rate_per_word' => 3,
+            'days_count' => 1,
+            'airing_date' => now()->toDateString(),
+            'total_amount' => 6,
+            'payment_status' => 'paid',
+            'commission_amount' => 1,
+            'is_approved' => true,
+            'submitter_type' => 'self',
+        ]);
+
+        $admin = User::factory()->create(['role' => 'admin', 'email' => 'admin@getembenews.com']);
+        $this->actingAs($admin);
+
+        $this->get('/admin/announcements')
+            ->assertSee('1');
+    }
 }

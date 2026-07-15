@@ -203,10 +203,10 @@
                         <span>Announcements</span>
                     </div>
                     @php
-                        $pendingAnnCount = \App\Models\Announcement::where('payment_status', 'pending')->count();
+                        $pendingAnnCount = \App\Models\Announcement::where('is_approved', false)->count();
                     @endphp
                     @if($pendingAnnCount > 0)
-                        <span class="bg-red-650 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0">
+                        <span class="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0">
                             {{ $pendingAnnCount }}
                         </span>
                     @endif

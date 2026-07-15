@@ -36,6 +36,7 @@ class AnnouncementSubmit extends Component
     public $currentAnnouncementId = null;
     public $mpesa_checkout_id = '';
     public $mpesa_error_message = '';
+    public $manual_receipt_ref = '';
 
     // Agent Login State
     public $showAgentLoginModal = false;
@@ -202,9 +203,22 @@ class AnnouncementSubmit extends Component
             
             // Map CheckoutRequestID to announcement ID in Cache
             \Illuminate\Support\Facades\Cache::put('mpesa_ann_' . $this->mpesa_checkout_id, $this->currentAnnouncementId, 3600);
+            \Illuminate\Support\Facades\Cache::put('mpesa_last_checkout_' . $this->currentAnnouncementId, $this->mpesa_checkout_id, 3600);
 
             $this->dispatch('start-stk-query-timer');
         } else {
+            // Check if the error indicates a duplicate or active transaction still under processing
+            $msg = $result['message'] ?? '';
+            if (str_contains(strtolower($msg), 'processing') || str_contains(strtolower($msg), 'busy') || str_contains(strtolower($msg), 'active')) {
+                $lastCheckout = \Illuminate\Support\Facades\Cache::get('mpesa_last_checkout_' . $this->currentAnnouncementId);
+                if ($lastCheckout) {
+                    $this->mpesa_checkout_id = $lastCheckout;
+                    $this->mpesa_status = 'sending';
+                    $this->dispatch('start-stk-query-timer');
+                    return;
+                }
+            }
+
             $this->mpesa_status = 'error';
             $this->mpesa_error_message = $result['message'];
         }
@@ -337,6 +351,16 @@ class AnnouncementSubmit extends Component
 
         session(['agent_logged_in' => $agent->id]);
         return $this->redirect('/agent/dashboard');
+    }
+
+    public function confirmManualPayment()
+    {
+        $this->validate([
+            'manual_receipt_ref' => 'required|string|min:8|max:20'
+        ]);
+
+        $ref = strtoupper(trim($this->manual_receipt_ref));
+        $this->confirmPaymentSuccess($ref);
     }
 
     public function render()

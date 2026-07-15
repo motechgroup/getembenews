@@ -371,4 +371,32 @@ class AnnouncementTest extends TestCase
         Setting::set('mpesa_callback_url', '');
         $this->assertNotEmpty(\App\Support\Mpesa::getCallbackUrl());
     }
+
+    public function test_mpesa_manual_receipt_confirmation(): void
+    {
+        $announcement = Announcement::create([
+            'visitor_name' => 'Emma Moraa',
+            'visitor_phone' => '254712345678',
+            'type' => 'funeral',
+            'media' => 'both',
+            'content' => 'Some funeral content text here.',
+            'word_count' => 5,
+            'rate_per_word' => 5,
+            'days_count' => 3,
+            'airing_date' => now()->toDateString(),
+            'total_amount' => 1500,
+            'payment_status' => 'pending',
+            'submitter_type' => 'self',
+        ]);
+
+        \Livewire\Livewire::test(\App\Livewire\AnnouncementSubmit::class)
+            ->set('currentAnnouncementId', $announcement->id)
+            ->set('manual_receipt_ref', 'UGFI9B799B')
+            ->call('confirmManualPayment')
+            ->assertSet('mpesa_status', 'success');
+
+        $announcement->refresh();
+        $this->assertEquals('paid', $announcement->payment_status);
+        $this->assertEquals('UGFI9B799B', $announcement->payment_reference);
+    }
 }

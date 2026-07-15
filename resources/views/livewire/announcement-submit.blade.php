@@ -256,7 +256,7 @@
                  }, 1000);
              "
              @start-stk-query-timer.window="
-                 countdown = 60;
+                 countdown = 90;
                  if (timerId) clearInterval(timerId);
                  timerId = setInterval(() => {
                      countdown--;

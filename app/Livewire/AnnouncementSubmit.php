@@ -209,14 +209,19 @@ class AnnouncementSubmit extends Component
         } else {
             // Check if the error indicates a duplicate or active transaction still under processing
             $msg = $result['message'] ?? '';
-            if (str_contains(strtolower($msg), 'processing') || str_contains(strtolower($msg), 'busy') || str_contains(strtolower($msg), 'active')) {
+            $isTempError = str_contains(strtolower($msg), 'processing') 
+                || str_contains(strtolower($msg), 'busy') 
+                || str_contains(strtolower($msg), 'active')
+                || str_contains(strtolower($msg), 'rate');
+
+            if ($isTempError) {
                 $lastCheckout = \Illuminate\Support\Facades\Cache::get('mpesa_last_checkout_' . $this->currentAnnouncementId);
                 if ($lastCheckout) {
                     $this->mpesa_checkout_id = $lastCheckout;
-                    $this->mpesa_status = 'sending';
-                    $this->dispatch('start-stk-query-timer');
-                    return;
                 }
+                $this->mpesa_status = 'sending';
+                $this->dispatch('start-stk-query-timer');
+                return;
             }
 
             $this->mpesa_status = 'error';

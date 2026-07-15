@@ -368,6 +368,22 @@ class AnnouncementSubmit extends Component
         $this->confirmPaymentSuccess($ref);
     }
 
+    public function closeCheckout()
+    {
+        $this->showCheckoutModal = false;
+        $this->mpesa_status = 'idle';
+        $this->mpesa_error_message = '';
+        $this->currentAnnouncementId = null;
+        $this->manual_receipt_ref = '';
+    }
+
+    public function cancelCheckout()
+    {
+        $this->showCheckoutModal = false;
+        $this->mpesa_status = 'idle';
+        $this->mpesa_error_message = '';
+    }
+
     public function render()
     {
         $publishedAnnouncements = Announcement::active()->latest()->paginate(10);

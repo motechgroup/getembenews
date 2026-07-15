@@ -363,7 +363,7 @@
                         </div>
 
                         <button type="button" 
-                                @click="$wire.showCheckoutModal = false"
+                                wire:click="closeCheckout"
                                 class="w-full bg-gray-900 hover:bg-gray-850 dark:bg-white dark:hover:bg-gray-100 dark:text-black text-white font-bold py-2.5 rounded-lg transition uppercase tracking-wider">
                             Close Receipt
                         </button>
@@ -409,7 +409,7 @@
                 <!-- Cancel / Close button -->
                 @if($mpesa_status !== 'sending')
                     <button type="button" 
-                            @click="$wire.showCheckoutModal = false"
+                            wire:click="cancelCheckout"
                             class="text-gray-400 hover:text-gray-600 text-[10px] font-bold uppercase tracking-wider block mx-auto hover:underline mt-2">
                         Cancel & Go Back
                     </button>

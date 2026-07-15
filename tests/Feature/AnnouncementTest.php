@@ -548,4 +548,19 @@ class AnnouncementTest extends TestCase
 
         $this->assertAuthenticatedAs($admin);
     }
+
+    public function test_announcement_close_and_cancel_checkout_methods(): void
+    {
+        \Livewire\Livewire::test(\App\Livewire\AnnouncementSubmit::class)
+            ->set('showCheckoutModal', true)
+            ->set('mpesa_status', 'success')
+            ->call('closeCheckout')
+            ->assertSet('showCheckoutModal', false)
+            ->assertSet('mpesa_status', 'idle')
+            ->set('showCheckoutModal', true)
+            ->set('mpesa_status', 'error')
+            ->call('cancelCheckout')
+            ->assertSet('showCheckoutModal', false)
+            ->assertSet('mpesa_status', 'idle');
+    }
 }

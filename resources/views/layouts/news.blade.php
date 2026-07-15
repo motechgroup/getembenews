@@ -472,7 +472,7 @@
         $adsenseEnabled = \App\Models\Setting::get('adsense_enabled', false);
         $facebookAdsEnabled = \App\Models\Setting::get('facebook_ads_enabled', false);
     @endphp
-    @if(($mobileStickyAd && \App\Models\Setting::get('custom_ads_enabled', true)) || ($adsenseEnabled && \App\Models\Setting::get('adsense_code')) || ($facebookAdsEnabled && \App\Models\Setting::get('facebook_ads_code')))
+    @if(($mobileStickyAd && \App\Models\Setting::get('custom_ads_enabled', false)) || ($adsenseEnabled && \App\Models\Setting::get('adsense_code')) || ($facebookAdsEnabled && \App\Models\Setting::get('facebook_ads_code')))
         <div class="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/95 dark:bg-gray-950/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 shadow-xl py-1 px-4 flex justify-between items-center" x-data="{ open: true }" x-show="open">
             <div class="flex-grow flex justify-center">
                 @include('partials.render-ad', ['location' => 'mobile_sticky'])

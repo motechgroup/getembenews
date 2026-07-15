@@ -216,7 +216,7 @@ state([
     'adsense_code' => fn() => Setting::get('adsense_code', ''),
     'facebook_ads_enabled' => fn() => Setting::get('facebook_ads_enabled', false),
     'facebook_ads_code' => fn() => Setting::get('facebook_ads_code', ''),
-    'custom_ads_enabled' => fn() => Setting::get('custom_ads_enabled', true),
+    'custom_ads_enabled' => fn() => Setting::get('custom_ads_enabled', false),
     'ad_top_image' => fn() => Setting::get('ad_top_image', ''),
     'ad_top_link' => fn() => Setting::get('ad_top_link', ''),
     'ad_sidebar_image' => fn() => Setting::get('ad_sidebar_image', ''),

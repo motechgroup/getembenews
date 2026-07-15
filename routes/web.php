@@ -342,6 +342,24 @@ Route::get('/run-seeders', function () {
     }
 });
 
+Route::get('/clear-cache', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        
+        $opcacheReset = false;
+        if (function_exists('opcache_reset')) {
+            $opcacheReset = @opcache_reset();
+        }
+
+        return 'Application caches cleared and optimized successfully! ' . ($opcacheReset ? 'PHP OPcache was also reset.' : 'OPcache reset function is disabled or not available.');
+    } catch (\Exception $e) {
+        return 'Error clearing application cache: ' . $e->getMessage();
+    }
+});
+
 Route::get('/debug-log', function () {
     $path = storage_path('logs/laravel.log');
     if (!file_exists($path)) {

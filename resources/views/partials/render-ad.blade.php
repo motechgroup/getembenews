@@ -2,7 +2,7 @@
     $location = $location ?? 'top';
     $adsenseEnabled = \App\Models\Setting::get('adsense_enabled', false);
     $facebookAdsEnabled = \App\Models\Setting::get('facebook_ads_enabled', false);
-    $customAdsEnabled = \App\Models\Setting::get('custom_ads_enabled', true);
+    $customAdsEnabled = \App\Models\Setting::get('custom_ads_enabled', false);
     
     // Retrieve custom banner image & destination
     $bannerImage = \App\Models\Setting::get("ad_{$location}_image");

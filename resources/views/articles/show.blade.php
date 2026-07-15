@@ -306,7 +306,7 @@
                     <!-- Watch Live TV / Listen Live Radio Start Banners -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 border-y border-gray-150 dark:border-gray-800 py-3.5">
                         @if(\App\Models\Setting::get('live_tv_active', '1') == '1')
-                            <a href="/live-tv" class="flex items-center justify-between p-3.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group">
+                            <a href="/live-tv" class="flex items-center justify-between p-3.5 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group" style="background-color: #C8102E !important; color: #ffffff !important;">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
                                         <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -314,8 +314,8 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none">Watch Live TV</h4>
-                                        <p class="text-[9px] text-red-100 mt-1">Broadcast Getembe TV Live Stream</p>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Watch Live TV</h4>
+                                        <p class="text-[9px] mt-1" style="color: rgba(255, 255, 255, 0.8) !important;">Broadcast Getembe TV Live Stream</p>
                                     </div>
                                 </div>
                                 <div class="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white">
@@ -327,7 +327,7 @@
                         @endif
 
                         @if(\App\Models\Setting::get('live_radio_active', '1') == '1')
-                            <a href="/live-radio" class="flex items-center justify-between p-3.5 bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-900 border border-gray-800 text-white rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group">
+                            <a href="/live-radio" class="flex items-center justify-between p-3.5 border border-gray-800 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group" style="background-color: #111827 !important; color: #ffffff !important;">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
                                         <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -335,8 +335,8 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none">Listen Live Radio</h4>
-                                        <p class="text-[9px] text-gray-400 mt-1">Tune in to Getembe FM Live Broadcast</p>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Listen Live Radio</h4>
+                                        <p class="text-[9px] mt-1" style="color: #9ca3af !important;">Tune in to Getembe FM Live Broadcast</p>
                                     </div>
                                 </div>
                                 <div class="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white">
@@ -353,7 +353,7 @@
                     <!-- Watch Live TV / Listen Live Radio End Banners -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 border-y border-gray-150 dark:border-gray-800 py-3.5">
                         @if(\App\Models\Setting::get('live_tv_active', '1') == '1')
-                            <a href="/live-tv" class="flex items-center justify-between p-3.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group">
+                            <a href="/live-tv" class="flex items-center justify-between p-3.5 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group" style="background-color: #C8102E !important; color: #ffffff !important;">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
                                         <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -361,8 +361,8 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none">Watch Live TV</h4>
-                                        <p class="text-[9px] text-red-100 mt-1">Broadcast Getembe TV Live Stream</p>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Watch Live TV</h4>
+                                        <p class="text-[9px] mt-1" style="color: rgba(255, 255, 255, 0.8) !important;">Broadcast Getembe TV Live Stream</p>
                                     </div>
                                 </div>
                                 <div class="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white">
@@ -374,7 +374,7 @@
                         @endif
 
                         @if(\App\Models\Setting::get('live_radio_active', '1') == '1')
-                            <a href="/live-radio" class="flex items-center justify-between p-3.5 bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-900 border border-gray-800 text-white rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group">
+                            <a href="/live-radio" class="flex items-center justify-between p-3.5 border border-gray-800 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group" style="background-color: #111827 !important; color: #ffffff !important;">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
                                         <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -382,8 +382,8 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none">Listen Live Radio</h4>
-                                        <p class="text-[9px] text-gray-400 mt-1">Tune in to Getembe FM Live Broadcast</p>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Listen Live Radio</h4>
+                                        <p class="text-[9px] mt-1" style="color: #9ca3af !important;">Tune in to Getembe FM Live Broadcast</p>
                                     </div>
                                 </div>
                                 <div class="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white">

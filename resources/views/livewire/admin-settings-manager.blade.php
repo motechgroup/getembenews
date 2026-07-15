@@ -2245,7 +2245,7 @@ $sendTestEmail = function () {
 
                                 <div class="space-y-1 md:col-span-2">
                                     <label class="text-[10px] font-bold text-gray-500">M-Pesa Webhook Callback URL (Read-only)</label>
-                                    <input type="text" readonly value="{{ url('/api/payments/mpesa/callback') }}" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-400 font-mono select-all">
+                                    <input type="text" readonly value="{{ url('/api/v1/payments/mpesa/callback') }}" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-400 font-mono select-all">
                                 </div>
                             </div>
                         </div>

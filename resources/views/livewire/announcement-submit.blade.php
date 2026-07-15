@@ -227,20 +227,39 @@
     <!-- M-Pesa STK Push Checkout Modal Overlay -->
     @if($showCheckoutModal)
         <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-             x-data="{ countdown: 2 }"
+             x-data="{ countdown: 60, timerId: null }"
              x-init="
                 $on('start-stk-timer', () => {
-                    countdown = 2;
-                    let timer = setInterval(() => {
+                    countdown = 5;
+                    if (timerId) clearInterval(timerId);
+                    timerId = setInterval(() => {
                         countdown--;
                         if (countdown <= 0) {
-                            clearInterval(timer);
+                            clearInterval(timerId);
                             $wire.confirmPaymentSuccess();
                         }
                     }, 1000);
                 });
+                $on('start-stk-query-timer', () => {
+                    countdown = 60;
+                    if (timerId) clearInterval(timerId);
+                    timerId = setInterval(() => {
+                        countdown--;
+                        if ($wire.mpesa_status === 'success' || $wire.mpesa_status === 'error') {
+                            clearInterval(timerId);
+                            return;
+                        }
+                        if (countdown <= 0) {
+                            clearInterval(timerId);
+                            $wire.set('mpesa_status', 'error');
+                            $wire.set('mpesa_error_message', 'Payment verification timed out. Safaricom did not confirm the transaction in time.');
+                        } else if (countdown % 3 === 0) {
+                            $wire.checkMpesaPaymentStatus();
+                        }
+                    }, 1000);
+                });
              ">
-            <div class="bg-white dark:bg-gray-950 border border-gray-250 dark:border-gray-800 max-w-md w-full rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl text-xs text-center">
+            <div class="bg-white dark:bg-gray-955 border border-gray-250 dark:border-gray-800 max-w-md w-full rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl text-xs text-center">
                 <!-- Header -->
                 <div class="space-y-1">
                     <span class="bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-455 font-black uppercase text-[10px] tracking-wider px-3 py-1 rounded-full">
@@ -273,7 +292,7 @@
 
                         <button type="button" 
                                 wire:click="triggerMpesaStkPush"
-                                class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition uppercase tracking-wider flex items-center justify-center space-x-1.5">
+                                class="w-full bg-green-650 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition uppercase tracking-wider flex items-center justify-center space-x-1.5">
                             <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
@@ -282,7 +301,7 @@
                     </div>
                 @elseif($mpesa_status === 'sending')
                     <!-- Sending / awaiting STK input -->
-                    <div class="space-y-6 py-6 flex flex-col items-center justify-center">
+                    <div class="space-y-6 py-4 flex flex-col items-center justify-center">
                         <!-- Loading spinner -->
                         <div class="relative flex items-center justify-center">
                             <div class="animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600"></div>
@@ -294,6 +313,12 @@
                                 We've sent a payment prompt to <span class="font-bold font-mono text-gray-800 dark:text-white" x-text="$wire.phone_for_mpesa"></span>. Please check your phone, enter your PIN and wait.
                             </p>
                         </div>
+                        
+                        <button type="button" 
+                                wire:click="checkMpesaPaymentStatus"
+                                class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 rounded-lg transition uppercase tracking-wider text-[10px] shadow-sm">
+                            I have paid (Confirm Status)
+                        </button>
                     </div>
                 @elseif($mpesa_status === 'success')
                     <!-- Success receipt -->
@@ -327,6 +352,27 @@
                                 @click="$wire.showCheckoutModal = false"
                                 class="w-full bg-gray-900 hover:bg-gray-850 dark:bg-white dark:hover:bg-gray-100 dark:text-black text-white font-bold py-2.5 rounded-lg transition uppercase tracking-wider">
                             Close Receipt
+                        </button>
+                    </div>
+                @elseif($mpesa_status === 'error')
+                    <!-- Error report -->
+                    <div class="space-y-6">
+                        <div class="flex flex-col items-center justify-center space-y-2">
+                            <div class="h-12 w-12 rounded-full bg-red-100 dark:bg-red-950/20 flex items-center justify-center text-red-600">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </div>
+                            <h4 class="font-black text-gray-900 dark:text-white text-base">Payment Unverified</h4>
+                            <p class="text-[10px] text-gray-500 max-w-xs mx-auto leading-normal">
+                                {{ $mpesa_error_message ?: 'We could not verify your M-Pesa transaction. Please ensure you received the prompt, entered your PIN, and try again.' }}
+                            </p>
+                        </div>
+
+                        <button type="button" 
+                                wire:click="$set('mpesa_status', 'idle')"
+                                class="w-full bg-[#C8102E] hover:bg-red-700 text-white font-bold py-2.5 rounded-lg transition uppercase tracking-wider">
+                            Try Again / Change Phone
                         </button>
                     </div>
                 @endif

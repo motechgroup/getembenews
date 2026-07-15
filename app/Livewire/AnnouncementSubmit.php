@@ -34,6 +34,8 @@ class AnnouncementSubmit extends Component
     public $showCheckoutModal = false;
     public $mpesa_status = 'idle'; // idle, sending, success, error
     public $currentAnnouncementId = null;
+    public $mpesa_checkout_id = '';
+    public $mpesa_error_message = '';
 
     // Agent Login State
     public $showAgentLoginModal = false;
@@ -150,7 +152,7 @@ class AnnouncementSubmit extends Component
     }
 
     /**
-     * Simulate triggering the M-Pesa STK Push.
+     * Trigger the M-Pesa STK Push.
      */
     public function triggerMpesaStkPush()
     {
@@ -168,21 +170,89 @@ class AnnouncementSubmit extends Component
         \Illuminate\Support\Facades\RateLimiter::hit('mpesa-push:' . $ip, 60);
 
         $this->mpesa_status = 'sending';
+        $this->mpesa_error_message = '';
 
-        // We will dispatch a browser event or handle a simulated timeout to complete the payment
-        $this->dispatch('start-stk-timer');
+        // Fallback to simulation if consumer credentials are not set
+        $key = \App\Models\Setting::get('mpesa_consumer_key', '');
+        $secret = \App\Models\Setting::get('mpesa_consumer_secret', '');
+
+        if (empty($key) || empty($secret)) {
+            $this->dispatch('start-stk-timer');
+            return;
+        }
+
+        // Trigger real Safaricom STK Push
+        $announcement = Announcement::find($this->currentAnnouncementId);
+        $amount = $announcement ? $announcement->total_amount : 1;
+        $reference = $announcement ? 'ANN-' . $announcement->id : 'GetembeNews';
+
+        $result = \App\Support\Mpesa::stkPush($this->phone_for_mpesa, $amount, $reference);
+
+        if ($result['success']) {
+            $this->mpesa_checkout_id = $result['checkout_request_id'];
+            
+            // Map CheckoutRequestID to announcement ID in Cache
+            \Illuminate\Support\Facades\Cache::put('mpesa_ann_' . $this->mpesa_checkout_id, $this->currentAnnouncementId, 3600);
+
+            $this->dispatch('start-stk-query-timer');
+        } else {
+            $this->mpesa_status = 'error';
+            $this->mpesa_error_message = $result['message'];
+        }
+    }
+
+    /**
+     * Check current status of M-Pesa transaction via Safaricom Query API or Webhook cache.
+     */
+    public function checkMpesaPaymentStatus()
+    {
+        if (empty($this->mpesa_checkout_id)) return;
+
+        // 1. Check if callback webhook already verified payment
+        $cachedResult = \Illuminate\Support\Facades\Cache::get('mpesa_status_' . $this->mpesa_checkout_id);
+        if ($cachedResult) {
+            $code = (int) $cachedResult['code'];
+            if ($code === 0) {
+                // Find reference if set
+                $ref = 'MPESA-CB-' . \Illuminate\Support\Str::random(10);
+                foreach (($cachedResult['metadata'] ?? []) as $item) {
+                    if (($item['Name'] ?? '') === 'MpesaReceiptNumber') {
+                        $ref = $item['Value'];
+                        break;
+                    }
+                }
+                $this->confirmPaymentSuccess($ref);
+                return;
+            } else {
+                $this->mpesa_status = 'error';
+                $this->mpesa_error_message = $cachedResult['desc'] ?: 'Payment failed or cancelled.';
+                return;
+            }
+        }
+
+        // 2. Query Safaricom status endpoint
+        $result = \App\Support\Mpesa::queryStatus($this->mpesa_checkout_id);
+
+        if ($result['success'] && $result['status'] === 'success') {
+            $this->confirmPaymentSuccess();
+        } elseif ($result['status'] === 'failed') {
+            $this->mpesa_status = 'error';
+            $this->mpesa_error_message = $result['message'] ?: 'Payment failed or cancelled.';
+        } elseif ($result['status'] === 'error') {
+            \Illuminate\Support\Facades\Log::info("M-Pesa status query error: " . $result['message']);
+        }
     }
 
     /**
      * Handle payment success webhook simulation.
      */
-    public function confirmPaymentSuccess()
+    public function confirmPaymentSuccess($customRef = null)
     {
         if (!$this->currentAnnouncementId) return;
 
         $announcement = Announcement::find($this->currentAnnouncementId);
         if ($announcement) {
-            $ref = 'MPESA-STK-' . strtoupper(Str::random(10));
+            $ref = $customRef ?: 'MPESA-STK-' . strtoupper(Str::random(10));
 
             $commissionAmount = 0;
             if ($announcement->agent_id) {

@@ -19,6 +19,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/announcements', [MobileAppController::class, 'announcements']);
     Route::post('/announcements', [MobileAppController::class, 'submitAnnouncement']);
     Route::post('/announcements/{id}/pay', [MobileAppController::class, 'payAnnouncement']);
+    Route::post('/payments/mpesa/callback', [\App\Http\Controllers\Api\MpesaCallbackController::class, 'handleCallback']);
     
     // Auth endpoints
     Route::post('/auth/register', [MobileAppController::class, 'register']);

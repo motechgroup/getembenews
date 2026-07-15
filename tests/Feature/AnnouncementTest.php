@@ -290,4 +290,76 @@ class AnnouncementTest extends TestCase
         $this->assertEquals('M-Pesa', Setting::get('payment_methods'));
         $this->assertEquals('M-Pesa', Setting::get('payment_gateways'));
     }
+
+    public function test_mpesa_stk_push_integration_logic(): void
+    {
+        Setting::set('mpesa_env', 'sandbox');
+        Setting::set('mpesa_shortcode', '174379');
+        Setting::set('mpesa_passkey', 'testPasskey');
+        Setting::set('mpesa_consumer_key', 'testKey');
+        Setting::set('mpesa_consumer_secret', 'testSecret');
+
+        \Illuminate\Support\Facades\Http::fake([
+            'oauth/v1/generate*' => \Illuminate\Support\Facades\Http::response([
+                'access_token' => 'mock_daraja_access_token'
+            ], 200),
+            'mpesa/stkpush/v1/processrequest' => \Illuminate\Support\Facades\Http::response([
+                'ResponseCode' => '0',
+                'ResponseDescription' => 'Success. Request accepted for processing',
+                'CheckoutRequestID' => 'ws_CO_15072026_xyz',
+                'MerchantRequestID' => '12345'
+            ], 200)
+        ]);
+
+        $result = \App\Support\Mpesa::stkPush('254712345678', 500, 'ANN-101');
+
+        $this->assertTrue($result['success']);
+        $this->assertEquals('ws_CO_15072026_xyz', $result['checkout_request_id']);
+    }
+
+    public function test_mpesa_webhook_callback_controller(): void
+    {
+        $announcement = Announcement::create([
+            'visitor_name' => 'John Doe',
+            'visitor_phone' => '254712345678',
+            'type' => 'general',
+            'media' => 'tv',
+            'content' => 'This is a test announcement content.',
+            'word_count' => 6,
+            'days_count' => 5,
+            'rate_per_word' => 5,
+            'total_amount' => 150,
+            'payment_status' => 'pending'
+        ]);
+
+        \Illuminate\Support\Facades\Cache::put('mpesa_ann_ws_CO_15072026_xyz', $announcement->id);
+
+        $payload = [
+            'Body' => [
+                'stkCallback' => [
+                    'MerchantRequestID' => '12345',
+                    'CheckoutRequestID' => 'ws_CO_15072026_xyz',
+                    'ResultCode' => 0,
+                    'ResultDesc' => 'The service request is processed successfully.',
+                    'CallbackMetadata' => [
+                        'Item' => [
+                            ['Name' => 'Amount', 'Value' => 1500],
+                            ['Name' => 'MpesaReceiptNumber', 'Value' => 'QTR89SDFG3'],
+                            ['Name' => 'TransactionDate', 'Value' => 20260715112259],
+                            ['Name' => 'PhoneNumber', 'Value' => 254712345678]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $response = $this->postJson('/api/v1/payments/mpesa/callback', $payload);
+
+        $response->assertStatus(200);
+        $response->assertJson(['ResultCode' => 0]);
+
+        $announcement->refresh();
+        $this->assertEquals('paid', $announcement->payment_status);
+        $this->assertEquals('QTR89SDFG3', $announcement->payment_reference);
+    }
 }

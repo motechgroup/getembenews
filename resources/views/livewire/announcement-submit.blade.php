@@ -120,8 +120,8 @@
                     <div class="space-y-1">
                         <div class="flex justify-between items-center text-[10px] font-bold text-gray-500 uppercase">
                             <label>Announcement Text Content</label>
-                            <span :class="{'text-red-500': $wire.word_count > wordLimit}">
-                                Word Count: <span class="font-bold text-gray-900 dark:text-white" x-text="$wire.word_count"></span> / 200 max
+                            <span>
+                                Word Count: <span class="font-bold text-gray-900 dark:text-white" x-text="$wire.word_count"></span>
                             </span>
                         </div>
                         <textarea wire:model.live="content" rows="6" required placeholder="Write your announcement content here. Note that pricing is calculated dynamically per word..." 

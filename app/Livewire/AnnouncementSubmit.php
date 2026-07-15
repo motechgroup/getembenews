@@ -47,7 +47,7 @@ class AnnouncementSubmit extends Component
         'visitor_phone' => 'required|string|max:20',
         'type' => 'required|in:funeral,general',
         'media' => 'required|in:tv,radio,both',
-        'content' => 'required|string|min:5',
+        'content' => 'required|string',
         'days_count' => 'required|integer|min:1|max:30',
         'airing_date' => 'required|date|after_or_equal:today',
         'submitter_type' => 'required|in:self,agent',

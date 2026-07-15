@@ -75,27 +75,54 @@ class ImageProcessor
         // 2. Apply Watermark ("getembe digital")
         if ($applyWatermark) {
             $watermarkText = 'getembe digital';
-            $fontSize = 5; // Built-in font size (1 to 5)
+            $fontSize = 4; // Built-in font size (1 to 5)
             $fontWidth = imagefontwidth($fontSize);
             $fontHeight = imagefontheight($fontSize);
 
             $textWidth = strlen($watermarkText) * $fontWidth;
 
-            // Position: Bottom-right corner with 15px padding
-            $padding = 15;
-            $x = $width - $textWidth - $padding;
+            // Position: Bottom-left corner with 20px padding
+            $padding = 20;
+            $x = $padding;
             $y = $height - $fontHeight - $padding;
 
-            if ($x > 0 && $y > 0) {
-                // Allocate colors
-                $white = imagecolorallocate($image, 255, 255, 255);
-                $black = imagecolorallocate($image, 0, 0, 0);
+            // Bounding box for the glass-embedded backing panel
+            $boxPaddingX = 10;
+            $boxPaddingY = 6;
+            $boxLeft = $x - $boxPaddingX;
+            $boxTop = $y - $boxPaddingY;
+            $boxRight = $x + $textWidth + $boxPaddingX;
+            $boxBottom = $y + $fontHeight + $boxPaddingY;
 
-                if ($white !== false && $black !== false) {
-                    // Draw a subtle shadow first
-                    imagestring($image, $fontSize, $x + 1, $y + 1, $watermarkText, $black);
-                    // Draw main white text
-                    imagestring($image, $fontSize, $x, $y, $watermarkText, $white);
+            if ($boxLeft > 0 && $boxBottom < $height && $boxRight < $width && $boxTop > 0) {
+                // Set alpha blending to blend drawing colors with background image
+                imagealphablending($image, true);
+
+                // Allocate glass-morphic colors:
+                // 1. Semi-transparent dark backing card (black with alpha 80 out of 127)
+                $glassBg = imagecolorallocatealpha($image, 0, 0, 0, 80);
+                
+                // 2. Semi-transparent white card border/highlight (white with alpha 95 out of 127)
+                $glassBorder = imagecolorallocatealpha($image, 255, 255, 255, 95);
+                
+                // 3. Bright solid white text (white with alpha 0)
+                $textColor = imagecolorallocatealpha($image, 255, 255, 255, 0);
+
+                if ($glassBg !== false && $glassBorder !== false && $textColor !== false) {
+                    // Draw backing card filled rectangle
+                    imagefilledrectangle($image, $boxLeft, $boxTop, $boxRight, $boxBottom, $glassBg);
+                    
+                    // Draw outer border (1px border line)
+                    imagerectangle($image, $boxLeft, $boxTop, $boxRight, $boxBottom, $glassBorder);
+                    
+                    // Draw dropshadowed text first (semi-transparent black)
+                    $shadowColor = imagecolorallocatealpha($image, 0, 0, 0, 60);
+                    if ($shadowColor !== false) {
+                        imagestring($image, $fontSize, $x + 1, $y + 1, $watermarkText, $shadowColor);
+                    }
+
+                    // Write main white text inside the glass panel
+                    imagestring($image, $fontSize, $x, $y, $watermarkText, $textColor);
                 }
             }
         }

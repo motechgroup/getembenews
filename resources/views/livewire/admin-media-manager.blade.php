@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Storage;
 uses(WithFileUploads::class);
 
 state([
-    'mediaFiles' => fn() => Media::orderBy('created_at', 'desc')->get(),
+    'mediaFiles' => fn() => Media::when(!auth()->user()->isAdmin(), function ($q) {
+        $q->where('user_id', auth()->id());
+    })->orderBy('created_at', 'desc')->get(),
     'search' => '',
     'filterType' => 'all', // all, image, document
     
@@ -43,25 +45,38 @@ $upload = function () {
     ]);
 
     $this->reset('uploadedFile');
-    $this->mediaFiles = Media::orderBy('created_at', 'desc')->get();
+    $this->mediaFiles = Media::when(!auth()->user()->isAdmin(), function ($q) {
+        $q->where('user_id', auth()->id());
+    })->orderBy('created_at', 'desc')->get();
     session()->flash('media_success', 'File uploaded successfully!');
 };
 
 $deleteMedia = function ($id) {
     $media = Media::findOrFail($id);
     
+    // Authorization check: Only owner or admin can delete
+    if (!auth()->user()->isAdmin() && $media->user_id !== auth()->id()) {
+        session()->flash('media_error', 'You are not authorized to delete this media file.');
+        return;
+    }
+
     // Delete file from storage
     if (Storage::disk('public')->exists($media->path)) {
         Storage::disk('public')->delete($media->path);
     }
     
     $media->delete();
-    $this->mediaFiles = Media::orderBy('created_at', 'desc')->get();
+    $this->mediaFiles = Media::when(!auth()->user()->isAdmin(), function ($q) {
+        $q->where('user_id', auth()->id());
+    })->orderBy('created_at', 'desc')->get();
     session()->flash('media_success', 'File deleted.');
 };
 
 $filteredMedia = function () {
-    return Media::orderBy('created_at', 'desc')
+    return Media::when(!auth()->user()->isAdmin(), function ($q) {
+            $q->where('user_id', auth()->id());
+        })
+        ->orderBy('created_at', 'desc')
         ->when($this->search, function ($q) {
             $q->where('filename', 'like', '%' . $this->search . '%');
         })
@@ -94,6 +109,11 @@ $filteredMedia = function () {
             @if (session()->has('media_success'))
                 <div class="p-2 bg-green-900/10 border border-green-800 text-green-300 text-xs rounded">
                     {{ session('media_success') }}
+                </div>
+            @endif
+            @if (session()->has('media_error'))
+                <div class="p-2 bg-red-900/10 border border-red-800 text-red-300 text-xs rounded">
+                    {{ session('media_error') }}
                 </div>
             @endif
 

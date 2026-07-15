@@ -54,7 +54,10 @@ $uploadFile = function () {
 };
 
 $mediaList = function () {
-    return Media::orderBy('created_at', 'desc')
+    return Media::when(!auth()->user()->isAdmin(), function ($q) {
+            $q->where('user_id', auth()->id());
+        })
+        ->orderBy('created_at', 'desc')
         ->when($this->search, function ($q) {
             $q->where('filename', 'like', '%' . $this->search . '%');
         })

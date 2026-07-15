@@ -378,4 +378,65 @@ class PublishingAndMediaTest extends TestCase
             ->dispatch('media-selected', url: 'https://example.com/selected-inline-image.jpg', targetField: 'trix_body')
             ->assertDispatched('insert-trix-image', url: 'https://example.com/selected-inline-image.jpg');
     }
+
+    /**
+     * Test media manager and select modal restrict files to the uploader unless user is admin.
+     */
+    public function test_media_isolation_by_user_role_permissions(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $author1 = User::factory()->create(['role' => 'author']);
+        $author2 = User::factory()->create(['role' => 'author']);
+
+        // Upload media for author1
+        $media1 = Media::create([
+            'filename' => 'author1_photo.jpg',
+            'path' => 'uploads/author1_photo.jpg',
+            'url' => '/storage/uploads/author1_photo.jpg',
+            'mime_type' => 'image/jpeg',
+            'size' => 1024,
+            'user_id' => $author1->id,
+        ]);
+
+        // Upload media for author2
+        $media2 = Media::create([
+            'filename' => 'author2_photo.jpg',
+            'path' => 'uploads/author2_photo.jpg',
+            'url' => '/storage/uploads/author2_photo.jpg',
+            'mime_type' => 'image/jpeg',
+            'size' => 1024,
+            'user_id' => $author2->id,
+        ]);
+
+        // 1. Author 1 logged in -> sees only media1
+        $this->actingAs($author1);
+        Livewire::test('admin-media-manager')
+            ->assertViewHas('mediaFiles', function ($files) use ($media1, $media2) {
+                return $files->contains($media1) && !$files->contains($media2);
+            });
+
+        $testModal1 = Livewire::test('media-select-modal');
+        $files1 = $testModal1->instance()->mediaList();
+        $this->assertTrue($files1->contains($media1));
+        $this->assertFalse($files1->contains($media2));
+
+        // Author 1 tries to delete Author 2's media -> denied
+        Livewire::test('admin-media-manager')
+            ->call('deleteMedia', $media2->id)
+            ->assertSee('You are not authorized to delete this media file.');
+
+        $this->assertDatabaseHas('media', ['id' => $media2->id]);
+
+        // 2. Admin logged in -> sees both media1 and media2
+        $this->actingAs($admin);
+        Livewire::test('admin-media-manager')
+            ->assertViewHas('mediaFiles', function ($files) use ($media1, $media2) {
+                return $files->contains($media1) && $files->contains($media2);
+            });
+
+        $testModal2 = Livewire::test('media-select-modal');
+        $files2 = $testModal2->instance()->mediaList();
+        $this->assertTrue($files2->contains($media1));
+        $this->assertTrue($files2->contains($media2));
+    }
 }

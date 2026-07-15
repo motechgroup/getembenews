@@ -857,6 +857,7 @@ $save = function () use ($logAction) {
             'uploadedLogo' => 'image|max:2048',
         ]);
         $logoPath = $this->uploadedLogo->store('site', 'public');
+        \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($logoPath), false);
         $this->site_logo = asset('storage/' . $logoPath);
         $this->uploadedLogo = null;
     }
@@ -866,6 +867,7 @@ $save = function () use ($logAction) {
             'uploadedFavicon' => 'file|mimes:ico,png,svg,jpg,jpeg|max:1024',
         ]);
         $faviconPath = $this->uploadedFavicon->store('site', 'public');
+        \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($faviconPath), false);
         $this->favicon = asset('storage/' . $faviconPath);
         $this->uploadedFavicon = null;
     }
@@ -873,6 +875,7 @@ $save = function () use ($logAction) {
     if ($this->uploadedTopAd) {
         $this->validate(['uploadedTopAd' => 'image|max:2048']);
         $path = $this->uploadedTopAd->store('ads', 'public');
+        \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($path), false);
         $this->ad_top_image = asset('storage/' . $path);
         $this->uploadedTopAd = null;
     }
@@ -880,6 +883,7 @@ $save = function () use ($logAction) {
     if ($this->uploadedSidebarAd) {
         $this->validate(['uploadedSidebarAd' => 'image|max:2048']);
         $path = $this->uploadedSidebarAd->store('ads', 'public');
+        \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($path), false);
         $this->ad_sidebar_image = asset('storage/' . $path);
         $this->uploadedSidebarAd = null;
     }
@@ -887,6 +891,7 @@ $save = function () use ($logAction) {
     if ($this->uploadedInlineAd) {
         $this->validate(['uploadedInlineAd' => 'image|max:2048']);
         $path = $this->uploadedInlineAd->store('ads', 'public');
+        \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($path), false);
         $this->ad_inline_image = asset('storage/' . $path);
         $this->uploadedInlineAd = null;
     }
@@ -894,6 +899,7 @@ $save = function () use ($logAction) {
     if ($this->uploadedFooterAd) {
         $this->validate(['uploadedFooterAd' => 'image|max:2048']);
         $path = $this->uploadedFooterAd->store('ads', 'public');
+        \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($path), false);
         $this->ad_footer_image = asset('storage/' . $path);
         $this->uploadedFooterAd = null;
     }
@@ -901,6 +907,7 @@ $save = function () use ($logAction) {
     if ($this->uploadedMobileStickyAd) {
         $this->validate(['uploadedMobileStickyAd' => 'image|max:2048']);
         $path = $this->uploadedMobileStickyAd->store('ads', 'public');
+        \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($path), false);
         $this->ad_mobile_sticky_image = asset('storage/' . $path);
         $this->uploadedMobileStickyAd = null;
     }

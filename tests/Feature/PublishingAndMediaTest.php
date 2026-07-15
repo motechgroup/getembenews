@@ -439,4 +439,60 @@ class PublishingAndMediaTest extends TestCase
         $this->assertTrue($files2->contains($media1));
         $this->assertTrue($files2->contains($media2));
     }
+
+    /**
+     * Test image compression and watermarking on upload.
+     */
+    public function test_image_compression_and_watermarking_on_upload(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($user);
+
+        // Create a fake heavy JPEG image (above 1MB) using uploader fake helper
+        $fakeFile = UploadedFile::fake()->create('heavy_photo.jpg', 1200, 'image/jpeg');
+        $tempPath = $fakeFile->getPathname();
+
+        // Overwrite temp file with a valid complex JPEG image to ensure it is > 1MB and valid
+        $im = imagecreatetruecolor(2000, 2000);
+        for ($i = 0; $i < 2000; $i += 10) {
+            for ($j = 0; $j < 2000; $j += 10) {
+                $color = imagecolorallocate($im, rand(0, 255), rand(0, 255), rand(0, 255));
+                imagefilledrectangle($im, $i, $j, $i + 9, $j + 9, $color);
+            }
+        }
+        imagejpeg($im, $tempPath, 100);
+        imagedestroy($im);
+
+        $originalSize = filesize($tempPath);
+        $this->assertTrue($originalSize > 1 * 1024 * 1024);
+
+        Livewire::test('admin-media-manager')
+            ->set('uploadedFile', $fakeFile)
+            ->call('upload')
+            ->assertHasNoErrors();
+
+        // Verify image processed: watermark applied & compressed
+        $this->assertDatabaseCount('media', 1);
+        $media = Media::first();
+        
+        $savedPath = Storage::disk('public')->path($media->path);
+        $this->assertTrue(file_exists($savedPath));
+        
+        // Assert file size has decreased
+        $newSize = filesize($savedPath);
+        $this->assertTrue($newSize < $originalSize, "Expected compressed size ($newSize) to be less than original size ($originalSize)");
+
+        // Assert database size column matches the new file size
+        $this->assertEquals($newSize, $media->size);
+
+        // Assert watermark is written (the image can still be read by GD)
+        $img = imagecreatefromjpeg($savedPath);
+        $this->assertNotFalse($img);
+        imagedestroy($img);
+
+        // Cleanup temp file
+        @unlink($tempPath);
+    }
 }

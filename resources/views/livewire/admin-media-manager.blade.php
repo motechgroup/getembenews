@@ -35,6 +35,13 @@ $upload = function () {
     $path = $this->uploadedFile->storeAs('uploads', $cleanName, 'public');
     $url = '/storage/' . $path;
 
+    // Process image: compress and apply watermark
+    $absolutePath = Storage::disk('public')->path($path);
+    \App\Support\ImageProcessor::process($absolutePath);
+    if (file_exists($absolutePath)) {
+        $size = filesize($absolutePath);
+    }
+
     Media::create([
         'filename' => $originalName,
         'path' => $path,

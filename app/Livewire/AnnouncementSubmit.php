@@ -181,6 +181,15 @@ class AnnouncementSubmit extends Component
             return;
         }
 
+        // 0. Check database first to see if it is already paid
+        if ($this->currentAnnouncementId) {
+            $ann = Announcement::find($this->currentAnnouncementId);
+            if ($ann && $ann->payment_status === 'paid') {
+                $this->confirmPaymentSuccess($ann->payment_reference);
+                return;
+            }
+        }
+
         // Trigger real Safaricom STK Push
         $announcement = Announcement::find($this->currentAnnouncementId);
         $amount = $announcement ? $announcement->total_amount : 1;
@@ -206,6 +215,15 @@ class AnnouncementSubmit extends Component
      */
     public function checkMpesaPaymentStatus()
     {
+        // 0. Check database first to see if it is already paid
+        if ($this->currentAnnouncementId) {
+            $ann = Announcement::find($this->currentAnnouncementId);
+            if ($ann && $ann->payment_status === 'paid') {
+                $this->confirmPaymentSuccess($ann->payment_reference);
+                return;
+            }
+        }
+
         if (empty($this->mpesa_checkout_id)) return;
 
         // 1. Check if callback webhook already verified payment

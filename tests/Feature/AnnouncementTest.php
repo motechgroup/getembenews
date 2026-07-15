@@ -610,4 +610,19 @@ class AnnouncementTest extends TestCase
         $this->get('/admin/announcements')
             ->assertSee('1');
     }
+
+    public function test_adsense_script_rendered_on_frontend(): void
+    {
+        Setting::set('adsense_enabled', true);
+        Setting::set('adsense_client_id', 'ca-pub-999999');
+        Setting::set('adsense_code', '<ins class="adsbygoogle" id="test-ad-unit"></ins>');
+
+        $response = $this->get('/');
+        $response->assertSee('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-999999');
+
+        // Test fallback works when client_id is empty but code is set
+        Setting::set('adsense_client_id', '');
+        $response2 = $this->get('/');
+        $response2->assertSee('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js');
+    }
 }

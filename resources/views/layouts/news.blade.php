@@ -126,23 +126,17 @@
         </script>
     @endif
 
-    <!-- Google AdSense Auto Ads -->
+    <!-- Google AdSense Integration -->
     @php
         $adsenseEnabled = \App\Models\Setting::get('adsense_enabled', false);
         $adsenseClientId = \App\Models\Setting::get('adsense_client_id');
     @endphp
-    @if($adsenseEnabled && !empty($adsenseClientId))
-        <script>
-            window.addEventListener('DOMContentLoaded', () => {
-                setTimeout(() => {
-                    const script = document.createElement('script');
-                    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adsenseClientId }}";
-                    script.async = true;
-                    script.crossOrigin = "anonymous";
-                    document.head.appendChild(script);
-                }, 4000);
-            });
-        </script>
+    @if($adsenseEnabled)
+        @if(!empty($adsenseClientId))
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adsenseClientId }}" crossorigin="anonymous"></script>
+        @else
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" crossorigin="anonymous"></script>
+        @endif
     @endif
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])

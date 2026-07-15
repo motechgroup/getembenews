@@ -565,4 +565,42 @@ class PublishingAndMediaTest extends TestCase
         $mediaFeatured->refresh();
         $this->assertEquals(filesize($featuredAbsPath), $mediaFeatured->size);
     }
+
+    /**
+     * Test article reactions Livewire component.
+     */
+    public function test_article_reactions_component(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::create(['name' => 'News', 'slug' => 'news']);
+        $article = Article::create([
+            'title' => 'Reaction Test Article',
+            'slug' => 'reaction-test-article',
+            'body' => 'Article body content',
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'status' => 'published',
+            'format' => 'article',
+            'published_at' => now(),
+        ]);
+
+        // 1. Initial reactions state should be all zero
+        Livewire::test('article-reactions', ['article' => $article])
+            ->assertSet('reactionsCount.love', 0)
+            ->assertSet('reactionsCount.like', 0)
+            ->assertSet('userReaction', null)
+            // 2. React with 'love'
+            ->call('react', 'love')
+            ->assertSet('reactionsCount.love', 1)
+            ->assertSet('userReaction', 'love')
+            // 3. React with a different reaction: 'like'
+            ->call('react', 'like')
+            ->assertSet('reactionsCount.love', 0)
+            ->assertSet('reactionsCount.like', 1)
+            ->assertSet('userReaction', 'like')
+            // 4. Click 'like' again to toggle/remove it
+            ->call('react', 'like')
+            ->assertSet('reactionsCount.like', 0)
+            ->assertSet('userReaction', null);
+    }
 }

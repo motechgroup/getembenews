@@ -66,6 +66,11 @@ class Article extends Model
         return $this->belongsToMany(Tag::class, 'article_tag');
     }
 
+    public function reactions()
+    {
+        return $this->hasMany(ArticleReaction::class);
+    }
+
     // Scopes
     public function scopePublished($query)
     {

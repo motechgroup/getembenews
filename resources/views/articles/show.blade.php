@@ -303,7 +303,100 @@
                         </div>
                     @endif
 
+                    <!-- Watch Live TV / Listen Live Radio Start Banners -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 border-y border-gray-150 dark:border-gray-800 py-3.5">
+                        @if(\App\Models\Setting::get('live_tv_active', '1') == '1')
+                            <a href="/live-tv" class="flex items-center justify-between p-3.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
+                                        <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none">Watch Live TV</h4>
+                                        <p class="text-[9px] text-red-100 mt-1">Broadcast Getembe TV Live Stream</p>
+                                    </div>
+                                </div>
+                                <div class="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
+                            </a>
+                        @endif
+
+                        @if(\App\Models\Setting::get('live_radio_active', '1') == '1')
+                            <a href="/live-radio" class="flex items-center justify-between p-3.5 bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-900 border border-gray-800 text-white rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
+                                        <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none">Listen Live Radio</h4>
+                                        <p class="text-[9px] text-gray-400 mt-1">Tune in to Getembe FM Live Broadcast</p>
+                                    </div>
+                                </div>
+                                <div class="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
+                            </a>
+                        @endif
+                    </div>
+
                     {!! $bodyContent !!}
+
+                    <!-- Watch Live TV / Listen Live Radio End Banners -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 border-y border-gray-150 dark:border-gray-800 py-3.5">
+                        @if(\App\Models\Setting::get('live_tv_active', '1') == '1')
+                            <a href="/live-tv" class="flex items-center justify-between p-3.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
+                                        <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none">Watch Live TV</h4>
+                                        <p class="text-[9px] text-red-100 mt-1">Broadcast Getembe TV Live Stream</p>
+                                    </div>
+                                </div>
+                                <div class="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
+                            </a>
+                        @endif
+
+                        @if(\App\Models\Setting::get('live_radio_active', '1') == '1')
+                            <a href="/live-radio" class="flex items-center justify-between p-3.5 bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-900 border border-gray-800 text-white rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group">
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
+                                        <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none">Listen Live Radio</h4>
+                                        <p class="text-[9px] text-gray-400 mt-1">Tune in to Getembe FM Live Broadcast</p>
+                                    </div>
+                                </div>
+                                <div class="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
+                            </a>
+                        @endif
+                    </div>
+
+                    <!-- Article Reactions -->
+                    <livewire:article-reactions :article="$article" />
                 </div>
 
                 @if($article->tags && count($article->tags) > 0)

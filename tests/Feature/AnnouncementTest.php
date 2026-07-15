@@ -444,7 +444,11 @@ class AnnouncementTest extends TestCase
                 return $stats['total_paid'] == 6
                     && $stats['total_pending'] == 40
                     && $stats['total_commissions'] == 1
-                    && $stats['pending_approval'] == 1;
+                    && $stats['pending_approval'] == 1
+                    && $stats['radio_revenue'] == 6
+                    && $stats['radio_count'] == 1
+                    && $stats['tv_revenue'] == 0
+                    && $stats['tv_count'] == 1;
             })
             ->set('media', 'radio')
             ->assertViewHas('announcements', function ($announcements) {

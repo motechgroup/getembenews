@@ -191,6 +191,12 @@ class AdminAnnouncements extends Component
             'total_pending' => Announcement::where('payment_status', 'pending')->sum('total_amount'),
             'total_commissions' => Announcement::where('payment_status', 'paid')->sum('commission_amount'),
             'pending_approval' => Announcement::where('is_approved', false)->count(),
+            'tv_revenue' => Announcement::where('media', 'tv')->where('payment_status', 'paid')->sum('total_amount'),
+            'tv_count' => Announcement::where('media', 'tv')->count(),
+            'radio_revenue' => Announcement::where('media', 'radio')->where('payment_status', 'paid')->sum('total_amount'),
+            'radio_count' => Announcement::where('media', 'radio')->count(),
+            'both_revenue' => Announcement::where('media', 'both')->where('payment_status', 'paid')->sum('total_amount'),
+            'both_count' => Announcement::where('media', 'both')->count(),
         ];
 
         $announcements = $query->latest()->paginate(10);

@@ -29,7 +29,7 @@
     @endif
 
     <!-- Financial Statistics Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <!-- Card 1: Total Paid Revenue -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
             <div class="space-y-1.5">
@@ -38,52 +38,97 @@
                     KSh {{ number_format($stats['total_paid'] ?? 0) }}
                 </h3>
             </div>
-            <div class="p-2 bg-green-50 dark:bg-green-950/20 text-green-600 rounded-lg">
+            <div class="p-2 bg-green-50 dark:bg-green-950/20 text-green-600 rounded-lg shrink-0">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
             </div>
         </div>
 
-        <!-- Card 2: Pending Revenue -->
+        <!-- Card 2: TV Revenue & Count -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
             <div class="space-y-1.5">
-                <span class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">Pending Revenue</span>
-                <h3 class="text-base font-black text-orange-600 dark:text-orange-455 font-mono leading-none">
-                    KSh {{ number_format($stats['total_pending'] ?? 0) }}
+                <span class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">TV Revenue</span>
+                <h3 class="text-base font-black text-blue-650 dark:text-blue-400 font-mono leading-none">
+                    KSh {{ number_format($stats['tv_revenue'] ?? 0) }}
                 </h3>
+                <div class="text-[9px] text-gray-400 font-medium">
+                    {{ number_format($stats['tv_count'] ?? 0) }} announcements
+                </div>
             </div>
-            <div class="p-2 bg-orange-50 dark:bg-orange-95/20 text-orange-600 rounded-lg">
+            <div class="p-2 bg-blue-50 dark:bg-blue-950/20 text-blue-650 dark:text-blue-450 rounded-lg shrink-0">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
                 </svg>
             </div>
         </div>
 
-        <!-- Card 3: Agent Commissions -->
+        <!-- Card 3: Radio Revenue & Count -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
+            <div class="space-y-1.5">
+                <span class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">Radio Revenue</span>
+                <h3 class="text-base font-black text-amber-600 dark:text-amber-450 font-mono leading-none">
+                    KSh {{ number_format($stats['radio_revenue'] ?? 0) }}
+                </h3>
+                <div class="text-[9px] text-gray-400 font-medium">
+                    {{ number_format($stats['radio_count'] ?? 0) }} announcements
+                </div>
+            </div>
+            <div class="p-2 bg-amber-50 dark:bg-amber-955/20 text-amber-600 dark:text-amber-455 rounded-lg shrink-0">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Card 4: TV & Radio (Both) -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
+            <div class="space-y-1.5">
+                <span class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">Both Target Rev</span>
+                <h3 class="text-base font-black text-indigo-650 dark:text-indigo-400 font-mono leading-none">
+                    KSh {{ number_format($stats['both_revenue'] ?? 0) }}
+                </h3>
+                <div class="text-[9px] text-gray-400 font-medium">
+                    {{ number_format($stats['both_count'] ?? 0) }} announcements
+                </div>
+            </div>
+            <div class="p-2 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-450 rounded-lg shrink-0">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Card 5: Agent Commissions -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
             <div class="space-y-1.5">
                 <span class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">Agent Commissions</span>
                 <h3 class="text-base font-black text-purple-600 dark:text-purple-400 font-mono leading-none">
                     KSh {{ number_format($stats['total_commissions'] ?? 0) }}
                 </h3>
+                <div class="text-[9px] text-gray-400 font-medium">
+                    Commissions paid
+                </div>
             </div>
-            <div class="p-2 bg-purple-50 dark:bg-purple-950/20 text-purple-600 rounded-lg">
+            <div class="p-2 bg-purple-50 dark:bg-purple-950/20 text-purple-600 rounded-lg shrink-0">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
             </div>
         </div>
 
-        <!-- Card 4: Awaiting Moderation -->
+        <!-- Card 6: Awaiting Moderation -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
             <div class="space-y-1.5">
                 <span class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">Awaiting Moderation</span>
                 <h3 class="text-base font-black text-red-600 dark:text-red-455 font-mono leading-none">
                     {{ number_format($stats['pending_approval'] ?? 0) }}
                 </h3>
+                <div class="text-[9px] text-gray-400 font-medium">
+                    KSh {{ number_format($stats['total_pending'] ?? 0) }} pending
+                </div>
             </div>
-            <div class="p-2 bg-red-50 dark:bg-red-950/20 text-red-655 rounded-lg">
+            <div class="p-2 bg-red-50 dark:bg-red-950/20 text-red-655 rounded-lg shrink-0">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>

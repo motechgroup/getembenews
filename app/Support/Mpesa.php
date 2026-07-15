@@ -221,6 +221,12 @@ class Mpesa
         }
 
         // 2. Return current dynamic request URL (including localhost)
-        return url('/api/v1/payments/mpesa/callback');
+        $currentUrl = url('/api/v1/payments/mpesa/callback');
+
+        if (str_contains($currentUrl, '127.0.0.1') || str_contains($currentUrl, 'localhost') || !str_starts_with($currentUrl, 'https')) {
+            return 'https://localhost/api/v1/payments/mpesa/callback';
+        }
+
+        return $currentUrl;
     }
 }

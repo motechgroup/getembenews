@@ -314,7 +314,7 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Watch Live TV</h4>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Watch Getembe TV Live</h4>
                                         <p class="text-[9px] mt-1" style="color: rgba(255, 255, 255, 0.8) !important;">Broadcast Getembe TV Live Stream</p>
                                     </div>
                                 </div>
@@ -335,7 +335,7 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Listen Live Radio</h4>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Listen Getembe FM Live</h4>
                                         <p class="text-[9px] mt-1" style="color: #9ca3af !important;">Tune in to Getembe FM Live Broadcast</p>
                                     </div>
                                 </div>
@@ -361,7 +361,7 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Watch Live TV</h4>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Watch Getembe TV Live</h4>
                                         <p class="text-[9px] mt-1" style="color: rgba(255, 255, 255, 0.8) !important;">Broadcast Getembe TV Live Stream</p>
                                     </div>
                                 </div>
@@ -382,7 +382,7 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Listen Live Radio</h4>
+                                        <h4 class="text-xs font-black uppercase tracking-wider leading-none" style="color: #ffffff !important;">Listen Getembe FM Live</h4>
                                         <p class="text-[9px] mt-1" style="color: #9ca3af !important;">Tune in to Getembe FM Live Broadcast</p>
                                     </div>
                                 </div>

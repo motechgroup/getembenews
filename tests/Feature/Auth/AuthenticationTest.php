@@ -83,4 +83,20 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
     }
+
+    public function test_admin_login_screen_can_be_rendered(): void
+    {
+        $response = $this->get('/admin/login');
+
+        $response
+            ->assertOk()
+            ->assertSeeVolt('pages.auth.login');
+    }
+
+    public function test_unauthenticated_admin_request_redirects_to_admin_login(): void
+    {
+        $response = $this->get('/admin/announcements');
+
+        $response->assertRedirect('/admin/login');
+    }
 }

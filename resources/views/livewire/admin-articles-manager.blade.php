@@ -263,6 +263,47 @@ $save = function () {
     $allSelected = array_unique(array_filter(array_merge([$this->category_id], $additionalCategories)));
     $article->categories()->sync($allSelected);
 
+    // Apply watermark and compression to featured image and inline body images if they are local
+    $processLocalImage = function ($url) {
+        if (empty($url)) return;
+        $relativePath = null;
+        if (str_starts_with($url, '/storage/')) {
+            $relativePath = substr($url, 9);
+        } elseif (str_starts_with($url, 'storage/')) {
+            $relativePath = substr($url, 8);
+        } elseif (str_starts_with($url, asset('storage/'))) {
+            $relativePath = substr($url, strlen(asset('storage/')));
+        }
+        if ($relativePath) {
+            $absolutePath = \Illuminate\Support\Facades\Storage::disk('public')->path($relativePath);
+            if (file_exists($absolutePath)) {
+                \App\Support\ImageProcessor::process($absolutePath);
+                // Also update size in media table if it exists
+                $media = \App\Models\Media::where('path', $relativePath)->first();
+                if ($media) {
+                    $media->update(['size' => filesize($absolutePath)]);
+                }
+            }
+        }
+    };
+
+    $processLocalImage($this->featured_image);
+
+    if (!empty($this->body)) {
+        preg_match_all('/\[image\s+url=["\']([^"\']+)["\']\]/i', $this->body, $shortcodeMatches);
+        if (!empty($shortcodeMatches[1])) {
+            foreach ($shortcodeMatches[1] as $imgUrl) {
+                $processLocalImage($imgUrl);
+            }
+        }
+        preg_match_all('/<img\s+[^>]*src=["\']([^"\']+)["\']/i', $this->body, $htmlMatches);
+        if (!empty($htmlMatches[1])) {
+            foreach ($htmlMatches[1] as $imgUrl) {
+                $processLocalImage($imgUrl);
+            }
+        }
+    }
+
     $this->isEditing = false;
     $this->reset([
         'articleId', 'title', 'slug', 'subtitle', 'body', 'featured_image',

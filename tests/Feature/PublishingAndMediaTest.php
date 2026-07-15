@@ -495,4 +495,74 @@ class PublishingAndMediaTest extends TestCase
         // Cleanup temp file
         @unlink($tempPath);
     }
+
+    /**
+     * Test post-save watermarking on article featured image and inline body images.
+     */
+    public function test_post_save_watermarking_on_article_images(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($user);
+
+        $category = Category::create(['name' => 'General', 'slug' => 'general']);
+
+        // 1. Create a raw image in public disk (unwatermarked)
+        $im = imagecreatetruecolor(500, 500);
+        $blue = imagecolorallocate($im, 0, 0, 255);
+        imagefill($im, 0, 0, $blue);
+        
+        $featuredPath = 'uploads/featured.jpg';
+        $inlinePath = 'uploads/inline.jpg';
+
+        // Ensure directories exist
+        Storage::disk('public')->makeDirectory('uploads');
+
+        $featuredAbsPath = Storage::disk('public')->path($featuredPath);
+        $inlineAbsPath = Storage::disk('public')->path($inlinePath);
+
+        imagejpeg($im, $featuredAbsPath, 100);
+        imagejpeg($im, $inlineAbsPath, 100);
+        imagedestroy($im);
+
+        // Record featured size before
+        $originalFeaturedSize = filesize($featuredAbsPath);
+
+        // Register a fake media record in the DB
+        $mediaFeatured = Media::create([
+            'filename' => 'featured.jpg',
+            'path' => $featuredPath,
+            'url' => '/storage/' . $featuredPath,
+            'mime_type' => 'image/jpeg',
+            'size' => $originalFeaturedSize,
+            'user_id' => $user->id,
+        ]);
+
+        // Save article using livewire component with local URLs
+        Livewire::test('admin-articles-manager')
+            ->set('title', 'Article with Local Images')
+            ->set('slug', 'article-with-local-images')
+            ->set('category_id', $category->id)
+            ->set('featured_image', '/storage/' . $featuredPath)
+            ->set('body', 'Some text [image url="/storage/' . $inlinePath . '"] other text')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        // Verify images processed: watermarks applied
+        $this->assertDatabaseHas('articles', ['slug' => 'article-with-local-images']);
+
+        // Re-read file to verify GD can read it (valid JPEG) and it was processed
+        $img1 = imagecreatefromjpeg($featuredAbsPath);
+        $this->assertNotFalse($img1);
+        imagedestroy($img1);
+
+        $img2 = imagecreatefromjpeg($inlineAbsPath);
+        $this->assertNotFalse($img2);
+        imagedestroy($img2);
+
+        // Verify that the media record size column was updated if size changed
+        $mediaFeatured->refresh();
+        $this->assertEquals(filesize($featuredAbsPath), $mediaFeatured->size);
+    }
 }

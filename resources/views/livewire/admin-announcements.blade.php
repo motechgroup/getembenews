@@ -1,24 +1,12 @@
 <div class="space-y-6 text-xs">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-xl shadow-sm">
-        <div>
-            <h1 class="text-lg font-serif font-black text-gray-900 dark:text-white uppercase tracking-wider">
-                Announcements Management
-            </h1>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
-                Moderation dashboard for visitors' submitted TV/Radio announcements.
-            </p>
-        </div>
-        <div class="shrink-0 w-full sm:w-auto">
-            <button type="button" 
-                    wire:click="exportRevenueReport"
-                    class="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition uppercase tracking-wider shadow-sm">
-                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Export Revenue CSV</span>
-            </button>
-        </div>
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-xl shadow-sm">
+        <h1 class="text-lg font-serif font-black text-gray-900 dark:text-white uppercase tracking-wider">
+            Announcements Management
+        </h1>
+        <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+            Moderation dashboard for visitors' submitted TV/Radio announcements.
+        </p>
     </div>
 
     <!-- Session Feedback Banner -->
@@ -136,66 +124,97 @@
         </div>
     </div>
 
-    <!-- Filters & Search -->
+    <!-- Search & Filters Toolbar -->
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl shadow-sm space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-6 gap-4 font-semibold">
+        <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <!-- Search field -->
-            <div class="space-y-1">
-                <label class="text-[10px] uppercase font-bold text-gray-500">Search</label>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search name, phone or text..." 
-                       class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
+            <div class="relative w-full sm:max-w-md">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </span>
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Quick search announcements..." 
+                       class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg pl-9 pr-4 py-2 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#cc6c3b]">
             </div>
-
-            <!-- Status filter -->
-            <div class="space-y-1">
-                <label class="text-[10px] uppercase font-bold text-gray-500">Payment Status</label>
-                <select wire:model.live="status" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
-                    <option value="">All Payments</option>
-                    <option value="pending">Pending</option>
-                    <option value="paid">Paid</option>
-                </select>
-            </div>
-
-            <!-- Type filter -->
-            <div class="space-y-1">
-                <label class="text-[10px] uppercase font-bold text-gray-500">Announcement Type</label>
-                <select wire:model.live="type" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
-                    <option value="">All Types</option>
-                    <option value="funeral">Funeral</option>
-                    <option value="general">General</option>
-                </select>
-            </div>
-
-            <!-- Media Target filter -->
-            <div class="space-y-1">
-                <label class="text-[10px] uppercase font-bold text-gray-500">Media Target</label>
-                <select wire:model.live="media" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
-                    <option value="">All Media</option>
-                    <option value="tv">TV Only</option>
-                    <option value="radio">Radio Only</option>
-                    <option value="both">Both (TV & Radio)</option>
-                </select>
-            </div>
-
-            <!-- Moderation Status filter -->
-            <div class="space-y-1">
-                <label class="text-[10px] uppercase font-bold text-gray-500">Moderation Status</label>
-                <select wire:model.live="approved" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
-                    <option value="">All Statuses</option>
-                    <option value="1">Approved</option>
-                    <option value="0">Pending Approval</option>
-                </select>
-            </div>
-
-            <!-- Reset filters -->
-            <div class="flex items-end">
+            
+            <div class="flex items-center gap-3 w-full sm:w-auto shrink-0 justify-end">
+                <!-- Advanced Filters Toggle Button -->
                 <button type="button" 
-                        wire:click="$set('search', ''); $set('status', ''); $set('type', ''); $set('media', ''); $set('approved', '');"
-                        class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2 rounded text-xs transition uppercase tracking-wider">
-                    Reset Filters
+                        wire:click="$toggle('showFilters')"
+                        class="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-850 dark:hover:bg-gray-800 text-gray-750 dark:text-gray-200 font-bold py-2 px-4 rounded-lg text-xs transition uppercase tracking-wider border border-gray-200/50 dark:border-gray-800">
+                    <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    <span>{{ $showFilters ? 'Hide Filters' : 'Filters' }}</span>
+                </button>
+
+                <!-- Export CSV Button -->
+                <button type="button" 
+                        wire:click="exportRevenueReport"
+                        class="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-lg text-xs transition uppercase tracking-wider shadow-sm">
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Export CSV</span>
                 </button>
             </div>
         </div>
+
+        @if($showFilters)
+            <!-- Advanced Filters Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-150 dark:border-gray-800 font-semibold">
+                <!-- Status filter -->
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Payment Status</label>
+                    <select wire:model.live="status" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
+                        <option value="">All Payments</option>
+                        <option value="pending">Pending</option>
+                        <option value="paid">Paid</option>
+                    </select>
+                </div>
+
+                <!-- Type filter -->
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Announcement Type</label>
+                    <select wire:model.live="type" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
+                        <option value="">All Types</option>
+                        <option value="funeral">Funeral</option>
+                        <option value="general">General</option>
+                    </select>
+                </div>
+
+                <!-- Media Target filter -->
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Media Target</label>
+                    <select wire:model.live="media" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
+                        <option value="">All Media</option>
+                        <option value="tv">TV Only</option>
+                        <option value="radio">Radio Only</option>
+                        <option value="both">Both (TV & Radio)</option>
+                    </select>
+                </div>
+
+                <!-- Moderation Status filter -->
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Moderation Status</label>
+                    <select wire:model.live="approved" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
+                        <option value="">All Statuses</option>
+                        <option value="1">Approved</option>
+                        <option value="0">Pending Approval</option>
+                    </select>
+                </div>
+
+                <!-- Reset filters -->
+                <div class="flex items-end">
+                    <button type="button" 
+                            wire:click="$set('search', ''); $set('status', ''); $set('type', ''); $set('media', ''); $set('approved', '');"
+                            class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2 rounded text-xs transition uppercase tracking-wider">
+                        Reset Filters
+                    </button>
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- Announcements Table Section -->

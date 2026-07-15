@@ -15,6 +15,7 @@ class AdminAnnouncements extends Component
     public $type = ''; // all, funeral, general
     public $media = ''; // all, tv, radio, both
     public $approved = ''; // all, 1 (approved), 0 (pending)
+    public $showFilters = false;
 
     protected $queryString = [
         'search' => ['except' => ''],

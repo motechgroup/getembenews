@@ -81,6 +81,9 @@ class Mpesa
         $amount = (int) max(1, round($amount));
 
         $callbackUrl = url('/api/v1/payments/mpesa/callback');
+        if (str_contains($callbackUrl, '127.0.0.1') || str_contains($callbackUrl, 'localhost') || !str_starts_with($callbackUrl, 'https')) {
+            $callbackUrl = 'https://getembenews.com/api/v1/payments/mpesa/callback';
+        }
 
         $body = [
             'BusinessShortCode' => $shortcode,

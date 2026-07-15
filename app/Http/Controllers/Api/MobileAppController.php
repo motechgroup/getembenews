@@ -275,8 +275,8 @@ class MobileAppController extends Controller
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => strtolower($request->email),
+            'name' => strip_tags(trim($request->name)),
+            'email' => strip_tags(trim(strtolower($request->email))),
             'password' => Hash::make($request->password),
             'role' => 'subscriber',
         ]);
@@ -371,7 +371,11 @@ class MobileAppController extends Controller
             'photo_url' => 'nullable|string|max:2048',
         ]);
 
-        $user->update($request->only('name', 'bio', 'photo_url'));
+        $user->update([
+            'name' => strip_tags(trim($request->name)),
+            'bio' => $request->bio ? strip_tags(trim($request->bio)) : null,
+            'photo_url' => $request->photo_url ? strip_tags(trim($request->photo_url)) : null,
+        ]);
 
         return response()->json([
             'status' => 'success',
@@ -442,7 +446,7 @@ class MobileAppController extends Controller
         $comment = Comment::create([
             'article_id' => $article->id,
             'user_id' => $user->id,
-            'body' => $request->body,
+            'body' => strip_tags(trim($request->body)),
             'status' => 'approved' // Automatically approve from mobile app users
         ]);
 
@@ -524,10 +528,10 @@ class MobileAppController extends Controller
         ]);
 
         $message = ContactMessage::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'subject' => $request->subject,
-            'message' => $request->message,
+            'name' => strip_tags(trim($request->name)),
+            'email' => strip_tags(trim(strtolower($request->email))),
+            'subject' => strip_tags(trim($request->subject)),
+            'message' => strip_tags(trim($request->message)),
             'is_read' => false
         ]);
 
@@ -549,7 +553,8 @@ class MobileAppController extends Controller
             'email' => 'required|email|max:255'
         ]);
 
-        $existing = Newsletter::where('email', $request->email)->first();
+        $email = strip_tags(trim(strtolower($request->email)));
+        $existing = Newsletter::where('email', $email)->first();
         if ($existing) {
             return response()->json([
                 'status' => 'success',
@@ -558,7 +563,7 @@ class MobileAppController extends Controller
         }
 
         $subscriber = Newsletter::create([
-            'email' => $request->email,
+            'email' => $email,
             'is_active' => true
         ]);
 
@@ -657,15 +662,15 @@ class MobileAppController extends Controller
         }
 
         // Count words
-        $content = $request->content;
+        $content = strip_tags(trim($request->content));
         $wordCount = count(array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($content)))));
         $totalAmount = $wordCount * $rate * (int) $request->days_count;
 
         $announcement = Announcement::create([
             'agent_id' => $selectedAgentId,
-            'visitor_name' => $request->visitor_name,
-            'visitor_email' => $request->visitor_email ?: null,
-            'visitor_phone' => $request->visitor_phone,
+            'visitor_name' => strip_tags(trim($request->visitor_name)),
+            'visitor_email' => $request->visitor_email ? strip_tags(trim(strtolower($request->visitor_email))) : null,
+            'visitor_phone' => strip_tags(trim($request->visitor_phone)),
             'type' => $request->type,
             'media' => $request->media,
             'content' => $content,

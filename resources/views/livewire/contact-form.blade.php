@@ -38,10 +38,10 @@ $submit = function () {
     \Illuminate\Support\Facades\RateLimiter::hit('contact-submit:' . $ip, 60);
 
     $contactData = [
-        'name' => $this->name,
-        'email' => $this->email,
-        'subject' => $this->subject,
-        'message' => $this->message,
+        'name' => strip_tags(trim($this->name)),
+        'email' => strip_tags(trim(strtolower($this->email))),
+        'subject' => strip_tags(trim($this->subject)),
+        'message' => strip_tags(trim($this->message)),
     ];
 
     \App\Models\ContactMessage::create($contactData);

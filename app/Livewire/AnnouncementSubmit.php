@@ -120,12 +120,12 @@ class AnnouncementSubmit extends Component
         }
 
         $announcement = Announcement::create([
-            'visitor_name' => $this->visitor_name,
-            'visitor_email' => $this->visitor_email ?: null,
-            'visitor_phone' => $this->visitor_phone,
+            'visitor_name' => strip_tags(trim($this->visitor_name)),
+            'visitor_email' => $this->visitor_email ? strip_tags(trim(strtolower($this->visitor_email))) : null,
+            'visitor_phone' => strip_tags(trim($this->visitor_phone)),
             'type' => $this->type,
             'media' => $this->media,
-            'content' => $this->content,
+            'content' => strip_tags(trim($this->content)),
             'airing_date' => $this->airing_date,
             'word_count' => $this->word_count,
             'days_count' => (int) $this->days_count,
@@ -364,7 +364,7 @@ class AnnouncementSubmit extends Component
             'manual_receipt_ref' => 'required|string|min:8|max:20'
         ]);
 
-        $ref = strtoupper(trim($this->manual_receipt_ref));
+        $ref = strtoupper(strip_tags(trim($this->manual_receipt_ref)));
         $this->confirmPaymentSuccess($ref);
     }
 

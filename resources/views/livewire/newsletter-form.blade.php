@@ -19,12 +19,13 @@ $subscribe = function () {
     }
     \Illuminate\Support\Facades\RateLimiter::hit('newsletter-subscribe:' . $ip, 60);
 
+    $email = strip_tags(trim(strtolower($this->email)));
     Newsletter::create([
-        'email' => $this->email,
+        'email' => $email,
         'is_active' => true
     ]);
 
-    \App\Support\Mailer::sendWelcome($this->email);
+    \App\Support\Mailer::sendWelcome($email);
 
     $this->email = '';
     $this->subscribed = true;

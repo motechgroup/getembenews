@@ -228,36 +228,34 @@
     @if($showCheckoutModal)
         <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
              x-data="{ countdown: 60, timerId: null }"
-             x-init="
-                $on('start-stk-timer', () => {
-                    countdown = 5;
-                    if (timerId) clearInterval(timerId);
-                    timerId = setInterval(() => {
-                        countdown--;
-                        if (countdown <= 0) {
-                            clearInterval(timerId);
-                            $wire.confirmPaymentSuccess();
-                        }
-                    }, 1000);
-                });
-                $on('start-stk-query-timer', () => {
-                    countdown = 60;
-                    if (timerId) clearInterval(timerId);
-                    timerId = setInterval(() => {
-                        countdown--;
-                        if ($wire.mpesa_status === 'success' || $wire.mpesa_status === 'error') {
-                            clearInterval(timerId);
-                            return;
-                        }
-                        if (countdown <= 0) {
-                            clearInterval(timerId);
-                            $wire.set('mpesa_status', 'error');
-                            $wire.set('mpesa_error_message', 'Payment verification timed out. Safaricom did not confirm the transaction in time.');
-                        } else if (countdown % 3 === 0) {
-                            $wire.checkMpesaPaymentStatus();
-                        }
-                    }, 1000);
-                });
+             @start-stk-timer.window="
+                 countdown = 5;
+                 if (timerId) clearInterval(timerId);
+                 timerId = setInterval(() => {
+                     countdown--;
+                     if (countdown <= 0) {
+                         clearInterval(timerId);
+                         $wire.confirmPaymentSuccess();
+                     }
+                 }, 1000);
+             "
+             @start-stk-query-timer.window="
+                 countdown = 60;
+                 if (timerId) clearInterval(timerId);
+                 timerId = setInterval(() => {
+                     countdown--;
+                     if ($wire.mpesa_status === 'success' || $wire.mpesa_status === 'error') {
+                         clearInterval(timerId);
+                         return;
+                     }
+                     if (countdown <= 0) {
+                         clearInterval(timerId);
+                         $wire.set('mpesa_status', 'error');
+                         $wire.set('mpesa_error_message', 'Payment verification timed out. Safaricom did not confirm the transaction in time.');
+                     } else if (countdown % 3 === 0) {
+                         $wire.checkMpesaPaymentStatus();
+                     }
+                 }, 1000);
              ">
             <div class="bg-white dark:bg-gray-955 border border-gray-250 dark:border-gray-800 max-w-md w-full rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl text-xs text-center">
                 <!-- Header -->

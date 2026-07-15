@@ -561,6 +561,7 @@
     </footer>
 
     <livewire:newsletter-popup />
+    <livewire:app-download-popup />
 
     @livewireScripts
 

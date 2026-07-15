@@ -694,4 +694,24 @@ class AnnouncementTest extends TestCase
                 return $stats['total_paid'] == 30 && $stats['total_commissions'] == 5;
             });
     }
+
+    public function test_app_download_popup_settings_and_rendering(): void
+    {
+        // 1. Enabled (default) -> should render in the public view
+        \App\Models\Setting::set('app_download_popup_enabled', true);
+        \App\Models\Setting::set('app_download_popup_title', 'Get the Custom Getembe App Now');
+        \App\Models\Setting::set('app_download_popup_description', 'Custom app desc text');
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Get the Custom Getembe App Now')
+            ->assertSee('Custom app desc text');
+
+        // 2. Disabled -> should not display
+        \App\Models\Setting::set('app_download_popup_enabled', false);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('Get the Custom Getembe App Now');
+    }
 }

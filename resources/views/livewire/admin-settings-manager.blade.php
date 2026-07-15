@@ -300,6 +300,10 @@ state([
     'newsletter_popup_title' => fn() => Setting::get('newsletter_popup_title', 'Subscribe to our Newsletter'),
     'newsletter_popup_description' => fn() => Setting::get('newsletter_popup_description', 'Get the latest breaking news alerts and regional updates delivered directly to your inbox.'),
     'newsletter_popup_delay' => fn() => (int) Setting::get('newsletter_popup_delay', 3),
+    'app_download_popup_enabled' => fn() => (bool) Setting::get('app_download_popup_enabled', true),
+    'app_download_popup_title' => fn() => Setting::get('app_download_popup_title', 'Download Getembe TV App'),
+    'app_download_popup_description' => fn() => Setting::get('app_download_popup_description', 'Take Getembe TV with you. Download our mobile app to watch live TV, listen to radio, and read the latest news alerts on the go.'),
+    'app_download_popup_delay' => fn() => (int) Setting::get('app_download_popup_delay', 5),
     'uploaded_subscribers_file' => null,
     'test_email_recipient' => '',
     'test_email_status' => '',
@@ -947,6 +951,7 @@ $save = function () use ($logAction) {
         'seo_nofollow_links', 'seo_strip_links', 'author_reward_rate',
         'email_driver', 'mailgun_domain', 'mailgun_secret', 'mailgun_endpoint', 'brevo_username', 'brevo_api_key',
         'newsletter_popup_enabled', 'newsletter_popup_title', 'newsletter_popup_description', 'newsletter_popup_delay',
+        'app_download_popup_enabled', 'app_download_popup_title', 'app_download_popup_description', 'app_download_popup_delay',
         'email_template_welcome_subject', 'email_template_welcome_body',
         'email_template_contact_subject', 'email_template_contact_body',
         'email_template_announcement_subject', 'email_template_announcement_body',
@@ -2833,6 +2838,29 @@ $sendTestEmail = function () {
                         <div class="flex items-center pt-2">
                             <input type="checkbox" wire:model="newsletter_popup_enabled" id="newsletter_popup_enabled" class="rounded text-[#C8102E] border-gray-300">
                             <label for="newsletter_popup_enabled" class="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">Enable Subscriber Popup Widget</label>
+                        </div>
+                    </div>
+
+                    <!-- App Download Popup Settings Group -->
+                    <div class="space-y-4 bg-gray-50 dark:bg-gray-950 p-4 border border-gray-250 dark:border-gray-850 rounded-lg">
+                        <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase">Getembe TV Mobile App Download Popup</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Popup Title</label>
+                                <input type="text" wire:model="app_download_popup_title" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Trigger Delay (seconds)</label>
+                                <input type="number" wire:model="app_download_popup_delay" min="0" max="60" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Popup Description</label>
+                            <input type="text" wire:model="app_download_popup_description" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        </div>
+                        <div class="flex items-center pt-2">
+                            <input type="checkbox" wire:model="app_download_popup_enabled" id="app_download_popup_enabled" class="rounded text-[#C8102E] border-gray-300">
+                            <label for="app_download_popup_enabled" class="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">Enable Mobile App Download Popup Widget</label>
                         </div>
                     </div>
 

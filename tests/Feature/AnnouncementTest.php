@@ -486,4 +486,56 @@ class AnnouncementTest extends TestCase
             ->call('exportRevenueReport')
             ->assertStatus(200);
     }
+
+    public function test_admin_announcements_date_range_filters(): void
+    {
+        Announcement::truncate();
+
+        // Create announcement today
+        Announcement::create([
+            'visitor_name' => 'Emma Today',
+            'visitor_phone' => '254712345678',
+            'type' => 'funeral',
+            'media' => 'both',
+            'content' => 'funeral content text',
+            'word_count' => 2,
+            'rate_per_word' => 3,
+            'days_count' => 1,
+            'airing_date' => now()->toDateString(),
+            'total_amount' => 6,
+            'payment_status' => 'paid',
+            'commission_amount' => 1,
+            'is_approved' => true,
+            'submitter_type' => 'self',
+        ]);
+
+        // Create announcement in the future
+        Announcement::create([
+            'visitor_name' => 'Emma Future',
+            'visitor_phone' => '254712345678',
+            'type' => 'funeral',
+            'media' => 'both',
+            'content' => 'funeral content text',
+            'word_count' => 2,
+            'rate_per_word' => 3,
+            'days_count' => 1,
+            'airing_date' => now()->addDays(5)->toDateString(),
+            'total_amount' => 6,
+            'payment_status' => 'paid',
+            'commission_amount' => 1,
+            'is_approved' => true,
+            'submitter_type' => 'self',
+        ]);
+
+        \Livewire\Livewire::test(\App\Livewire\AdminAnnouncements::class)
+            ->set('date_from', now()->addDays(2)->toDateString())
+            ->assertViewHas('announcements', function ($announcements) {
+                return $announcements->count() === 1 && $announcements->first()->visitor_name === 'Emma Future';
+            })
+            ->set('date_from', '')
+            ->set('date_to', now()->addDays(1)->toDateString())
+            ->assertViewHas('announcements', function ($announcements) {
+                return $announcements->count() === 1 && $announcements->first()->visitor_name === 'Emma Today';
+            });
+    }
 }

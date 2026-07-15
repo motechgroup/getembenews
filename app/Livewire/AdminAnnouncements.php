@@ -16,6 +16,8 @@ class AdminAnnouncements extends Component
     public $media = ''; // all, tv, radio, both
     public $approved = ''; // all, 1 (approved), 0 (pending)
     public $showFilters = false;
+    public $date_from = '';
+    public $date_to = '';
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -23,6 +25,8 @@ class AdminAnnouncements extends Component
         'type' => ['except' => ''],
         'media' => ['except' => ''],
         'approved' => ['except' => ''],
+        'date_from' => ['except' => ''],
+        'date_to' => ['except' => ''],
     ];
 
     public function updatingSearch()
@@ -101,6 +105,14 @@ class AdminAnnouncements extends Component
 
         if ($this->approved !== '') {
             $query->where('is_approved', (bool) $this->approved);
+        }
+
+        if (!empty($this->date_from)) {
+            $query->whereDate('airing_date', '>=', $this->date_from);
+        }
+
+        if (!empty($this->date_to)) {
+            $query->whereDate('airing_date', '<=', $this->date_to);
         }
 
         $announcements = $query->latest()->get();
@@ -184,6 +196,14 @@ class AdminAnnouncements extends Component
 
         if ($this->approved !== '') {
             $query->where('is_approved', (bool) $this->approved);
+        }
+
+        if (!empty($this->date_from)) {
+            $query->whereDate('airing_date', '>=', $this->date_from);
+        }
+
+        if (!empty($this->date_to)) {
+            $query->whereDate('airing_date', '<=', $this->date_to);
         }
 
         // Calculate dynamic dashboard financial statistics

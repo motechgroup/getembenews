@@ -124,6 +124,26 @@
         </div>
     </div>
 
+    <!-- Comparisons Bar -->
+    @if(($stats['tv_revenue'] + $stats['radio_revenue'] + $stats['both_revenue']) > 0)
+        @php
+            $tvPct = $stats['total_paid'] > 0 ? ($stats['tv_revenue'] / $stats['total_paid']) * 100 : 0;
+            $radioPct = $stats['total_paid'] > 0 ? ($stats['radio_revenue'] / $stats['total_paid']) * 100 : 0;
+            $bothPct = $stats['total_paid'] > 0 ? ($stats['both_revenue'] / $stats['total_paid']) * 100 : 0;
+        @endphp
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl shadow-sm space-y-2">
+            <div class="flex justify-between items-center text-[10px] font-bold uppercase text-gray-500 tracking-wider">
+                <span>Revenue Split Comparison</span>
+                <span class="font-mono text-gray-400">TV ({{ round($tvPct) }}%) / Radio ({{ round($radioPct) }}%) / Both ({{ round($bothPct) }}%)</span>
+            </div>
+            <div class="h-2 w-full rounded-full overflow-hidden flex bg-gray-100 dark:bg-gray-800">
+                <div style="width: {{ $tvPct }}%" class="bg-blue-500 h-full" title="TV: {{ round($tvPct) }}%"></div>
+                <div style="width: {{ $radioPct }}%" class="bg-amber-500 h-full" title="Radio: {{ round($radioPct) }}%"></div>
+                <div style="width: {{ $bothPct }}%" class="bg-indigo-500 h-full" title="Both: {{ round($bothPct) }}%"></div>
+            </div>
+        </div>
+    @endif
+
     <!-- Search & Filters Toolbar -->
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl shadow-sm space-y-4">
         <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -142,7 +162,7 @@
                 <!-- Advanced Filters Toggle Button -->
                 <button type="button" 
                         wire:click="$toggle('showFilters')"
-                        class="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-850 dark:hover:bg-gray-800 text-gray-750 dark:text-gray-200 font-bold py-2 px-4 rounded-lg text-xs transition uppercase tracking-wider border border-gray-200/50 dark:border-gray-800">
+                        class="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-855 dark:hover:bg-gray-800 text-gray-750 dark:text-gray-200 font-bold py-2 px-4 rounded-lg text-xs transition uppercase tracking-wider border border-gray-200/50 dark:border-gray-800">
                     <svg class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                     </svg>
@@ -163,7 +183,7 @@
 
         @if($showFilters)
             <!-- Advanced Filters Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-150 dark:border-gray-800 font-semibold">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-4 pt-4 border-t border-gray-150 dark:border-gray-800 font-semibold">
                 <!-- Status filter -->
                 <div class="space-y-1">
                     <label class="text-[10px] uppercase font-bold text-gray-500">Payment Status</label>
@@ -205,10 +225,22 @@
                     </select>
                 </div>
 
+                <!-- Date From filter -->
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Airing Date From</label>
+                    <input type="date" wire:model.live="date_from" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                </div>
+
+                <!-- Date To filter -->
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Airing Date To</label>
+                    <input type="date" wire:model.live="date_to" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                </div>
+
                 <!-- Reset filters -->
                 <div class="flex items-end">
                     <button type="button" 
-                            wire:click="$set('search', ''); $set('status', ''); $set('type', ''); $set('media', ''); $set('approved', '');"
+                            wire:click="$set('search', ''); $set('status', ''); $set('type', ''); $set('media', ''); $set('approved', ''); $set('date_from', ''); $set('date_to', '');"
                             class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2 rounded text-xs transition uppercase tracking-wider">
                         Reset Filters
                     </button>

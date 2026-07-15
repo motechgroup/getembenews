@@ -82,6 +82,8 @@ on([
             $this->downloads[$index]['url'] = $url;
         } elseif ($targetField === 'audio_url') {
             $this->format_meta['audio_url'] = $url;
+        } elseif ($targetField === 'trix_body') {
+            $this->dispatch('insert-trix-image', url: $url);
         }
     }
 ]);
@@ -1153,13 +1155,7 @@ $generateIdeas = function () {
 
                 imageButton.addEventListener("click", function(e) {
                     e.preventDefault();
-                    var url = prompt("Enter Image URL:");
-                    if (url && url.trim()) {
-                        var editorObj = event.target.editor || (document.querySelector('trix-editor') ? document.querySelector('trix-editor').editor : null);
-                        if (editorObj) {
-                            editorObj.insertString('[image url="' + url.trim() + '"]');
-                        }
-                    }
+                    window.dispatchEvent(new CustomEvent('open-media-modal', {detail: {field: 'trix_body'}}));
                 });
 
                 // Insert into file-tools or block-tools group
@@ -1173,6 +1169,20 @@ $generateIdeas = function () {
 
             // Register events globally
             document.addEventListener("trix-initialize", initializeTrixToolbar);
+
+            // Prevent default drag and drop upload since it is unhandled; users should use the uploader button instead
+            document.addEventListener("trix-file-accept", function(event) {
+                event.preventDefault();
+            });
+
+            // Listen for image selection from media select modal and insert shortcode
+            window.addEventListener('insert-trix-image', function(e) {
+                var url = e.detail.url;
+                var editorObj = document.querySelector('trix-editor') ? document.querySelector('trix-editor').editor : null;
+                if (editorObj && url) {
+                    editorObj.insertString('[image url="' + url.trim() + '"]');
+                }
+            });
         })();
     </script>
 </div>

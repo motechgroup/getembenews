@@ -365,4 +365,17 @@ class PublishingAndMediaTest extends TestCase
             ->assertOk()
             ->assertSeeHtml('<img src="https://example.com/test-image.jpg" alt="Article Inline Image"');
     }
+
+    /**
+     * Test Trix editor image selection and media library connection.
+     */
+    public function test_trix_editor_image_selection_event_flows(): void
+    {
+        $author = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($author);
+
+        Livewire::test('admin-articles-manager')
+            ->dispatch('media-selected', url: 'https://example.com/selected-inline-image.jpg', targetField: 'trix_body')
+            ->assertDispatched('insert-trix-image', url: 'https://example.com/selected-inline-image.jpg');
+    }
 }

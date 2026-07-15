@@ -115,6 +115,7 @@ state([
     'mpesa_passkey' => fn() => Setting::get('mpesa_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'),
     'mpesa_initiator_name' => fn() => Setting::get('mpesa_initiator_name', ''),
     'mpesa_initiator_password' => fn() => Setting::get('mpesa_initiator_password', ''),
+    'mpesa_callback_url' => fn() => Setting::get('mpesa_callback_url', ''),
 
     // 5. Currency Settings
     'currency' => fn() => Setting::get('currency', 'KES'),
@@ -952,7 +953,7 @@ $save = function () use ($logAction) {
         'sms_textsms_api_key', 'sms_textsms_partner_id', 'sms_textsms_shortcode',
         'sms_template_draft', 'sms_template_payment',
         'mpesa_env', 'mpesa_consumer_key', 'mpesa_consumer_secret',
-        'mpesa_shortcode', 'mpesa_passkey', 'mpesa_initiator_name', 'mpesa_initiator_password'
+        'mpesa_shortcode', 'mpesa_passkey', 'mpesa_initiator_name', 'mpesa_initiator_password', 'mpesa_callback_url'
     ];
 
     foreach ($fields as $field) {
@@ -2244,8 +2245,14 @@ $sendTestEmail = function () {
                                 </div>
 
                                 <div class="space-y-1 md:col-span-2">
-                                    <label class="text-[10px] font-bold text-gray-500">M-Pesa Webhook Callback URL (Read-only)</label>
-                                    <input type="text" readonly value="{{ url('/api/v1/payments/mpesa/callback') }}" class="w-full bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-400 font-mono select-all">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Custom Webhook Callback URL (Optional)</label>
+                                    <input type="text" wire:model="mpesa_callback_url" placeholder="e.g. https://your-domain.com/api/v1/payments/mpesa/callback" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                    <p class="text-[9px] text-gray-400 leading-normal mt-0.5">
+                                        If left empty, the system automatically detects the host as <span class="font-mono font-bold text-gray-550 dark:text-gray-300">{{ url('/api/v1/payments/mpesa/callback') }}</span>.
+                                        @if(str_contains(request()->getHost(), '127.0.0.1') || str_contains(request()->getHost(), 'localhost'))
+                                            <span class="text-orange-500 font-bold block mt-0.5">ℹ️ Localhost detected: If you use Ngrok, enter the public https url above to receive callbacks locally! If not, system automatically forwards STK status locally.</span>
+                                        @endif
+                                    </p>
                                 </div>
                             </div>
                         </div>

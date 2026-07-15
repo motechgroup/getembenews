@@ -80,10 +80,7 @@ class Mpesa
         // Ensure amount is integer or positive float
         $amount = (int) max(1, round($amount));
 
-        $callbackUrl = url('/api/v1/payments/mpesa/callback');
-        if (str_contains($callbackUrl, '127.0.0.1') || str_contains($callbackUrl, 'localhost') || !str_starts_with($callbackUrl, 'https')) {
-            $callbackUrl = 'https://getembenews.com/api/v1/payments/mpesa/callback';
-        }
+        $callbackUrl = self::getCallbackUrl();
 
         $body = [
             'BusinessShortCode' => $shortcode,
@@ -210,5 +207,41 @@ class Mpesa
                 'message' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Resolve the best Webhook Callback URL for M-Pesa.
+     */
+    public static function getCallbackUrl(): string
+    {
+        // 1. Check custom settings URL
+        $customUrl = Setting::get('mpesa_callback_url', '');
+        if (!empty($customUrl)) {
+            return rtrim($customUrl, '/');
+        }
+
+        // 2. Localhost auto-detection logic
+        $currentUrl = url('/api/v1/payments/mpesa/callback');
+        if (str_contains($currentUrl, '127.0.0.1') || str_contains($currentUrl, 'localhost') || !str_starts_with($currentUrl, 'https')) {
+            try {
+                // Look for running local Ngrok tunnel API
+                $ngrokResponse = Http::timeout(1)->get('http://127.0.0.1:4040/api/tunnels');
+                if ($ngrokResponse->successful()) {
+                    $tunnels = $ngrokResponse->json('tunnels') ?: [];
+                    foreach ($tunnels as $tunnel) {
+                        if (($tunnel['proto'] ?? '') === 'https' && !empty($tunnel['public_url'])) {
+                            return rtrim($tunnel['public_url'], '/') . '/api/v1/payments/mpesa/callback';
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Ngrok not active
+            }
+
+            // Dummy public HTTPS fallback for sandbox validation bypass
+            return 'https://getembenews.com/api/v1/payments/mpesa/callback';
+        }
+
+        return $currentUrl;
     }
 }

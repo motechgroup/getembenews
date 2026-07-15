@@ -362,4 +362,13 @@ class AnnouncementTest extends TestCase
         $this->assertEquals('paid', $announcement->payment_status);
         $this->assertEquals('QTR89SDFG3', $announcement->payment_reference);
     }
+
+    public function test_mpesa_callback_url_resolution(): void
+    {
+        Setting::set('mpesa_callback_url', 'https://custom-domain.com/webhook');
+        $this->assertEquals('https://custom-domain.com/webhook', \App\Support\Mpesa::getCallbackUrl());
+
+        Setting::set('mpesa_callback_url', '');
+        $this->assertNotEmpty(\App\Support\Mpesa::getCallbackUrl());
+    }
 }

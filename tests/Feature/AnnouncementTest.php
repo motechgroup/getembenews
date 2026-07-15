@@ -625,4 +625,10 @@ class AnnouncementTest extends TestCase
         $response2 = $this->get('/');
         $response2->assertSee('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js');
     }
+
+    public function test_x_frame_options_header_is_removed_for_adsense_preview(): void
+    {
+        $response = $this->get('/');
+        $response->assertHeaderMissing('X-Frame-Options');
+    }
 }

@@ -120,6 +120,7 @@ class User extends Authenticatable
                 'comment management',
                 'tag management',
                 'page management',
+                'menu management',
                 'contact message management',
                 'settings management',
                 'theme management',

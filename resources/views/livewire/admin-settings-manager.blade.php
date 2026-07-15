@@ -290,6 +290,9 @@ state([
     'seo_nofollow_links' => fn() => Setting::get('seo_nofollow_links', true),
     'seo_strip_links' => fn() => Setting::get('seo_strip_links', false),
     'author_reward_rate' => fn() => Setting::get('author_reward_rate', '0.10'),
+    'earnings_enabled' => fn() => (bool) Setting::get('earnings_enabled', true),
+    'earnings_min_articles' => fn() => (int) Setting::get('earnings_min_articles', 5),
+    'earnings_min_views' => fn() => (int) Setting::get('earnings_min_views', 1000),
     'email_driver' => fn() => Setting::get('email_driver', 'smtp'),
     'mailgun_domain' => fn() => Setting::get('mailgun_domain', ''),
     'mailgun_secret' => fn() => Setting::get('mailgun_secret', ''),
@@ -490,7 +493,7 @@ $addRole = function () use ($logAction) {
         // seed defaults first
         $rolesPermissions = [
             'admin' => ['name' => 'Administrator', 'desc' => 'All permissions access', 'perms' => ['all']],
-            'editor' => ['name' => 'Editor', 'desc' => 'Content control and moderation', 'perms' => ['content management', 'article management', 'category management', 'comment management', 'tag management', 'page management', 'contact message management']],
+            'editor' => ['name' => 'Editor', 'desc' => 'Content control and moderation', 'perms' => ['content management', 'article management', 'category management', 'comment management', 'tag management', 'page management', 'menu management', 'contact message management']],
             'manager' => ['name' => 'Manager', 'desc' => 'Announcement and transaction moderator', 'perms' => ['announcement management']],
             'author' => ['name' => 'Author', 'desc' => 'Article writer and publisher', 'perms' => ['writing article']],
             'writing-article' => ['name' => 'Writing Article', 'desc' => 'Allows writing and managing own articles', 'perms' => ['content management', 'article management', 'writing article']],
@@ -541,7 +544,7 @@ $savePermissions = function () use ($logAction) {
     if (empty($rolesPermissions)) {
         $rolesPermissions = [
             'admin' => ['name' => 'Administrator', 'desc' => 'All permissions access', 'perms' => ['all']],
-            'editor' => ['name' => 'Editor', 'desc' => 'Content control and moderation', 'perms' => ['content management', 'article management', 'category management', 'comment management', 'tag management', 'page management', 'contact message management']],
+            'editor' => ['name' => 'Editor', 'desc' => 'Content control and moderation', 'perms' => ['content management', 'article management', 'category management', 'comment management', 'tag management', 'page management', 'menu management', 'contact message management']],
             'manager' => ['name' => 'Manager', 'desc' => 'Announcement and transaction moderator', 'perms' => ['announcement management']],
             'author' => ['name' => 'Author', 'desc' => 'Article writer and publisher', 'perms' => ['writing article']],
             'writing-article' => ['name' => 'Writing Article', 'desc' => 'Allows writing and managing own articles', 'perms' => ['content management', 'article management', 'writing article']],
@@ -948,7 +951,7 @@ $save = function () use ($logAction) {
         'ad_mobile_sticky_image', 'ad_mobile_sticky_link',
         'captcha_driver', 'recaptcha_site_key', 'recaptcha_secret_key', 'turnstile_site_key', 'turnstile_secret_key',
         'email_blacklist', 'password_min_length', 'password_complexity_required', 'login_max_attempts', 'login_lockout_duration',
-        'seo_nofollow_links', 'seo_strip_links', 'author_reward_rate',
+        'seo_nofollow_links', 'seo_strip_links', 'author_reward_rate', 'earnings_enabled', 'earnings_min_articles', 'earnings_min_views',
         'email_driver', 'mailgun_domain', 'mailgun_secret', 'mailgun_endpoint', 'brevo_username', 'brevo_api_key',
         'newsletter_popup_enabled', 'newsletter_popup_title', 'newsletter_popup_description', 'newsletter_popup_delay',
         'app_download_popup_enabled', 'app_download_popup_title', 'app_download_popup_description', 'app_download_popup_delay',
@@ -2771,7 +2774,7 @@ $sendTestEmail = function () {
                                 @foreach([
                                     'user management', 'content management', 'settings management', 'theme management', 
                                     'email management', 'social login management', 'social media management', 
-                                    'chat widget management', 'page management', 'footer management', 'seo management', 
+                                    'chat widget management', 'page management', 'menu management', 'footer management', 'seo management', 
                                     'cookie management', 'payment management', 'currency management', 'language management', 
                                     'roles and permissions management', 'article management', 'category management', 
                                     'tag management', 'comment management', 'notification management', 'contact message management', 
@@ -3582,9 +3585,30 @@ $sendTestEmail = function () {
                                 <label for="seo_strip_links" class="text-xs font-semibold text-gray-750 dark:text-gray-300">Completely strip links from comment text</label>
                             </div>
 
-                            <div class="space-y-1 pt-2">
-                                <label class="text-[11px] font-bold text-gray-400">Author Reward Rate (KES per valid view)</label>
-                                <input type="text" wire:model="author_reward_rate" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                            <!-- Earning System Settings -->
+                            <div class="border-t border-gray-200 dark:border-gray-800 pt-4 mt-2 space-y-4">
+                                <h5 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Earning System Management</h5>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <input type="checkbox" wire:model="earnings_enabled" id="earnings_enabled" class="rounded text-[#C8102E] focus:ring-[#C8102E] border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                    <label for="earnings_enabled" class="text-xs font-semibold text-gray-750 dark:text-gray-300">Enable Earning System for Authors/Editors</label>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">Author Reward Rate (KES per valid view)</label>
+                                    <input type="text" wire:model="author_reward_rate" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="space-y-1">
+                                        <label class="text-[11px] font-bold text-gray-400">Minimum Articles Required to Earn</label>
+                                        <input type="number" wire:model="earnings_min_articles" min="0" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[11px] font-bold text-gray-400">Minimum Total Views Required to Earn</label>
+                                        <input type="number" wire:model="earnings_min_views" min="0" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

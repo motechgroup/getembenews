@@ -37,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
             'social media management',
             'chat widget management',
             'page management',
+            'menu management',
             'footer management',
             'seo management',
             'cookie management',
@@ -69,6 +70,10 @@ class AppServiceProvider extends ServiceProvider
             if ($permission === 'article management') {
                 \Illuminate\Support\Facades\Gate::define('article management', function (\App\Models\User $user) {
                     return $user->hasPermission('article management') || $user->hasPermission('writing article');
+                });
+            } elseif ($permission === 'menu management') {
+                \Illuminate\Support\Facades\Gate::define('menu management', function (\App\Models\User $user) {
+                    return $user->hasPermission('menu management') || $user->hasPermission('page management');
                 });
             } else {
                 \Illuminate\Support\Facades\Gate::define($permission, function (\App\Models\User $user) use ($permission) {

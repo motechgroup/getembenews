@@ -183,14 +183,14 @@ Route::middleware(['auth', 'can:access-admin'])->prefix('admin')->group(function
     Route::view('/', 'admin.dashboard')->name('admin.dashboard');
     Route::view('/articles', 'admin.articles')->middleware('can:article management')->name('admin.articles');
     Route::view('/categories', 'admin.categories')->middleware('can:category management')->name('admin.categories');
-    Route::view('/menus', 'admin.menus')->middleware('can:page management')->name('admin.menus');
+    Route::view('/menus', 'admin.menus')->middleware('can:menu management')->name('admin.menus');
     Route::view('/comments', 'admin.comments')->middleware('can:comment management')->name('admin.comments');
     Route::view('/users', 'admin.users')->middleware('can:user management')->name('admin.users');
     Route::view('/messages', 'admin.messages')->middleware('can:contact message management')->name('admin.messages');
     Route::get('/announcements', \App\Livewire\AdminAnnouncements::class)->middleware('can:announcement management')->name('admin.announcements');
     Route::get('/agents', \App\Livewire\AdminAgents::class)->middleware('can:announcement management')->name('admin.agents');
     Route::view('/advertisements', 'admin.advertisements')->middleware('can:settings management')->name('admin.advertisements');
-    Route::view('/media', 'admin.media')->middleware('can:settings management')->name('admin.media');
+    Route::view('/media', 'admin.media')->middleware('can:content management')->name('admin.media');
     Route::get('/settings/{tab?}', function ($tab = 'identity') {
         return view('admin.settings', compact('tab'));
     })->name('admin.settings');

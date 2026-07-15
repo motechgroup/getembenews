@@ -2,9 +2,17 @@
     <x-slot name="title">Dashboard - Getembe News</x-slot>
 
     @php
-        $verifiedViews = \App\Models\Article::where('user_id', auth()->id())->sum('views_count');
+        $earningsEnabled = (bool) \App\Models\Setting::get('earnings_enabled', true);
+        $minArticles = (int) \App\Models\Setting::get('earnings_min_articles', 5);
+        $minViews = (int) \App\Models\Setting::get('earnings_min_views', 1000);
+
+        $myArticlesCount = \App\Models\Article::where('user_id', auth()->id())->count();
+        $myViewsCount = \App\Models\Article::where('user_id', auth()->id())->sum('views_count');
+
+        $isEligible = ($myArticlesCount >= $minArticles) && ($myViewsCount >= $minViews);
+
         $rewardRate = (float) \App\Models\Setting::get('author_reward_rate', '0.10');
-        $totalEarnings = $verifiedViews * $rewardRate;
+        $totalEarnings = $isEligible ? ($myViewsCount * $rewardRate) : 0.0;
         $currencySymbol = \App\Models\Setting::get('currency_symbol', 'KSh');
     @endphp
 
@@ -260,27 +268,79 @@
                 </div>
             </div>
 
-            <!-- My Earnings -->
-            <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4 relative group bg-gradient-to-br from-green-50/20 to-white dark:from-green-950/5 dark:to-gray-900">
-                <div class="p-3 bg-green-100 dark:bg-green-950/20 text-green-600 rounded-md">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 8H7m5 8h5M5 12a7 7 0 1114 0 7 7 0 01-14 0z"/>
-                    </svg>
+            <!-- My Earnings / Eligibility Status -->
+            @if(!$earningsEnabled)
+                <!-- System Disabled message -->
+                <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4">
+                    <div class="p-3 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-md">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">My Earnings</div>
+                        <div class="text-xs font-bold text-gray-650 dark:text-gray-400 mt-2">Earning system is currently disabled by administrator.</div>
+                    </div>
                 </div>
-                <div class="flex-1">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider">My Earnings</span>
-                        <!-- Tooltip -->
-                        <div class="relative group cursor-help ml-2">
-                            <span class="text-[10px] text-gray-400 hover:text-gray-650 bg-gray-100 dark:bg-gray-800 w-4 h-4 rounded-full flex items-center justify-center font-bold">?</span>
-                            <div class="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 z-10 font-normal leading-relaxed">
-                                Accumulated reward amount calculated as: My Personal Page Views × Current Reward Rate ({{ $currencySymbol }} {{ number_format($rewardRate, 2) }} per view).
+            @elseif(!$isEligible)
+                <!-- Eligibility Progress Card -->
+                <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm relative group bg-gradient-to-br from-amber-50/10 to-white dark:from-amber-950/5 dark:to-gray-900 flex flex-col justify-between">
+                    <div class="flex items-start space-x-3.5">
+                        <div class="p-2 bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-450 rounded-md shrink-0">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-xs font-bold text-gray-500 uppercase tracking-wider">Earnings Eligibility</div>
+                            <div class="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mt-1.5 leading-relaxed">
+                                You need <span class="text-amber-600 dark:text-amber-400 font-extrabold">{{ $minArticles }} articles</span> and <span class="text-amber-600 dark:text-amber-400 font-extrabold">{{ number_format($minViews) }} total views</span> to start earning.
                             </div>
                         </div>
                     </div>
-                    <div class="text-2xl font-black text-green-600 dark:text-green-400 mt-1">{{ $currencySymbol }} {{ number_format($totalEarnings, 2) }}</div>
+                    
+                    <!-- Progress Stats -->
+                    <div class="mt-3 space-y-2 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                        <div class="flex justify-between items-center">
+                            <span>Articles: {{ $myArticlesCount }} / {{ $minArticles }}</span>
+                            <span class="text-gray-950 dark:text-white font-mono text-[9px]">{{ min(100, round(($myArticlesCount / max(1, $minArticles)) * 100)) }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-150 dark:bg-gray-800 h-1 rounded-full overflow-hidden">
+                            <div class="bg-amber-500 h-full rounded-full" style="width: {{ min(100, ($myArticlesCount / max(1, $minArticles)) * 100) }}%"></div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pt-1">
+                            <span>Views: {{ number_format($myViewsCount) }} / {{ number_format($minViews) }}</span>
+                            <span class="text-gray-950 dark:text-white font-mono text-[9px]">{{ min(100, round(($myViewsCount / max(1, $minViews)) * 100)) }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-150 dark:bg-gray-800 h-1 rounded-full overflow-hidden">
+                            <div class="bg-amber-500 h-full rounded-full" style="width: {{ min(100, ($myViewsCount / max(1, $minViews)) * 100) }}%"></div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            @else
+                <!-- My Earnings Card (Regular) -->
+                <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4 relative group bg-gradient-to-br from-green-50/20 to-white dark:from-green-950/5 dark:to-gray-900">
+                    <div class="p-3 bg-green-100 dark:bg-green-950/20 text-green-600 rounded-md">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 8H7m5 8h5M5 12a7 7 0 1114 0 7 7 0 01-14 0z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider">My Earnings</span>
+                            <!-- Tooltip -->
+                            <div class="relative group cursor-help ml-2">
+                                <span class="text-[10px] text-gray-400 hover:text-gray-650 bg-gray-100 dark:bg-gray-800 w-4 h-4 rounded-full flex items-center justify-center font-bold">?</span>
+                                <div class="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 z-10 font-normal leading-relaxed">
+                                    Accumulated reward amount calculated as: My Personal Page Views × Current Reward Rate ({{ $currencySymbol }} {{ number_format($rewardRate, 2) }} per view).
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-black text-green-600 dark:text-green-400 mt-1">{{ $currencySymbol }} {{ number_format($totalEarnings, 2) }}</div>
+                    </div>
+                </div>
+            @endif
 
         </div>
 
@@ -541,27 +601,79 @@
                 </div>
             </div>
 
-            <!-- My Earnings -->
-            <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4 relative group bg-gradient-to-br from-green-50/20 to-white dark:from-green-950/5 dark:to-gray-900">
-                <div class="p-3 bg-green-100 dark:bg-green-950/20 text-green-600 rounded-md">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 8H7m5 8h5M5 12a7 7 0 1114 0 7 7 0 01-14 0z"/>
-                    </svg>
+            <!-- My Earnings / Eligibility Status -->
+            @if(!$earningsEnabled)
+                <!-- System Disabled message -->
+                <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4">
+                    <div class="p-3 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-md">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">My Earnings</div>
+                        <div class="text-xs font-bold text-gray-650 dark:text-gray-400 mt-2">Earning system is currently disabled by administrator.</div>
+                    </div>
                 </div>
-                <div class="flex-1">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider">My Earnings</span>
-                        <!-- Tooltip -->
-                        <div class="relative group cursor-help ml-2">
-                            <span class="text-[10px] text-gray-400 hover:text-gray-650 bg-gray-100 dark:bg-gray-800 w-4 h-4 rounded-full flex items-center justify-center font-bold">?</span>
-                            <div class="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 z-10 font-normal leading-relaxed">
-                                Accumulated reward amount calculated as: My Personal Page Views × Current Reward Rate ({{ $currencySymbol }} {{ number_format($rewardRate, 2) }} per view).
+            @elseif(!$isEligible)
+                <!-- Eligibility Progress Card -->
+                <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm relative group bg-gradient-to-br from-amber-50/10 to-white dark:from-amber-950/5 dark:to-gray-900 flex flex-col justify-between">
+                    <div class="flex items-start space-x-3.5">
+                        <div class="p-2 bg-amber-100 dark:bg-amber-950/30 text-amber-600 dark:text-amber-450 rounded-md shrink-0">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-xs font-bold text-gray-500 uppercase tracking-wider">Earnings Eligibility</div>
+                            <div class="text-[11px] font-semibold text-gray-700 dark:text-gray-300 mt-1.5 leading-relaxed">
+                                You need <span class="text-amber-600 dark:text-amber-400 font-extrabold">{{ $minArticles }} articles</span> and <span class="text-amber-600 dark:text-amber-400 font-extrabold">{{ number_format($minViews) }} total views</span> to start earning.
                             </div>
                         </div>
                     </div>
-                    <div class="text-2xl font-black text-green-600 dark:text-green-400 mt-1">{{ $currencySymbol }} {{ number_format($totalEarnings, 2) }}</div>
+                    
+                    <!-- Progress Stats -->
+                    <div class="mt-3 space-y-2 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                        <div class="flex justify-between items-center">
+                            <span>Articles: {{ $myArticlesCount }} / {{ $minArticles }}</span>
+                            <span class="text-gray-950 dark:text-white font-mono text-[9px]">{{ min(100, round(($myArticlesCount / max(1, $minArticles)) * 100)) }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-150 dark:bg-gray-800 h-1 rounded-full overflow-hidden">
+                            <div class="bg-amber-500 h-full rounded-full" style="width: {{ min(100, ($myArticlesCount / max(1, $minArticles)) * 100) }}%"></div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pt-1">
+                            <span>Views: {{ number_format($myViewsCount) }} / {{ number_format($minViews) }}</span>
+                            <span class="text-gray-950 dark:text-white font-mono text-[9px]">{{ min(100, round(($myViewsCount / max(1, $minViews)) * 100)) }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-150 dark:bg-gray-800 h-1 rounded-full overflow-hidden">
+                            <div class="bg-amber-500 h-full rounded-full" style="width: {{ min(100, ($myViewsCount / max(1, $minViews)) * 100) }}%"></div>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            @else
+                <!-- My Earnings Card (Regular) -->
+                <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4 relative group bg-gradient-to-br from-green-50/20 to-white dark:from-green-950/5 dark:to-gray-900">
+                    <div class="p-3 bg-green-100 dark:bg-green-950/20 text-green-600 rounded-md">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 8H7m5 8h5M5 12a7 7 0 1114 0 7 7 0 01-14 0z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider">My Earnings</span>
+                            <!-- Tooltip -->
+                            <div class="relative group cursor-help ml-2">
+                                <span class="text-[10px] text-gray-400 hover:text-gray-650 bg-gray-100 dark:bg-gray-800 w-4 h-4 rounded-full flex items-center justify-center font-bold">?</span>
+                                <div class="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 z-10 font-normal leading-relaxed">
+                                    Accumulated reward amount calculated as: My Personal Page Views × Current Reward Rate ({{ $currencySymbol }} {{ number_format($rewardRate, 2) }} per view).
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-2xl font-black text-green-600 dark:text-green-400 mt-1">{{ $currencySymbol }} {{ number_format($totalEarnings, 2) }}</div>
+                    </div>
+                </div>
+            @endif
 
         </div>
 

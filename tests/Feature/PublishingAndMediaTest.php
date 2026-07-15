@@ -612,8 +612,11 @@ class PublishingAndMediaTest extends TestCase
         $user = User::factory()->create(['role' => 'author', 'email_verified_at' => now()]);
         $this->actingAs($user);
 
-        // Configure setting rate
+        // Configure setting rate and thresholds
         \App\Models\Setting::set('author_reward_rate', '0.25');
+        \App\Models\Setting::set('earnings_enabled', '1');
+        \App\Models\Setting::set('earnings_min_articles', '1');
+        \App\Models\Setting::set('earnings_min_views', '100');
 
         $category = Category::create(['name' => 'General', 'slug' => 'general']);
 
@@ -640,4 +643,79 @@ class PublishingAndMediaTest extends TestCase
             ->assertSee('25.00')
             ->assertSee('First Story Title');
     }
+
+    /**
+     * Test earnings disabled and ineligibility conditions on author dashboard.
+     */
+    public function test_earnings_ineligibility_and_disabled(): void
+    {
+        $user = User::factory()->create(['role' => 'author', 'email_verified_at' => now()]);
+        $this->actingAs($user);
+
+        // Scenario 1: Earnings Enabled but Author is Ineligible
+        \App\Models\Setting::set('author_reward_rate', '0.25');
+        \App\Models\Setting::set('earnings_enabled', '1');
+        \App\Models\Setting::set('earnings_min_articles', '5');
+        \App\Models\Setting::set('earnings_min_views', '1000');
+
+        $category = Category::create(['name' => 'General', 'slug' => 'general']);
+        Article::create([
+            'title' => 'Sample Post',
+            'slug' => 'sample-post',
+            'body' => 'Content here',
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'status' => 'published',
+            'format' => 'article',
+            'published_at' => now(),
+            'views_count' => 100,
+        ]);
+
+        // Should see eligibility progress panel, not 25.00 KSh
+        $this->get('/admin')
+            ->assertOk()
+            ->assertSee('Earnings Eligibility')
+            ->assertSee('You need')
+            ->assertSee('articles')
+            ->assertSee('total views')
+            ->assertSee('to start earning')
+            ->assertSee('Articles: 1 / 5')
+            ->assertSee('Views: 100 / 1,000')
+            ->assertDontSee('25.00');
+
+        // Scenario 2: Earnings Disabled globally
+        \App\Models\Setting::set('earnings_enabled', '0');
+
+        $res = $this->get('/admin');
+        $res->assertOk()
+            ->assertSee('Earning system is currently disabled by administrator.')
+            ->assertDontSee('Earnings Eligibility');
+    }
+
+    /**
+     * Test menu access permissions for admin, editor, and author.
+     */
+    public function test_menu_access_permissions(): void
+    {
+        // 1. Admin should have access to /admin/menus
+        $admin = User::factory()->create(['role' => 'admin', 'email_verified_at' => now()]);
+        $this->actingAs($admin);
+        $this->get('/admin/menus')
+            ->assertOk()
+            ->assertSee('Navigation Menus Manager');
+
+        // 2. Editor should have access to /admin/menus
+        $editor = User::factory()->create(['role' => 'editor', 'email_verified_at' => now()]);
+        $this->actingAs($editor);
+        $this->get('/admin/menus')
+            ->assertOk()
+            ->assertSee('Navigation Menus Manager');
+
+        // 3. Author should NOT have access to /admin/menus by default (403 or redirect)
+        $author = User::factory()->create(['role' => 'author', 'email_verified_at' => now()]);
+        $this->actingAs($author);
+        $this->get('/admin/menus')
+            ->assertStatus(403);
+    }
 }
+

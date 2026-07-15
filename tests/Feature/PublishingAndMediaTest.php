@@ -603,4 +603,41 @@ class PublishingAndMediaTest extends TestCase
             ->assertSet('reactionsCount.like', 0)
             ->assertSet('userReaction', null);
     }
+
+    /**
+     * Test author dashboard rewards and creator tips rendering.
+     */
+    public function test_author_dashboard_rewards_and_creator_tips(): void
+    {
+        $user = User::factory()->create(['role' => 'author', 'email_verified_at' => now()]);
+        $this->actingAs($user);
+
+        // Configure setting rate
+        \App\Models\Setting::set('author_reward_rate', '0.25');
+
+        $category = Category::create(['name' => 'General', 'slug' => 'general']);
+
+        // Create article with views for the author
+        Article::create([
+            'title' => 'First Story Title',
+            'slug' => 'first-story-title',
+            'body' => 'Article body content',
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'status' => 'published',
+            'format' => 'article',
+            'published_at' => now(),
+            'views_count' => 100,
+        ]);
+
+        $this->get('/dashboard')
+            ->assertRedirect('/admin');
+
+        $this->get('/admin')
+            ->assertOk()
+            ->assertSee('My Personal Content Performance')
+            ->assertSee('Creator Tips & Guidelines (Do\'s & Don\'ts)', false)
+            ->assertSee('25.00')
+            ->assertSee('First Story Title');
+    }
 }

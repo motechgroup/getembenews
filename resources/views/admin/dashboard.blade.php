@@ -1,6 +1,13 @@
 <x-admin-layout>
     <x-slot name="title">Dashboard - Getembe News</x-slot>
 
+    @php
+        $verifiedViews = \App\Models\Article::where('user_id', auth()->id())->sum('views_count');
+        $rewardRate = (float) \App\Models\Setting::get('author_reward_rate', '0.10');
+        $totalEarnings = $verifiedViews * $rewardRate;
+        $currencySymbol = \App\Models\Setting::get('currency_symbol', 'KSh');
+    @endphp
+
     @if(auth()->user()->isAdmin())
         <!-- ================= ADMIN DASHBOARD ================= -->
         <h2 class="text-xs font-black uppercase text-gray-400 tracking-wider mb-4">Site-Wide Executive Metrics</h2>
@@ -202,7 +209,7 @@
     @elseif(auth()->user()->isEditor())
         <!-- ================= EDITOR DASHBOARD ================= -->
         <h2 class="text-xs font-black uppercase text-gray-400 tracking-wider mb-4">Editorial Content Performance</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             
             <!-- Total Articles -->
             <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4">
@@ -218,16 +225,25 @@
             </div>
 
             <!-- Total Views -->
-            <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4">
+            <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4 relative group">
                 <div class="p-3 bg-blue-100 dark:bg-blue-950/20 text-blue-600 rounded-md">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                     </svg>
                 </div>
-                <div>
-                    <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Page Views</div>
-                    <div class="text-2xl font-black text-gray-900 dark:text-white">{{ number_format(\App\Models\Article::sum('views_count')) }}</div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                        <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Page Views</div>
+                        <!-- Tooltip -->
+                        <div class="relative group cursor-help ml-2">
+                            <span class="text-[10px] text-gray-400 hover:text-gray-650 bg-gray-100 dark:bg-gray-800 w-4 h-4 rounded-full flex items-center justify-center font-bold">?</span>
+                            <div class="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 z-10 font-normal leading-relaxed">
+                                Site-wide verified views represent unique reader visits filtered by our anti-cheat system.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ number_format(\App\Models\Article::sum('views_count')) }}</div>
                 </div>
             </div>
 
@@ -244,6 +260,117 @@
                 </div>
             </div>
 
+            <!-- My Earnings -->
+            <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4 relative group bg-gradient-to-br from-green-50/20 to-white dark:from-green-950/5 dark:to-gray-900">
+                <div class="p-3 bg-green-100 dark:bg-green-950/20 text-green-600 rounded-md">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 8H7m5 8h5M5 12a7 7 0 1114 0 7 7 0 01-14 0z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider">My Earnings</span>
+                        <!-- Tooltip -->
+                        <div class="relative group cursor-help ml-2">
+                            <span class="text-[10px] text-gray-400 hover:text-gray-650 bg-gray-100 dark:bg-gray-800 w-4 h-4 rounded-full flex items-center justify-center font-bold">?</span>
+                            <div class="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 z-10 font-normal leading-relaxed">
+                                Accumulated reward amount calculated as: My Personal Page Views × Current Reward Rate ({{ $currencySymbol }} {{ number_format($rewardRate, 2) }} per view).
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-black text-green-600 dark:text-green-400 mt-1">{{ $currencySymbol }} {{ number_format($totalEarnings, 2) }}</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Creator Earnings Tips & Guidelines (Do's & Don'ts) -->
+        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-250 dark:border-gray-800 overflow-hidden mb-8">
+            <div class="p-5 border-b border-gray-150 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/10 flex items-center justify-between">
+                <div>
+                    <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center">
+                        <span class="mr-2">💡</span> Creator Tips & Guidelines (Do's & Don'ts)
+                    </h4>
+                    <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">Learn how to maximize your story reach and ensure all views qualify for rewards.</p>
+                </div>
+                <span class="text-[10px] font-black text-[#C8102E] bg-red-50 dark:bg-red-950/20 px-2 py-0.5 rounded uppercase">Manual</span>
+            </div>
+            
+            <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-150 dark:divide-gray-800">
+                <!-- DO's Column -->
+                <div class="space-y-3 pr-0 md:pr-6">
+                    <h5 class="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider flex items-center">
+                        <span class="mr-1.5">👍</span> The Do's (Maximize Reach)
+                    </h5>
+                    <ul class="space-y-2.5 text-[11px] leading-relaxed">
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 mt-0.5 shrink-0 font-bold">✓</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">Write Engaging Headlines:</strong>
+                                <p class="text-gray-500 mt-0.5">Use clear, factual, and captivating titles to trigger interest on social media feeds.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 mt-0.5 shrink-0 font-bold">✓</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">Embed High-Quality Media:</strong>
+                                <p class="text-gray-500 mt-0.5">Incorporate images, audio clips, and event schedules to increase reader stay time (dwell time).</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 mt-0.5 shrink-0 font-bold">✓</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">Share on Social Channels:</strong>
+                                <p class="text-gray-500 mt-0.5">Distribute your articles in local Facebook groups, Twitter/X threads, and WhatsApp news circles.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 mt-0.5 shrink-0 font-bold">✓</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">Respond to Reader Comments:</strong>
+                                <p class="text-gray-500 mt-0.5">Build a community by answering questions in your article comments to invite repeat views.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- DON'Ts Column -->
+                <div class="space-y-3 pt-4 md:pt-0 pl-0 md:pl-6 border-gray-150 dark:border-gray-800">
+                    <h5 class="text-xs font-bold text-red-650 dark:text-red-400 uppercase tracking-wider flex items-center">
+                        <span class="mr-1.5">⚠️</span> The Don'ts (Avoid Violations)
+                    </h5>
+                    <ul class="space-y-2.5 text-[11px] leading-relaxed">
+                        <li class="flex items-start space-x-2">
+                            <span class="text-red-500 mt-0.5 shrink-0 font-bold">✗</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">Strictly No Clickbait:</strong>
+                                <p class="text-gray-500 mt-0.5">Deceptive headings or fake summaries violate editor guidelines and can trigger article rejection.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-red-500 mt-0.5 shrink-0 font-bold">✗</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">No Auto-Refresh or Bot Traffic:</strong>
+                                <p class="text-gray-500 mt-0.5">Our anti-cheat engine monitors user-agent behaviors and discards rapid clicks and non-human traffic.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-red-500 mt-0.5 shrink-0 font-bold">✗</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">No Plagiarism:</strong>
+                                <p class="text-gray-500 mt-0.5">Re-publishing copied articles without original input is prohibited and leads to account suspension.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-red-500 mt-0.5 shrink-0 font-bold">✗</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">No Artificial Click Rings:</strong>
+                                <p class="text-gray-500 mt-0.5">Participating in paid view networks or swap groups will void all earned rewards on your posts.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -361,7 +488,7 @@
     @else
         <!-- ================= AUTHOR / WRITER DASHBOARD ================= -->
         <h2 class="text-xs font-black uppercase text-gray-400 tracking-wider mb-4">My Personal Content Performance</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             
             <!-- Total Articles -->
             <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4">
@@ -377,16 +504,25 @@
             </div>
 
             <!-- Total Views -->
-            <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4">
+            <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4 relative group">
                 <div class="p-3 bg-blue-100 dark:bg-blue-950/20 text-blue-600 rounded-md">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                     </svg>
                 </div>
-                <div>
-                    <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">My Page Views</div>
-                    <div class="text-2xl font-black text-gray-900 dark:text-white">{{ number_format(\App\Models\Article::where('user_id', auth()->id())->sum('views_count')) }}</div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                        <div class="text-xs text-gray-500 font-semibold uppercase tracking-wider">My Page Views</div>
+                        <!-- Tooltip -->
+                        <div class="relative group cursor-help ml-2">
+                            <span class="text-[10px] text-gray-400 hover:text-gray-650 bg-gray-100 dark:bg-gray-850 w-4 h-4 rounded-full flex items-center justify-center font-bold">?</span>
+                            <div class="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 z-10 font-normal leading-relaxed">
+                                Verified views represent unique reader visits filtered by our anti-cheat system (excluding repeat clicks, bots, and rapid refreshes).
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-black text-gray-900 dark:text-white mt-1">{{ number_format(\App\Models\Article::where('user_id', auth()->id())->sum('views_count')) }}</div>
                 </div>
             </div>
 
@@ -402,6 +538,118 @@
                     <div class="text-2xl font-black text-gray-900 dark:text-white">
                         {{ \App\Models\Comment::whereHas('article', function($q) { $q->where('user_id', auth()->id()); })->count() }}
                     </div>
+                </div>
+            </div>
+
+            <!-- My Earnings -->
+            <div class="bg-white dark:bg-gray-900 p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm flex items-center space-x-4 relative group bg-gradient-to-br from-green-50/20 to-white dark:from-green-950/5 dark:to-gray-900">
+                <div class="p-3 bg-green-100 dark:bg-green-950/20 text-green-600 rounded-md">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 8H7m5 8h5M5 12a7 7 0 1114 0 7 7 0 01-14 0z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500 font-semibold uppercase tracking-wider">My Earnings</span>
+                        <!-- Tooltip -->
+                        <div class="relative group cursor-help ml-2">
+                            <span class="text-[10px] text-gray-400 hover:text-gray-650 bg-gray-100 dark:bg-gray-800 w-4 h-4 rounded-full flex items-center justify-center font-bold">?</span>
+                            <div class="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 z-10 font-normal leading-relaxed">
+                                Accumulated reward amount calculated as: My Personal Page Views × Current Reward Rate ({{ $currencySymbol }} {{ number_format($rewardRate, 2) }} per view).
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-black text-green-600 dark:text-green-400 mt-1">{{ $currencySymbol }} {{ number_format($totalEarnings, 2) }}</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Creator Earnings Tips & Guidelines (Do's & Don'ts) -->
+        <div class="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-250 dark:border-gray-800 overflow-hidden mb-8">
+            <div class="p-5 border-b border-gray-150 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/10 flex items-center justify-between">
+                <div>
+                    <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center">
+                        <span class="mr-2">💡</span> Creator Tips & Guidelines (Do's & Don'ts)
+                    </h4>
+                    <p class="text-[10px] text-gray-450 dark:text-gray-500 mt-1">Learn how to maximize your story reach and ensure all views qualify for rewards.</p>
+                </div>
+                <span class="text-[10px] font-black text-[#C8102E] bg-red-50 dark:bg-red-950/20 px-2 py-0.5 rounded uppercase">Manual</span>
+            </div>
+            
+            <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6 divide-y md:divide-y-0 md:divide-x divide-gray-150 dark:divide-gray-800">
+                <!-- DO's Column -->
+                <div class="space-y-3 pr-0 md:pr-6">
+                    <h5 class="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider flex items-center">
+                        <span class="mr-1.5">👍</span> The Do's (Maximize Reach)
+                    </h5>
+                    <ul class="space-y-2.5 text-[11px] leading-relaxed">
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 mt-0.5 shrink-0 font-bold">✓</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">Write Engaging Headlines:</strong>
+                                <p class="text-gray-500 mt-0.5">Use clear, factual, and captivating titles to trigger interest on social media feeds.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 mt-0.5 shrink-0 font-bold">✓</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">Embed High-Quality Media:</strong>
+                                <p class="text-gray-500 mt-0.5">Incorporate images, audio clips, and event schedules to increase reader stay time (dwell time).</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 mt-0.5 shrink-0 font-bold">✓</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">Share on Social Channels:</strong>
+                                <p class="text-gray-500 mt-0.5">Distribute your articles in local Facebook groups, Twitter/X threads, and WhatsApp news circles.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-green-500 mt-0.5 shrink-0 font-bold">✓</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">Respond to Reader Comments:</strong>
+                                <p class="text-gray-500 mt-0.5">Build a community by answering questions in your article comments to invite repeat views.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- DON'Ts Column -->
+                <div class="space-y-3 pt-4 md:pt-0 pl-0 md:pl-6 border-gray-150 dark:border-gray-800">
+                    <h5 class="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center">
+                        <span class="mr-1.5">⚠️</span> The Don'ts (Avoid Violations)
+                    </h5>
+                    <ul class="space-y-2.5 text-[11px] leading-relaxed">
+                        <li class="flex items-start space-x-2">
+                            <span class="text-red-500 mt-0.5 shrink-0 font-bold">✗</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">Strictly No Clickbait:</strong>
+                                <p class="text-gray-500 mt-0.5">Deceptive headings or fake summaries violate editor guidelines and can trigger article rejection.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-red-500 mt-0.5 shrink-0 font-bold">✗</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">No Auto-Refresh or Bot Traffic:</strong>
+                                <p class="text-gray-500 mt-0.5">Our anti-cheat engine monitors user-agent behaviors and discards rapid clicks and non-human traffic.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-red-500 mt-0.5 shrink-0 font-bold">✗</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">No Plagiarism:</strong>
+                                <p class="text-gray-500 mt-0.5">Re-publishing copied articles without original input is prohibited and leads to account suspension.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-2">
+                            <span class="text-red-500 mt-0.5 shrink-0 font-bold">✗</span>
+                            <div>
+                                <strong class="text-gray-900 dark:text-white">No Artificial Click Rings:</strong>
+                                <p class="text-gray-500 mt-0.5">Participating in paid view networks or swap groups will void all earned rewards on your posts.</p>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>

@@ -456,4 +456,30 @@ class AnnouncementTest extends TestCase
                 return $announcements->count() === 1 && $announcements->first()->visitor_name === 'John';
             });
     }
+
+    public function test_admin_announcements_export_revenue_report(): void
+    {
+        Announcement::truncate();
+
+        Announcement::create([
+            'visitor_name' => 'Emma Moraa',
+            'visitor_phone' => '254712345678',
+            'type' => 'funeral',
+            'media' => 'both',
+            'content' => 'funeral content text',
+            'word_count' => 2,
+            'rate_per_word' => 3,
+            'days_count' => 1,
+            'airing_date' => now()->toDateString(),
+            'total_amount' => 6,
+            'payment_status' => 'paid',
+            'commission_amount' => 1,
+            'is_approved' => true,
+            'submitter_type' => 'self',
+        ]);
+
+        \Livewire\Livewire::test(\App\Livewire\AdminAnnouncements::class)
+            ->call('exportRevenueReport')
+            ->assertStatus(200);
+    }
 }

@@ -9,6 +9,16 @@
                 Moderation dashboard for visitors' submitted TV/Radio announcements.
             </p>
         </div>
+        <div class="shrink-0 w-full sm:w-auto">
+            <button type="button" 
+                    wire:click="exportRevenueReport"
+                    class="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition uppercase tracking-wider shadow-sm">
+                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Export Revenue CSV</span>
+            </button>
+        </div>
     </div>
 
     <!-- Session Feedback Banner -->

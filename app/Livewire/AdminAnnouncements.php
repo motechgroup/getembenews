@@ -78,6 +78,85 @@ class AdminAnnouncements extends Component
         session()->flash('message', 'Announcement deleted successfully.');
     }
 
+    public function exportRevenueReport()
+    {
+        $query = Announcement::query()->where('payment_status', 'paid');
+
+        if (!empty($this->search)) {
+            $query->where(function($q) {
+                $q->where('visitor_name', 'like', '%' . $this->search . '%')
+                  ->orWhere('visitor_phone', 'like', '%' . $this->search . '%')
+                  ->orWhere('content', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        if (!empty($this->type)) {
+            $query->where('type', $this->type);
+        }
+
+        if ($this->media !== '') {
+            $query->where('media', $this->media);
+        }
+
+        if ($this->approved !== '') {
+            $query->where('is_approved', (bool) $this->approved);
+        }
+
+        $announcements = $query->latest()->get();
+
+        $headers = [
+            'Content-type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename=revenue_report_' . now()->format('Ymd_His') . '.csv',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+
+        $callback = function() use ($announcements) {
+            $file = fopen('php://output', 'w');
+            
+            fputcsv($file, [
+                'Announcement ID',
+                'Visitor Name',
+                'Visitor Phone',
+                'Announcement Type',
+                'Media Target',
+                'Airing Date',
+                'Expiry Date',
+                'Words Count',
+                'Days Count',
+                'Total Paid (KSh)',
+                'Agent Name',
+                'Agent Commission (KSh)',
+                'Payment Reference',
+                'Approved Status'
+            ]);
+
+            foreach ($announcements as $ann) {
+                fputcsv($file, [
+                    $ann->id,
+                    $ann->visitor_name,
+                    $ann->visitor_phone,
+                    ucfirst($ann->type),
+                    strtoupper($ann->media),
+                    $ann->airing_date ? $ann->airing_date->format('Y-m-d') : 'N/A',
+                    $ann->expiry_date ? $ann->expiry_date->format('Y-m-d') : 'N/A',
+                    $ann->word_count,
+                    $ann->days_count,
+                    $ann->total_amount,
+                    $ann->agent ? $ann->agent->name : 'N/A',
+                    $ann->commission_amount,
+                    $ann->payment_reference,
+                    $ann->is_approved ? 'Approved' : 'Pending Approval'
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function render()
     {
         $query = Announcement::query();

@@ -17,7 +17,7 @@
     @endif
 
     <!-- Financial Statistics Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
         <!-- Card 1: Total Paid Revenue -->
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
             <div class="space-y-1.5">
@@ -29,6 +29,21 @@
             <div class="p-2 bg-green-50 dark:bg-green-950/20 text-green-600 rounded-lg shrink-0">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Card 2: Net Income (After Comm) -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
+            <div class="space-y-1.5">
+                <span class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">Net Income (After Comm)</span>
+                <h3 class="text-base font-black text-emerald-600 dark:text-emerald-450 font-mono leading-none">
+                    KSh {{ number_format(($stats['total_paid'] ?? 0) - ($stats['total_commissions'] ?? 0)) }}
+                </h3>
+            </div>
+            <div class="p-2 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450 rounded-lg shrink-0">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
             </div>
         </div>
@@ -183,7 +198,7 @@
 
         @if($showFilters)
             <!-- Advanced Filters Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-4 pt-4 border-t border-gray-150 dark:border-gray-800 font-semibold">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 pt-4 border-t border-gray-150 dark:border-gray-800 font-semibold">
                 <!-- Status filter -->
                 <div class="space-y-1">
                     <label class="text-[10px] uppercase font-bold text-gray-500">Payment Status</label>
@@ -225,6 +240,17 @@
                     </select>
                 </div>
 
+                <!-- Month filter -->
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Filter By Month</label>
+                    <select wire:model.live="selected_month" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
+                        <option value="">All Months</option>
+                        @foreach($this->months as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <!-- Date From filter -->
                 <div class="space-y-1">
                     <label class="text-[10px] uppercase font-bold text-gray-500">Airing Date From</label>
@@ -240,7 +266,7 @@
                 <!-- Reset filters -->
                 <div class="flex items-end">
                     <button type="button" 
-                            wire:click="$set('search', ''); $set('status', ''); $set('type', ''); $set('media', ''); $set('approved', ''); $set('date_from', ''); $set('date_to', '');"
+                            wire:click="$set('search', ''); $set('status', ''); $set('type', ''); $set('media', ''); $set('approved', ''); $set('date_from', ''); $set('date_to', ''); $set('selected_month', '');"
                             class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2 rounded text-xs transition uppercase tracking-wider">
                         Reset Filters
                     </button>

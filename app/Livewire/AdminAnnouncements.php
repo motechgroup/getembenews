@@ -18,6 +18,7 @@ class AdminAnnouncements extends Component
     public $showFilters = false;
     public $date_from = '';
     public $date_to = '';
+    public $selected_month = '';
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -27,11 +28,22 @@ class AdminAnnouncements extends Component
         'approved' => ['except' => ''],
         'date_from' => ['except' => ''],
         'date_to' => ['except' => ''],
+        'selected_month' => ['except' => ''],
     ];
 
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    public function getMonthsProperty()
+    {
+        $months = [];
+        for ($i = 0; $i < 12; $i++) {
+            $date = now()->subMonths($i);
+            $months[$date->format('Y-m')] = $date->format('F Y');
+        }
+        return $months;
     }
 
     public function toggleApproval($id)
@@ -113,6 +125,14 @@ class AdminAnnouncements extends Component
 
         if (!empty($this->date_to)) {
             $query->whereDate('airing_date', '<=', $this->date_to);
+        }
+
+        if (!empty($this->selected_month)) {
+            $parts = explode('-', $this->selected_month);
+            if (count($parts) === 2) {
+                $query->whereYear('created_at', $parts[0])
+                      ->whereMonth('created_at', $parts[1]);
+            }
         }
 
         $announcements = $query->latest()->get();
@@ -206,18 +226,69 @@ class AdminAnnouncements extends Component
             $query->whereDate('airing_date', '<=', $this->date_to);
         }
 
-        // Calculate dynamic dashboard financial statistics
+        if (!empty($this->selected_month)) {
+            $parts = explode('-', $this->selected_month);
+            if (count($parts) === 2) {
+                $query->whereYear('created_at', $parts[0])
+                      ->whereMonth('created_at', $parts[1]);
+            }
+        }
+
+        // Base query for statistics calculations, matching all active query filters
+        $statsQuery = Announcement::query();
+
+        if (!empty($this->search)) {
+            $statsQuery->where(function($q) {
+                $q->where('visitor_name', 'like', '%' . $this->search . '%')
+                  ->orWhere('visitor_phone', 'like', '%' . $this->search . '%')
+                  ->orWhere('content', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        if (!empty($this->status)) {
+            $statsQuery->where('payment_status', $this->status);
+        }
+
+        if (!empty($this->type)) {
+            $statsQuery->where('type', $this->type);
+        }
+
+        if ($this->media !== '') {
+            $statsQuery->where('media', $this->media);
+        }
+
+        if ($this->approved !== '') {
+            $statsQuery->where('is_approved', (bool) $this->approved);
+        }
+
+        if (!empty($this->date_from)) {
+            $statsQuery->whereDate('airing_date', '>=', $this->date_from);
+        }
+
+        if (!empty($this->date_to)) {
+            $statsQuery->whereDate('airing_date', '<=', $this->date_to);
+        }
+
+        if (!empty($this->selected_month)) {
+            $parts = explode('-', $this->selected_month);
+            if (count($parts) === 2) {
+                $statsQuery->whereYear('created_at', $parts[0])
+                           ->whereMonth('created_at', $parts[1]);
+            }
+        }
+
+        // Calculate dynamic dashboard financial statistics based on the filtered query
         $stats = [
-            'total_paid' => Announcement::where('payment_status', 'paid')->sum('total_amount'),
-            'total_pending' => Announcement::where('payment_status', 'pending')->sum('total_amount'),
-            'total_commissions' => Announcement::where('payment_status', 'paid')->sum('commission_amount'),
-            'pending_approval' => Announcement::where('is_approved', false)->count(),
-            'tv_revenue' => Announcement::where('media', 'tv')->where('payment_status', 'paid')->sum('total_amount'),
-            'tv_count' => Announcement::where('media', 'tv')->count(),
-            'radio_revenue' => Announcement::where('media', 'radio')->where('payment_status', 'paid')->sum('total_amount'),
-            'radio_count' => Announcement::where('media', 'radio')->count(),
-            'both_revenue' => Announcement::where('media', 'both')->where('payment_status', 'paid')->sum('total_amount'),
-            'both_count' => Announcement::where('media', 'both')->count(),
+            'total_paid' => (clone $statsQuery)->where('payment_status', 'paid')->sum('total_amount'),
+            'total_pending' => (clone $statsQuery)->where('payment_status', 'pending')->sum('total_amount'),
+            'total_commissions' => (clone $statsQuery)->where('payment_status', 'paid')->sum('commission_amount'),
+            'pending_approval' => (clone $statsQuery)->where('is_approved', false)->count(),
+            'tv_revenue' => (clone $statsQuery)->where('media', 'tv')->where('payment_status', 'paid')->sum('total_amount'),
+            'tv_count' => (clone $statsQuery)->where('media', 'tv')->count(),
+            'radio_revenue' => (clone $statsQuery)->where('media', 'radio')->where('payment_status', 'paid')->sum('total_amount'),
+            'radio_count' => (clone $statsQuery)->where('media', 'radio')->count(),
+            'both_revenue' => (clone $statsQuery)->where('media', 'both')->where('payment_status', 'paid')->sum('total_amount'),
+            'both_count' => (clone $statsQuery)->where('media', 'both')->count(),
         ];
 
         $announcements = $query->latest()->paginate(10);

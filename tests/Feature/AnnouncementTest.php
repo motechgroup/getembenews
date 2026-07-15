@@ -631,4 +631,67 @@ class AnnouncementTest extends TestCase
         $response = $this->get('/');
         $response->assertHeaderMissing('X-Frame-Options');
     }
+
+    public function test_admin_announcements_monthly_filter_and_net_income_statistics(): void
+    {
+        Announcement::query()->delete();
+
+        // Create announcement in current month
+        $ann1 = new Announcement([
+            'visitor_name' => 'Alice Current Month',
+            'visitor_phone' => '254711111111',
+            'type' => 'general',
+            'media' => 'tv',
+            'content' => 'funeral content text',
+            'word_count' => 10,
+            'rate_per_word' => 5,
+            'days_count' => 1,
+            'airing_date' => now()->toDateString(),
+            'total_amount' => 50,
+            'payment_status' => 'paid',
+            'commission_amount' => 10,
+            'is_approved' => true,
+        ]);
+        $ann1->created_at = now();
+        $ann1->save();
+
+        // Create announcement in previous month
+        $ann2 = new Announcement([
+            'visitor_name' => 'Bob Previous Month',
+            'visitor_phone' => '254722222222',
+            'type' => 'general',
+            'media' => 'radio',
+            'content' => 'radio content text',
+            'word_count' => 10,
+            'rate_per_word' => 3,
+            'days_count' => 1,
+            'airing_date' => now()->subMonth()->toDateString(),
+            'total_amount' => 30,
+            'payment_status' => 'paid',
+            'commission_amount' => 5,
+            'is_approved' => true,
+        ]);
+        $ann2->created_at = now()->subMonth();
+        $ann2->save();
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin);
+
+        // Test unfiltered component stats
+        Livewire::test('admin-announcements')
+            ->assertSet('selected_month', '')
+            ->assertViewHas('stats', function ($stats) {
+                return $stats['total_paid'] == 80 && $stats['total_commissions'] == 15;
+            })
+            // Filter by current month
+            ->set('selected_month', now()->format('Y-m'))
+            ->assertViewHas('stats', function ($stats) {
+                return $stats['total_paid'] == 50 && $stats['total_commissions'] == 10;
+            })
+            // Filter by previous month
+            ->set('selected_month', now()->subMonth()->format('Y-m'))
+            ->assertViewHas('stats', function ($stats) {
+                return $stats['total_paid'] == 30 && $stats['total_commissions'] == 5;
+            });
+    }
 }

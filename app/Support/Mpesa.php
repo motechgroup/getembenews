@@ -27,7 +27,7 @@ class Mpesa
             : 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
 
         try {
-            $response = Http::withBasicAuth($consumerKey, $consumerSecret)->get($url);
+            $response = Http::withoutVerifying()->withBasicAuth($consumerKey, $consumerSecret)->get($url);
 
             if ($response->successful()) {
                 return $response->json('access_token');
@@ -97,7 +97,7 @@ class Mpesa
         ];
 
         try {
-            $response = Http::withToken($token)->post($url, $body);
+            $response = Http::withoutVerifying()->withToken($token)->post($url, $body);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -161,7 +161,7 @@ class Mpesa
         ];
 
         try {
-            $response = Http::withToken($token)->post($url, $body);
+            $response = Http::withoutVerifying()->withToken($token)->post($url, $body);
 
             if ($response->successful()) {
                 $data = $response->json();

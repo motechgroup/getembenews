@@ -306,11 +306,11 @@
 
                         <button type="button" 
                                 wire:click="triggerMpesaStkPush"
-                                class="w-full bg-green-650 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition uppercase tracking-wider flex items-center justify-center space-x-1.5">
+                                class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition uppercase tracking-wider flex items-center justify-center space-x-1.5 shadow-sm text-xs">
                             <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
-                            <span>Send STK Push</span>
+                            <span>Make Payment</span>
                         </button>
                     </div>
                 @elseif($mpesa_status === 'sending')

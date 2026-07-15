@@ -260,7 +260,7 @@
                  if (timerId) clearInterval(timerId);
                  timerId = setInterval(() => {
                      countdown--;
-                     if ($wire.mpesa_status === 'success' || $wire.mpesa_status === 'error') {
+                     if ($wire.mpesa_status === 'success') {
                          clearInterval(timerId);
                          return;
                      }
@@ -394,13 +394,14 @@
                         <!-- Manual verification fallback -->
                         <div class="pt-4 border-t border-gray-150 dark:border-gray-800 space-y-2 text-left font-medium mt-2">
                             <label class="block text-[9px] font-bold text-gray-500 dark:text-gray-450 uppercase tracking-wide">Paid but status didn't update?</label>
-                            <div class="flex gap-2">
-                                <input type="text" wire:model.defer="manual_receipt_ref" placeholder="Enter Receipt Code (e.g. UGFI9B799B)" class="w-full bg-gray-55 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded p-2 text-[10px] text-gray-900 dark:text-white uppercase font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#cc6c3b]">
-                                <button type="button" wire:click="confirmManualPayment" class="bg-gray-900 hover:bg-gray-850 dark:bg-white dark:hover:bg-gray-100 dark:text-black text-white px-3.5 py-2 rounded text-[10px] font-black uppercase tracking-wider shrink-0 transition">
-                                    Verify
-                                </button>
-                            </div>
-                            @error('manual_receipt_ref') <p class="text-red-550 text-[9px] mt-1">{{ $message }}</p> @enderror
+                            <button type="button" 
+                                    wire:click="checkMpesaPaymentStatus"
+                                    class="w-full bg-gray-900 hover:bg-gray-850 dark:bg-white dark:hover:bg-gray-100 dark:text-black text-white font-bold py-2.5 rounded-lg transition uppercase tracking-wider text-[10px] shadow-sm flex items-center justify-center space-x-1.5">
+                                <svg class="animate-pulse h-3.5 w-3.5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5" />
+                                </svg>
+                                <span>Confirm Status / Fetch Transaction</span>
+                            </button>
                         </div>
                     </div>
                 @endif

@@ -399,4 +399,61 @@ class AnnouncementTest extends TestCase
         $this->assertEquals('paid', $announcement->payment_status);
         $this->assertEquals('UGFI9B799B', $announcement->payment_reference);
     }
+
+    public function test_admin_announcements_filters_and_financial_stats(): void
+    {
+        // Clean up old announcements to avoid test noise
+        Announcement::truncate();
+
+        Announcement::create([
+            'visitor_name' => 'Mary',
+            'visitor_phone' => '254712345678',
+            'type' => 'funeral',
+            'media' => 'radio',
+            'content' => 'funeral content text',
+            'word_count' => 2,
+            'rate_per_word' => 3,
+            'days_count' => 1,
+            'airing_date' => now()->toDateString(),
+            'total_amount' => 6,
+            'payment_status' => 'paid',
+            'commission_amount' => 1,
+            'is_approved' => true,
+            'submitter_type' => 'self',
+        ]);
+
+        Announcement::create([
+            'visitor_name' => 'John',
+            'visitor_phone' => '254712345679',
+            'type' => 'general',
+            'media' => 'tv',
+            'content' => 'general content text',
+            'word_count' => 4,
+            'rate_per_word' => 5,
+            'days_count' => 2,
+            'airing_date' => now()->toDateString(),
+            'total_amount' => 40,
+            'payment_status' => 'pending',
+            'commission_amount' => 0,
+            'is_approved' => false,
+            'submitter_type' => 'self',
+        ]);
+
+        \Livewire\Livewire::test(\App\Livewire\AdminAnnouncements::class)
+            ->assertViewHas('stats', function ($stats) {
+                return $stats['total_paid'] == 6
+                    && $stats['total_pending'] == 40
+                    && $stats['total_commissions'] == 1
+                    && $stats['pending_approval'] == 1;
+            })
+            ->set('media', 'radio')
+            ->assertViewHas('announcements', function ($announcements) {
+                return $announcements->count() === 1 && $announcements->first()->visitor_name === 'Mary';
+            })
+            ->set('media', '')
+            ->set('approved', '0')
+            ->assertViewHas('announcements', function ($announcements) {
+                return $announcements->count() === 1 && $announcements->first()->visitor_name === 'John';
+            });
+    }
 }

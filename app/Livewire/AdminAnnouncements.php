@@ -13,11 +13,15 @@ class AdminAnnouncements extends Component
     public $search = '';
     public $status = ''; // all, pending, paid
     public $type = ''; // all, funeral, general
+    public $media = ''; // all, tv, radio, both
+    public $approved = ''; // all, 1 (approved), 0 (pending)
 
     protected $queryString = [
         'search' => ['except' => ''],
         'status' => ['except' => ''],
         'type' => ['except' => ''],
+        'media' => ['except' => ''],
+        'approved' => ['except' => ''],
     ];
 
     public function updatingSearch()
@@ -94,10 +98,27 @@ class AdminAnnouncements extends Component
             $query->where('type', $this->type);
         }
 
+        if ($this->media !== '') {
+            $query->where('media', $this->media);
+        }
+
+        if ($this->approved !== '') {
+            $query->where('is_approved', (bool) $this->approved);
+        }
+
+        // Calculate dynamic dashboard financial statistics
+        $stats = [
+            'total_paid' => Announcement::where('payment_status', 'paid')->sum('total_amount'),
+            'total_pending' => Announcement::where('payment_status', 'pending')->sum('total_amount'),
+            'total_commissions' => Announcement::where('payment_status', 'paid')->sum('commission_amount'),
+            'pending_approval' => Announcement::where('is_approved', false)->count(),
+        ];
+
         $announcements = $query->latest()->paginate(10);
 
         return view('livewire.admin-announcements', [
-            'announcements' => $announcements
+            'announcements' => $announcements,
+            'stats' => $stats,
         ])->layout('layouts.admin');
     }
 }

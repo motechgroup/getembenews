@@ -18,9 +18,72 @@
         </div>
     @endif
 
+    <!-- Financial Statistics Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Card 1: Total Paid Revenue -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
+            <div class="space-y-1.5">
+                <span class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">Total Paid Revenue</span>
+                <h3 class="text-base font-black text-green-600 dark:text-green-455 font-mono leading-none">
+                    KSh {{ number_format($stats['total_paid'] ?? 0) }}
+                </h3>
+            </div>
+            <div class="p-2 bg-green-50 dark:bg-green-950/20 text-green-600 rounded-lg">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Card 2: Pending Revenue -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
+            <div class="space-y-1.5">
+                <span class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">Pending Revenue</span>
+                <h3 class="text-base font-black text-orange-600 dark:text-orange-455 font-mono leading-none">
+                    KSh {{ number_format($stats['total_pending'] ?? 0) }}
+                </h3>
+            </div>
+            <div class="p-2 bg-orange-50 dark:bg-orange-95/20 text-orange-600 rounded-lg">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Card 3: Agent Commissions -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
+            <div class="space-y-1.5">
+                <span class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">Agent Commissions</span>
+                <h3 class="text-base font-black text-purple-600 dark:text-purple-400 font-mono leading-none">
+                    KSh {{ number_format($stats['total_commissions'] ?? 0) }}
+                </h3>
+            </div>
+            <div class="p-2 bg-purple-50 dark:bg-purple-950/20 text-purple-600 rounded-lg">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Card 4: Awaiting Moderation -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 rounded-xl shadow-sm flex items-center justify-between transition duration-155">
+            <div class="space-y-1.5">
+                <span class="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 tracking-wider">Awaiting Moderation</span>
+                <h3 class="text-base font-black text-red-600 dark:text-red-455 font-mono leading-none">
+                    {{ number_format($stats['pending_approval'] ?? 0) }}
+                </h3>
+            </div>
+            <div class="p-2 bg-red-50 dark:bg-red-950/20 text-red-655 rounded-lg">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
     <!-- Filters & Search -->
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl shadow-sm space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 font-semibold">
+        <div class="grid grid-cols-1 sm:grid-cols-6 gap-4 font-semibold">
             <!-- Search field -->
             <div class="space-y-1">
                 <label class="text-[10px] uppercase font-bold text-gray-500">Search</label>
@@ -48,10 +111,31 @@
                 </select>
             </div>
 
+            <!-- Media Target filter -->
+            <div class="space-y-1">
+                <label class="text-[10px] uppercase font-bold text-gray-500">Media Target</label>
+                <select wire:model.live="media" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
+                    <option value="">All Media</option>
+                    <option value="tv">TV Only</option>
+                    <option value="radio">Radio Only</option>
+                    <option value="both">Both (TV & Radio)</option>
+                </select>
+            </div>
+
+            <!-- Moderation Status filter -->
+            <div class="space-y-1">
+                <label class="text-[10px] uppercase font-bold text-gray-500">Moderation Status</label>
+                <select wire:model.live="approved" class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
+                    <option value="">All Statuses</option>
+                    <option value="1">Approved</option>
+                    <option value="0">Pending Approval</option>
+                </select>
+            </div>
+
             <!-- Reset filters -->
             <div class="flex items-end">
                 <button type="button" 
-                        wire:click="$set('search', ''); $set('status', ''); $set('type', '');"
+                        wire:click="$set('search', ''); $set('status', ''); $set('type', ''); $set('media', ''); $set('approved', '');"
                         class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-2 rounded text-xs transition uppercase tracking-wider">
                     Reset Filters
                 </button>

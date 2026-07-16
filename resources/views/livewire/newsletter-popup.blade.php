@@ -47,7 +47,8 @@ $subscribe = function () {
 ?>
 
 <div>
-    <div x-data="{
+    @if((bool) Setting::get('newsletter_popup_enabled', true))
+        <div x-data="{
             showPopup: @entangle('showPopup'),
             init() {
                 if (localStorage.getItem('newsletter_popup_dismissed')) {
@@ -144,4 +145,5 @@ $subscribe = function () {
              @endif
          </div>
     </div>
+    @endif
 </div>

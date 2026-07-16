@@ -563,6 +563,72 @@
     <livewire:newsletter-popup />
     <livewire:app-download-popup />
 
+    @if((bool) \App\Models\Setting::get('cookie_banner_enabled', true))
+        @php
+            $position = \App\Models\Setting::get('cookie_position', 'bottom');
+            $isStrict = (bool) \App\Models\Setting::get('cookie_approval_required', false);
+            
+            $positionClasses = match($position) {
+                'top' => 'top-0 left-0 right-0 border-b',
+                'bottom-right' => 'bottom-4 right-4 max-w-md rounded-2xl border',
+                default => 'bottom-0 left-0 right-0 border-t'
+            };
+        @endphp
+        
+        <div x-data="{ 
+                showCookieBanner: false,
+                init() {
+                    if (!localStorage.getItem('cookie_consent_accepted')) {
+                        this.showCookieBanner = true;
+                    }
+                },
+                acceptCookies() {
+                    localStorage.setItem('cookie_consent_accepted', 'accepted');
+                    this.showCookieBanner = false;
+                },
+                declineCookies() {
+                    localStorage.setItem('cookie_consent_accepted', 'declined');
+                    this.showCookieBanner = false;
+                }
+             }"
+             x-show="showCookieBanner"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+             class="fixed {{ $positionClasses }} z-50 p-4 sm:p-5 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-gray-200 dark:border-gray-800 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4"
+             style="display: none;"
+             x-cloak>
+             
+             <div class="flex items-start space-x-3 text-left">
+                 <div class="p-2 bg-[#cc6c3b]/10 text-[#cc6c3b] rounded-lg shrink-0 mt-0.5">
+                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                     </svg>
+                 </div>
+                 <div class="space-y-1">
+                     <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Cookie Consent Preferences</h4>
+                     <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl">
+                         We use cookies to optimize site features, compile visitor analytics, and personalize advertising content. By clicking "Accept All", you agree to our storage of cookies on your device.
+                     </p>
+                 </div>
+             </div>
+             
+             <div class="flex items-center space-x-2 shrink-0 w-full md:w-auto justify-end">
+                 @if($isStrict)
+                     <button @click="declineCookies()" class="px-4 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-xs rounded-lg transition uppercase tracking-wider">
+                         Decline
+                     </button>
+                 @endif
+                 <button @click="acceptCookies()" class="px-4 py-2 bg-[#cc6c3b] hover:bg-opacity-90 text-white font-bold text-xs rounded-lg transition shadow uppercase tracking-wider">
+                     Accept All
+                 </button>
+             </div>
+        </div>
+    @endif
+
     @livewireScripts
 
     <!-- Fallback handler for broken images (e.g. broken storage links) -->

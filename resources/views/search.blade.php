@@ -31,9 +31,9 @@
                     </div>
                     <div class="space-y-1.5">
                         <div class="flex items-center space-x-2 text-[10px] text-gray-400 font-semibold">
-                            <span class="text-[#C8102E] uppercase font-bold">{{ $article->category->name }}</span>
+                            <span class="text-[#C8102E] uppercase font-bold">{{ $article->category?->name ?? 'News' }}</span>
                             <span>&bull;</span>
-                            <span>{{ $article->published_at->diffForHumans() }}</span>
+                            <span>{{ $article->published_at ? $article->published_at->diffForHumans() : '' }}</span>
                         </div>
                         <h2 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition line-clamp-2 break-words">
                             <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>

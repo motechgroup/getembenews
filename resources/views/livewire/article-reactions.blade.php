@@ -16,53 +16,69 @@ mount(function (Article $article) {
 });
 
 $loadReactions = function () {
-    $reactions = ArticleReaction::where('article_id', $this->articleId)
-        ->select('type', \DB::raw('count(*) as count'))
-        ->groupBy('type')
-        ->pluck('count', 'type')
-        ->toArray();
+    try {
+        $reactions = ArticleReaction::where('article_id', $this->articleId)
+            ->select('type', \DB::raw('count(*) as count'))
+            ->groupBy('type')
+            ->pluck('count', 'type')
+            ->toArray();
 
-    $this->reactionsCount = [
-        'like' => $reactions['like'] ?? 0,
-        'love' => $reactions['love'] ?? 0,
-        'wow' => $reactions['wow'] ?? 0,
-        'sad' => $reactions['sad'] ?? 0,
-        'angry' => $reactions['angry'] ?? 0,
-    ];
+        $this->reactionsCount = [
+            'like' => $reactions['like'] ?? 0,
+            'love' => $reactions['love'] ?? 0,
+            'wow' => $reactions['wow'] ?? 0,
+            'sad' => $reactions['sad'] ?? 0,
+            'angry' => $reactions['angry'] ?? 0,
+        ];
 
-    $ip = request()->ip();
-    $reaction = ArticleReaction::where('article_id', $this->articleId)
-        ->where('ip_address', $ip)
-        ->first();
+        $ip = request()->ip();
+        $reaction = ArticleReaction::where('article_id', $this->articleId)
+            ->where('ip_address', $ip)
+            ->first();
 
-    $this->userReaction = $reaction ? $reaction->type : null;
+        $this->userReaction = $reaction ? $reaction->type : null;
+    } catch (\Exception $e) {
+        \Log::warning("ArticleReaction database load error: " . $e->getMessage());
+        $this->reactionsCount = [
+            'like' => 0,
+            'love' => 0,
+            'wow' => 0,
+            'sad' => 0,
+            'angry' => 0,
+        ];
+        $this->userReaction = null;
+    }
 };
 
 $react = function ($type) {
-    $ip = request()->ip();
+    try {
+        $ip = request()->ip();
 
-    $existing = ArticleReaction::where('article_id', $this->articleId)
-        ->where('ip_address', $ip)
-        ->first();
+        $existing = ArticleReaction::where('article_id', $this->articleId)
+            ->where('ip_address', $ip)
+            ->first();
 
-    if ($existing) {
-        if ($existing->type === $type) {
-            // Toggle off
-            $existing->delete();
+        if ($existing) {
+            if ($existing->type === $type) {
+                // Toggle off
+                $existing->delete();
+            } else {
+                // Update reaction
+                $existing->update(['type' => $type]);
+            }
         } else {
-            // Update reaction
-            $existing->update(['type' => $type]);
+            // Create reaction
+            ArticleReaction::create([
+                'article_id' => $this->articleId,
+                'type' => $type,
+                'ip_address' => $ip
+            ]);
         }
-    } else {
-        // Create reaction
-        ArticleReaction::create([
-            'article_id' => $this->articleId,
-            'type' => $type,
-            'ip_address' => $ip
-        ]);
-    }
 
-    $this->loadReactions();
+        $this->loadReactions();
+    } catch (\Exception $e) {
+        \Log::error("ArticleReaction database write error: " . $e->getMessage());
+    }
 };
 
 ?>

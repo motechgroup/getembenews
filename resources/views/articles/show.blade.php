@@ -10,8 +10,10 @@
         <!-- Breadcrumbs -->
         <nav class="flex text-xs text-gray-500 space-x-2 mb-6 uppercase tracking-wider font-semibold">
             <a href="/" class="hover:text-[#C8102E] transition">Home</a>
-            <span>/</span>
-            <a href="/{{ $article->category->slug }}" class="hover:text-[#C8102E] transition">{{ $article->category->name }}</a>
+            @if($article->category)
+                <span>/</span>
+                <a href="/{{ $article->category->slug }}" class="hover:text-[#C8102E] transition">{{ $article->category->name }}</a>
+            @endif
             <span>/</span>
             <span class="text-gray-400 dark:text-gray-600 truncate">{{ $article->title }}</span>
         </nav>
@@ -23,9 +25,11 @@
             <div class="lg:col-span-2 space-y-6">
                 
                 <!-- Category Badge -->
-                <a href="/{{ $article->category->slug }}" class="inline-block text-xs font-bold text-[#C8102E] uppercase hover:underline">
-                    {{ $article->category->name }}
-                </a>
+                @if($article->category)
+                    <a href="/{{ $article->category->slug }}" class="inline-block text-xs font-bold text-[#C8102E] uppercase hover:underline">
+                        {{ $article->category->name }}
+                    </a>
+                @endif
 
                 <!-- Headline -->
                 <h1 class="text-3xl sm:text-4xl font-serif font-black tracking-tight text-gray-900 dark:text-white leading-tight break-words">
@@ -42,23 +46,39 @@
                 <!-- Author, Date and Save button -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-y border-gray-100 dark:border-gray-800 gap-4">
                     <div class="flex items-center space-x-3">
-                        <a href="/author/{{ $article->author->id }}" class="flex items-center space-x-3 group">
-                            <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-600 dark:text-gray-400 overflow-hidden border border-gray-200 dark:border-gray-750 group-hover:border-[#C8102E] transition">
-                                @if($article->author->photo_url)
-                                    <img src="{{ $article->author->photo_url }}" alt="{{ $article->author->name }}" class="w-full h-full object-cover">
-                                @else
-                                    {{ strtoupper(substr($article->author->name, 0, 1)) }}
-                                @endif
-                            </div>
-                            <div>
-                                <div class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-[#C8102E] transition text-left">{{ $article->author->name }}</div>
-                                <div class="text-xs text-gray-550 text-left">
-                                    <span>Published {{ $article->published_at->format('M j, Y \a\t g:i a') }}</span>
-                                    <span class="mx-1.5">&bull;</span>
-                                    <span>{{ $article->read_time }} min read</span>
+                        @if($article->author)
+                            <a href="/author/{{ $article->author->id }}" class="flex items-center space-x-3 group">
+                                <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-600 dark:text-gray-400 overflow-hidden border border-gray-200 dark:border-gray-850 group-hover:border-[#C8102E] transition">
+                                    @if($article->author->photo_url)
+                                        <img src="{{ $article->author->photo_url }}" alt="{{ $article->author->name }}" class="w-full h-full object-cover">
+                                    @else
+                                        {{ strtoupper(substr($article->author->name, 0, 1)) }}
+                                    @endif
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-gray-900 dark:text-white group-hover:text-[#C8102E] transition text-left">{{ $article->author->name }}</div>
+                                    <div class="text-xs text-gray-550 text-left">
+                                        <span>Published {{ $article->published_at ? $article->published_at->format('M j, Y \a\t g:i a') : 'Draft' }}</span>
+                                        <span class="mx-1.5">&bull;</span>
+                                        <span>{{ $article->read_time }} min read</span>
+                                    </div>
+                                </div>
+                            </a>
+                        @else
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-600 dark:text-gray-400 overflow-hidden border border-gray-200 dark:border-gray-850">
+                                    G
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-gray-900 dark:text-white text-left">Getembe News Staff</div>
+                                    <div class="text-xs text-gray-550 text-left">
+                                        <span>Published {{ $article->published_at ? $article->published_at->format('M j, Y \a\t g:i a') : 'Draft' }}</span>
+                                        <span class="mx-1.5">&bull;</span>
+                                        <span>{{ $article->read_time }} min read</span>
+                                    </div>
                                 </div>
                             </div>
-                        </a>
+                        @endif
                     </div>
 
                     <!-- Bookmark Action -->
@@ -457,32 +477,34 @@
                 @include('partials.render-ad', ['location' => 'inline'])
 
                 <!-- Author Profile Card -->
-                <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-5 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-10">
-                    <a href="/author/{{ $article->author->id }}" class="shrink-0">
-                        <div class="w-16 h-16 rounded-full bg-gray-250 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-600 dark:text-gray-400 overflow-hidden border border-gray-250 dark:border-gray-750 hover:border-[#C8102E] transition">
-                            @if($article->author->photo_url)
-                                <img src="{{ $article->author->photo_url }}" alt="{{ $article->author->name }}" class="w-full h-full object-cover">
-                            @else
-                                {{ strtoupper(substr($article->author->name, 0, 1)) }}
+                @if($article->author)
+                    <div class="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-5 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-10">
+                        <a href="/author/{{ $article->author->id }}" class="shrink-0">
+                            <div class="w-16 h-16 rounded-full bg-gray-250 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-600 dark:text-gray-400 overflow-hidden border border-gray-250 dark:border-gray-750 hover:border-[#C8102E] transition">
+                                @if($article->author->photo_url)
+                                    <img src="{{ $article->author->photo_url }}" alt="{{ $article->author->name }}" class="w-full h-full object-cover">
+                                @else
+                                    {{ strtoupper(substr($article->author->name, 0, 1)) }}
+                                @endif
+                            </div>
+                        </a>
+                        <div class="space-y-2 text-left">
+                            <div class="text-sm font-bold text-gray-900 dark:text-white">
+                                Written by <a href="/author/{{ $article->author->id }}" class="hover:text-[#C8102E] transition">{{ $article->author->name }}</a>
+                            </div>
+                            <p class="text-xs text-gray-650 dark:text-gray-400 leading-relaxed">
+                                {{ $article->author->bio ?? 'Reporter and staff writer at Getembe News.' }}
+                            </p>
+                            @if($article->author->social_links)
+                                <div class="flex space-x-3 text-[11px] font-bold text-gray-500">
+                                    @foreach($article->author->social_links as $platform => $url)
+                                        <a href="{{ $url }}" target="_blank" class="hover:text-[#C8102E] uppercase">{{ $platform }}</a>
+                                    @endforeach
+                                </div>
                             @endif
                         </div>
-                    </a>
-                    <div class="space-y-2 text-left">
-                        <div class="text-sm font-bold text-gray-900 dark:text-white">
-                            Written by <a href="/author/{{ $article->author->id }}" class="hover:text-[#C8102E] transition">{{ $article->author->name }}</a>
-                        </div>
-                        <p class="text-xs text-gray-650 dark:text-gray-400 leading-relaxed">
-                            {{ $article->author->bio ?? 'Reporter and staff writer at Getembe News.' }}
-                        </p>
-                        @if($article->author->social_links)
-                            <div class="flex space-x-3 text-[11px] font-bold text-gray-500">
-                                @foreach($article->author->social_links as $platform => $url)
-                                    <a href="{{ $url }}" target="_blank" class="hover:text-[#C8102E] uppercase">{{ $platform }}</a>
-                                @endforeach
-                            </div>
-                        @endif
                     </div>
-                </div>
+                @endif
 
                 <!-- Comments Component -->
                 <div class="pt-8 border-t border-gray-150 dark:border-gray-800 mt-10">
@@ -513,7 +535,7 @@
                                     <h4 class="text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition">
                                         <a href="/articles/{{ $related->slug }}">{{ $related->title }}</a>
                                     </h4>
-                                    <span class="text-[10px] text-gray-400">{{ $related->published_at->diffForHumans() }}</span>
+                                    <span class="text-[10px] text-gray-400">{{ $related->published_at ? $related->published_at->diffForHumans() : '' }}</span>
                                 </div>
                             </article>
                         @empty

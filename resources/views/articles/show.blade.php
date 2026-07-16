@@ -325,8 +325,8 @@
 
                     <!-- Watch Live TV / Listen Live Radio Start Banners -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 border-y border-gray-150 dark:border-gray-800 py-3.5">
-                        @if(\App\Models\Setting::get('live_tv_active', '1') == '1')
-                            <a href="/live-tv" class="flex items-center justify-between p-3.5 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group" style="background-color: #C8102E !important; color: #ffffff !important;">
+                        @if(filter_var(\App\Models\Setting::get('live_tv_active', '1'), FILTER_VALIDATE_BOOLEAN))
+                            <a href="/live-tv" class="flex items-center justify-between p-3.5 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group" style="background-color: #cc6c3b !important; color: #ffffff !important;">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
                                         <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -346,8 +346,8 @@
                             </a>
                         @endif
 
-                        @if(\App\Models\Setting::get('live_radio_active', '1') == '1')
-                            <a href="/live-radio" class="flex items-center justify-between p-3.5 border border-gray-800 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group" style="background-color: #111827 !important; color: #ffffff !important;">
+                        @if(filter_var(\App\Models\Setting::get('live_radio_active', '1'), FILTER_VALIDATE_BOOLEAN))
+                            <a href="/live-radio" class="flex items-center justify-between p-3.5 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group border border-gray-800" style="background-color: #111827 !important; color: #ffffff !important;">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
                                         <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -372,8 +372,8 @@
 
                     <!-- Watch Live TV / Listen Live Radio End Banners -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 border-y border-gray-150 dark:border-gray-800 py-3.5">
-                        @if(\App\Models\Setting::get('live_tv_active', '1') == '1')
-                            <a href="/live-tv" class="flex items-center justify-between p-3.5 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group" style="background-color: #C8102E !important; color: #ffffff !important;">
+                        @if(filter_var(\App\Models\Setting::get('live_tv_active', '1'), FILTER_VALIDATE_BOOLEAN))
+                            <a href="/live-tv" class="flex items-center justify-between p-3.5 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group" style="background-color: #cc6c3b !important; color: #ffffff !important;">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
                                         <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -393,8 +393,8 @@
                             </a>
                         @endif
 
-                        @if(\App\Models\Setting::get('live_radio_active', '1') == '1')
-                            <a href="/live-radio" class="flex items-center justify-between p-3.5 border border-gray-800 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group" style="background-color: #111827 !important; color: #ffffff !important;">
+                        @if(filter_var(\App\Models\Setting::get('live_radio_active', '1'), FILTER_VALIDATE_BOOLEAN))
+                            <a href="/live-radio" class="flex items-center justify-between p-3.5 rounded-xl shadow-sm transition duration-200 transform hover:-translate-y-0.5 group border border-gray-800" style="background-color: #111827 !important; color: #ffffff !important;">
                                 <div class="flex items-center space-x-3">
                                     <div class="p-2 bg-white/10 rounded-lg group-hover:scale-110 transition duration-200 shrink-0">
                                         <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">

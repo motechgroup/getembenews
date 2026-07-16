@@ -264,13 +264,15 @@ state([
     'activeScheduleDay' => 'monday', // monday, tuesday, etc.
 
     // Temp program inputs
-    'newTvTime' => '',
+    'newTvStartTime' => '06:00',
+    'newTvEndTime' => '09:00',
     'newTvTitle' => '',
     'newTvDesc' => '',
     'newTvDaily' => false,
     'newTvDays' => [],
 
-    'newRadioTime' => '',
+    'newRadioStartTime' => '06:00',
+    'newRadioEndTime' => '10:00',
     'newRadioTitle' => '',
     'newRadioDesc' => '',
     'newRadioDaily' => false,
@@ -386,26 +388,46 @@ mount(function ($activeTab = 'identity') {
             foreach ($days as $day) {
                 $grouped[$day] = $defaultFlat;
             }
-            return $grouped;
-        }
-
-        $isGrouped = true;
-        foreach ($days as $day) {
-            if (!isset($schedule[$day])) {
-                $isGrouped = false;
-                break;
+            $schedule = $grouped;
+        } else {
+            $isGrouped = true;
+            foreach ($days as $day) {
+                if (!isset($schedule[$day])) {
+                    $isGrouped = false;
+                    break;
+                }
+            }
+            if (!$isGrouped) {
+                $grouped = [];
+                foreach ($days as $day) {
+                    $grouped[$day] = $schedule;
+                }
+                $schedule = $grouped;
             }
         }
 
-        if ($isGrouped) {
-            return $schedule;
+        // Ensure every item has start_time and end_time
+        foreach ($schedule as $day => &$items) {
+            foreach ($items as &$item) {
+                if (empty($item['start_time']) || empty($item['end_time'])) {
+                    $parts = explode('-', $item['time'] ?? '');
+                    $startTime = '06:00';
+                    $endTime = '09:00';
+                    if (count($parts) === 2) {
+                        try {
+                            $startTime = \Illuminate\Support\Carbon::parse(trim($parts[0]))->format('H:i');
+                            $endTime = \Illuminate\Support\Carbon::parse(trim($parts[1]))->format('H:i');
+                        } catch (\Exception $e) {
+                            // ignore
+                        }
+                    }
+                    $item['start_time'] = $startTime;
+                    $item['end_time'] = $endTime;
+                }
+            }
         }
 
-        $grouped = [];
-        foreach ($days as $day) {
-            $grouped[$day] = $schedule;
-        }
-        return $grouped;
+        return $schedule;
     };
 
     $this->tv_schedule = $normalizeSchedule(Setting::get('tv_schedule', []), $defaultTvFlat);
@@ -750,23 +772,30 @@ $restoreBackup = function ($id, $name) use ($logAction) {
 };
 
 $addTvProgram = function () {
-    if (!$this->newTvTime || !$this->newTvTitle) return;
+    if (!$this->newTvStartTime || !$this->newTvEndTime || !$this->newTvTitle) return;
     $days = !empty($this->newTvDays) 
         ? $this->newTvDays 
         : [$this->activeScheduleDay];
+
+    $startFormatted = \Illuminate\Support\Carbon::parse($this->newTvStartTime)->format('h:i A');
+    $endFormatted = \Illuminate\Support\Carbon::parse($this->newTvEndTime)->format('h:i A');
+    $timeString = $startFormatted . ' - ' . $endFormatted;
 
     foreach ($days as $day) {
         if (!isset($this->tv_schedule[$day])) {
             $this->tv_schedule[$day] = [];
         }
         $this->tv_schedule[$day][] = [
-            'time' => $this->newTvTime,
+            'start_time' => $this->newTvStartTime,
+            'end_time' => $this->newTvEndTime,
+            'time' => $timeString,
             'title' => $this->newTvTitle,
             'desc' => $this->newTvDesc,
             'is_playing' => false
         ];
     }
-    $this->newTvTime = '';
+    $this->newTvStartTime = '06:00';
+    $this->newTvEndTime = '09:00';
     $this->newTvTitle = '';
     $this->newTvDesc = '';
     $this->newTvDaily = false;
@@ -804,23 +833,30 @@ $changeTvProgramDay = function ($fromDay, $index, $toDay) {
 };
 
 $addRadioProgram = function () {
-    if (!$this->newRadioTime || !$this->newRadioTitle) return;
+    if (!$this->newRadioStartTime || !$this->newRadioEndTime || !$this->newRadioTitle) return;
     $days = !empty($this->newRadioDays) 
         ? $this->newRadioDays 
         : [$this->activeScheduleDay];
+
+    $startFormatted = \Illuminate\Support\Carbon::parse($this->newRadioStartTime)->format('h:i A');
+    $endFormatted = \Illuminate\Support\Carbon::parse($this->newRadioEndTime)->format('h:i A');
+    $timeString = $startFormatted . ' - ' . $endFormatted;
 
     foreach ($days as $day) {
         if (!isset($this->radio_schedule[$day])) {
             $this->radio_schedule[$day] = [];
         }
         $this->radio_schedule[$day][] = [
-            'time' => $this->newRadioTime,
+            'start_time' => $this->newRadioStartTime,
+            'end_time' => $this->newRadioEndTime,
+            'time' => $timeString,
             'title' => $this->newRadioTitle,
             'desc' => $this->newRadioDesc,
             'is_playing' => false
         ];
     }
-    $this->newRadioTime = '';
+    $this->newRadioStartTime = '06:00';
+    $this->newRadioEndTime = '10:00';
     $this->newRadioTitle = '';
     $this->newRadioDesc = '';
     $this->newRadioDaily = false;
@@ -970,6 +1006,24 @@ $save = function () use ($logAction) {
         'mpesa_env', 'mpesa_consumer_key', 'mpesa_consumer_secret',
         'mpesa_shortcode', 'mpesa_passkey', 'mpesa_initiator_name', 'mpesa_initiator_password', 'mpesa_callback_url'
     ];
+
+    foreach (['tv_schedule', 'radio_schedule'] as $schedKey) {
+        $schedule = $this->{$schedKey};
+        if (is_array($schedule)) {
+            foreach ($schedule as $day => &$items) {
+                foreach ($items as &$item) {
+                    $start = !empty($item['start_time']) ? $item['start_time'] : '06:00';
+                    $end = !empty($item['end_time']) ? $item['end_time'] : '09:00';
+                    
+                    $startFormatted = \Illuminate\Support\Carbon::parse($start)->format('h:i A');
+                    $endFormatted = \Illuminate\Support\Carbon::parse($end)->format('h:i A');
+                    
+                    $item['time'] = $startFormatted . ' - ' . $endFormatted;
+                }
+            }
+            $this->{$schedKey} = $schedule;
+        }
+    }
 
     foreach ($fields as $field) {
         Setting::set($field, $this->{$field});
@@ -3341,11 +3395,15 @@ $sendTestEmail = function () {
                                     @forelse(($tv_schedule[$activeScheduleDay] ?? []) as $index => $item)
                                         <div class="p-4 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-855 rounded-lg flex flex-col gap-3 text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
                                             <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 w-full">
-                                                <div class="sm:col-span-3">
-                                                    <label class="text-[9px] font-bold text-gray-450 uppercase block mb-0.5">Time</label>
-                                                    <input type="text" wire:model="tv_schedule.{{ $activeScheduleDay }}.{{ $index }}.time" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                                <div class="sm:col-span-2">
+                                                    <label class="text-[9px] font-bold text-gray-450 uppercase block mb-0.5">Start Time</label>
+                                                    <input type="time" wire:model="tv_schedule.{{ $activeScheduleDay }}.{{ $index }}.start_time" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                                                 </div>
-                                                <div class="sm:col-span-3">
+                                                <div class="sm:col-span-2">
+                                                    <label class="text-[9px] font-bold text-gray-450 uppercase block mb-0.5">End Time</label>
+                                                    <input type="time" wire:model="tv_schedule.{{ $activeScheduleDay }}.{{ $index }}.end_time" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                                </div>
+                                                <div class="sm:col-span-2">
                                                     <label class="text-[9px] font-bold text-gray-450 uppercase block mb-0.5">Day</label>
                                                     <select wire:change="changeTvProgramDay('{{ $activeScheduleDay }}', {{ $index }}, $event.target.value)" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none font-bold">
                                                         @foreach(['monday' => 'Monday', 'tuesday' => 'Tuesday', 'wednesday' => 'Wednesday', 'thursday' => 'Thursday', 'friday' => 'Friday', 'saturday' => 'Saturday', 'sunday' => 'Sunday'] as $dayVal => $dayName)
@@ -3385,9 +3443,15 @@ $sendTestEmail = function () {
                             <div class="bg-gray-50 dark:bg-gray-955 p-4 border border-gray-200 dark:border-gray-855 rounded-lg space-y-3 h-fit">
                                 <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Add TV Program Slot</h4>
                                 <div class="space-y-2">
-                                    <div class="space-y-1">
-                                        <label class="text-[10px] font-bold text-gray-400">Time Slot (e.g. 12:00 PM - 02:00 PM)</label>
-                                        <input type="text" wire:model="newTvTime" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div class="space-y-1">
+                                            <label class="text-[10px] font-bold text-gray-400">Start Time</label>
+                                            <input type="time" wire:model="newTvStartTime" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-[10px] font-bold text-gray-400">End Time</label>
+                                            <input type="time" wire:model="newTvEndTime" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                        </div>
                                     </div>
                                     <div class="space-y-1">
                                         <label class="text-[10px] font-bold text-gray-400">Program Title</label>
@@ -3422,11 +3486,15 @@ $sendTestEmail = function () {
                                     @forelse(($radio_schedule[$activeScheduleDay] ?? []) as $index => $item)
                                         <div class="p-4 bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg flex flex-col gap-3 text-xs {{ ($item['is_playing'] ?? false) ? 'border-l-4 border-[#C8102E]' : '' }}">
                                             <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 w-full">
-                                                <div class="sm:col-span-3">
-                                                    <label class="text-[9px] font-bold text-gray-455 uppercase block mb-0.5">Time</label>
-                                                    <input type="text" wire:model="radio_schedule.{{ $activeScheduleDay }}.{{ $index }}.time" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                                <div class="sm:col-span-2">
+                                                    <label class="text-[9px] font-bold text-gray-455 uppercase block mb-0.5">Start Time</label>
+                                                    <input type="time" wire:model="radio_schedule.{{ $activeScheduleDay }}.{{ $index }}.start_time" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
                                                 </div>
-                                                <div class="sm:col-span-3">
+                                                <div class="sm:col-span-2">
+                                                    <label class="text-[9px] font-bold text-gray-455 uppercase block mb-0.5">End Time</label>
+                                                    <input type="time" wire:model="radio_schedule.{{ $activeScheduleDay }}.{{ $index }}.end_time" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                                </div>
+                                                <div class="sm:col-span-2">
                                                     <label class="text-[9px] font-bold text-gray-455 uppercase block mb-0.5">Day</label>
                                                     <select wire:change="changeRadioProgramDay('{{ $activeScheduleDay }}', {{ $index }}, $event.target.value)" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none font-bold">
                                                         @foreach(['monday' => 'Monday', 'tuesday' => 'Tuesday', 'wednesday' => 'Wednesday', 'thursday' => 'Thursday', 'friday' => 'Friday', 'saturday' => 'Saturday', 'sunday' => 'Sunday'] as $dayVal => $dayName)
@@ -3466,9 +3534,15 @@ $sendTestEmail = function () {
                             <div class="bg-gray-50 dark:bg-gray-955 p-4 border border-gray-200 dark:border-gray-855 rounded-lg space-y-3 h-fit">
                                 <h4 class="text-xs font-bold text-gray-550 uppercase tracking-wider">Add Radio Program Slot</h4>
                                 <div class="space-y-2">
-                                    <div class="space-y-1">
-                                        <label class="text-[10px] font-bold text-gray-400">Time Slot (e.g. 01:00 PM - 04:00 PM)</label>
-                                        <input type="text" wire:model="newRadioTime" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div class="space-y-1">
+                                            <label class="text-[10px] font-bold text-gray-400">Start Time</label>
+                                            <input type="time" wire:model="newRadioStartTime" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-[10px] font-bold text-gray-400">End Time</label>
+                                            <input type="time" wire:model="newRadioEndTime" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-1.5 text-xs text-gray-900 dark:text-white focus:outline-none">
+                                        </div>
                                     </div>
                                     <div class="space-y-1">
                                         <label class="text-[10px] font-bold text-gray-400">Program Title</label>

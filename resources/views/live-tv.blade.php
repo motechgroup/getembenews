@@ -3,7 +3,7 @@
 
     @php
         $checkIsPlaying = function ($timeString, $dayKey) {
-            $currentDay = strtolower(now()->format('l'));
+            $currentDay = strtolower(now('Africa/Nairobi')->format('l'));
             if ($currentDay !== strtolower($dayKey)) {
                 return false;
             }
@@ -14,17 +14,17 @@
             }
 
             try {
-                $now = now();
+                $now = now('Africa/Nairobi');
                 
                 $parseTime = function ($timeStr) use ($now) {
                     $timeStr = trim($timeStr);
                     try {
-                        return \Illuminate\Support\Carbon::createFromFormat('h:i A', $timeStr);
+                        return \Illuminate\Support\Carbon::createFromFormat('h:i A', $timeStr, 'Africa/Nairobi');
                     } catch (\Exception $e) {
                         try {
-                            return \Illuminate\Support\Carbon::createFromFormat('g:i A', $timeStr);
+                            return \Illuminate\Support\Carbon::createFromFormat('g:i A', $timeStr, 'Africa/Nairobi');
                         } catch (\Exception $e2) {
-                            return \Illuminate\Support\Carbon::createFromFormat('H:i', $timeStr);
+                            return \Illuminate\Support\Carbon::createFromFormat('H:i', $timeStr, 'Africa/Nairobi');
                         }
                     }
                 };

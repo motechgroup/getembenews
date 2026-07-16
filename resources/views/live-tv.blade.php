@@ -67,6 +67,50 @@
             }
         }
 
+        $sortScheduleSlots = function (&$schedule) {
+            $runtimeSort = function ($a, $b) {
+                $getStartTime = function ($item) {
+                    if (!empty($item['start_time'])) {
+                        return $item['start_time'];
+                    }
+                    $parts = explode('-', $item['time'] ?? '');
+                    if (count($parts) === 2) {
+                        try {
+                            return \Illuminate\Support\Carbon::parse(trim($parts[0]))->format('H:i');
+                        } catch (\Exception $e) {}
+                    }
+                    return '06:00';
+                };
+
+                $aTime = $getStartTime($a);
+                $bTime = $getStartTime($b);
+                
+                $getMinutesFrom6AM = function ($timeStr) {
+                    if (strpos($timeStr, ':') === false) {
+                        return 360;
+                    }
+                    $parts = explode(':', $timeStr);
+                    $h = (int) ($parts[0] ?? 6);
+                    $m = (int) ($parts[1] ?? 0);
+                    $totalMinutes = ($h * 60) + $m;
+                    if ($totalMinutes < 360) {
+                        $totalMinutes += 1440;
+                    }
+                    return $totalMinutes;
+                };
+                
+                return $getMinutesFrom6AM($aTime) <=> $getMinutesFrom6AM($bTime);
+            };
+
+            foreach ($schedule as $day => &$items) {
+                if (is_array($items)) {
+                    usort($items, $runtimeSort);
+                }
+            }
+        };
+
+        $sortScheduleSlots($tvSchedule);
+
         $todayDay = strtolower(now()->format('l'));
         $currentShow = null;
         foreach (($tvSchedule[$todayDay] ?? []) as $item) {

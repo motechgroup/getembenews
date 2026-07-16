@@ -360,6 +360,37 @@ state([
     'test_sms_error' => '',
 ]);
 
+if (!function_exists('sortScheduleSlots')) {
+    function sortScheduleSlots(&$schedule) {
+        $runtimeSort = function ($a, $b) {
+            $aStart = $a['start_time'] ?? '06:00';
+            $bStart = $b['start_time'] ?? '06:00';
+            
+            $getMinutesFrom6AM = function ($timeStr) {
+                if (strpos($timeStr, ':') === false) {
+                    return 360;
+                }
+                $parts = explode(':', $timeStr);
+                $h = (int) ($parts[0] ?? 6);
+                $m = (int) ($parts[1] ?? 0);
+                $totalMinutes = ($h * 60) + $m;
+                if ($totalMinutes < 360) { // 6 AM
+                    $totalMinutes += 1440; // Add 24 hours
+                }
+                return $totalMinutes;
+            };
+            
+            return $getMinutesFrom6AM($aStart) <=> $getMinutesFrom6AM($bStart);
+        };
+
+        foreach ($schedule as $day => &$items) {
+            if (is_array($items)) {
+                usort($items, $runtimeSort);
+            }
+        }
+    }
+}
+
 mount(function ($activeTab = 'identity') {
     $this->activeTab = $activeTab;
 
@@ -426,6 +457,8 @@ mount(function ($activeTab = 'identity') {
                 }
             }
         }
+
+        sortScheduleSlots($schedule);
 
         return $schedule;
     };
@@ -794,6 +827,7 @@ $addTvProgram = function () {
             'is_playing' => false
         ];
     }
+    sortScheduleSlots($this->tv_schedule);
     $this->newTvStartTime = '06:00';
     $this->newTvEndTime = '09:00';
     $this->newTvTitle = '';
@@ -855,6 +889,7 @@ $addRadioProgram = function () {
             'is_playing' => false
         ];
     }
+    sortScheduleSlots($this->radio_schedule);
     $this->newRadioStartTime = '06:00';
     $this->newRadioEndTime = '10:00';
     $this->newRadioTitle = '';
@@ -1021,6 +1056,7 @@ $save = function () use ($logAction) {
                     $item['time'] = $startFormatted . ' - ' . $endFormatted;
                 }
             }
+            sortScheduleSlots($schedule);
             $this->{$schedKey} = $schedule;
         }
     }

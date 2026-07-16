@@ -395,4 +395,16 @@ Route::get('/debug-log', function () {
     return '<pre style="background: #111; color: #eee; padding: 20px; font-family: monospace; overflow: auto; max-height: 90vh;">' . htmlspecialchars(implode("\n", $lastLines)) . '</pre>';
 });
 
+Route::get('/run-migrations', function () {
+    if (request()->query('secret') !== 'motechgroup2026') {
+        abort(403);
+    }
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return '<h3>Migration Success:</h3><pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';
+    } catch (\Exception $e) {
+        return '<h3>Migration Error:</h3><pre>' . $e->getMessage() . '</pre>';
+    }
+});
+
 Route::get('/{slug}', [ArticleController::class, 'category'])->name('category.show');

@@ -18,11 +18,21 @@ class SecurityHeaders
         /** @var Response $response */
         $response = $next($request);
 
-        $response->headers->set(
-            'Content-Security-Policy',
-            "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src-elem 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src-attr 'self' 'unsafe-inline'; style-src 'self' https: http: 'unsafe-inline'; img-src * data: blob:; frame-src *; connect-src *; frame-ancestors 'self' https://*.google.com https://*.doubleclick.net https://*.google.adservices.com https://*.googlesyndication.com;"
-        );
-        
+        // Remove X-Frame-Options to allow Google AdSense site preview tool to frame pages
+        $response->headers->remove('X-Frame-Options');
+
+        $adsenseEnabled = (bool) \App\Models\Setting::get('adsense_enabled', false);
+
+        if (!$adsenseEnabled) {
+            $response->headers->set(
+                'Content-Security-Policy',
+                "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self';"
+            );
+        } else {
+            // Omit CSP header when AdSense is enabled so ad scripts, eval, and previews are not blocked
+            $response->headers->remove('Content-Security-Policy');
+        }
+
         $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');

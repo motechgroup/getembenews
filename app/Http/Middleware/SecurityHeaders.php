@@ -18,7 +18,7 @@ class SecurityHeaders
         /** @var Response $response */
         $response = $next($request);
 
-        $response->headers->set('Content-Security-Policy', "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self';");
+        $response->headers->set('Content-Security-Policy', "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self';");
         
         if (!$request->is('/')) {
             $response->headers->set('X-Frame-Options', 'SAMEORIGIN');

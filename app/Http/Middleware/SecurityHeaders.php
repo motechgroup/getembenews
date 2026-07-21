@@ -20,7 +20,7 @@ class SecurityHeaders
 
         $response->headers->set(
             'Content-Security-Policy',
-            "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self' https://*.google.com https://*.doubleclick.net https://*.google.adservices.com;"
+            "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src-elem 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; script-src-attr 'self' 'unsafe-inline'; style-src 'self' https: http: 'unsafe-inline'; img-src * data: blob:; frame-src *; connect-src *; frame-ancestors 'self' https://*.google.com https://*.doubleclick.net https://*.google.adservices.com https://*.googlesyndication.com;"
         );
         
         $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');

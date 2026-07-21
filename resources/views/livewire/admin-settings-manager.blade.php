@@ -2,6 +2,7 @@
 
 use function Livewire\Volt\{state, mount, uses};
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use App\Models\Setting;
 use App\Models\Newsletter;
 use App\Models\BreakingNews;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-uses(WithFileUploads::class);
+uses([WithFileUploads::class, WithPagination::class]);
 
 state([
     // Navigation active tab
@@ -23,6 +24,8 @@ state([
     'uploadedFavicon' => null,
 
     // Featured & Breaking News states
+    'featured_search' => '',
+    'featured_filter' => 'all',
     'breaking_title' => '',
     'breaking_link' => '',
     'breaking_priority' => 1,
@@ -86,17 +89,17 @@ state([
     'other_social_links' => fn() => Setting::get('other_social_links', ''),
 
     // Toggles for Social Widgets
-    'social_facebook_active' => fn() => Setting::get('social_facebook_active', '1'),
-    'social_twitter_active' => fn() => Setting::get('social_twitter_active', '1'),
-    'social_instagram_active' => fn() => Setting::get('social_instagram_active', '1'),
-    'social_linkedin_active' => fn() => Setting::get('social_linkedin_active', '1'),
-    'social_whatsapp_active' => fn() => Setting::get('social_whatsapp_active', '1'),
-    'social_youtube_active' => fn() => Setting::get('social_youtube_active', '1'),
-    'social_tiktok_active' => fn() => Setting::get('social_tiktok_active', '1'),
-    'social_snapchat_active' => fn() => Setting::get('social_snapchat_active', '1'),
-    'social_telegram_active' => fn() => Setting::get('social_telegram_active', '1'),
-    'social_pinterest_active' => fn() => Setting::get('social_pinterest_active', '1'),
-    'social_threads_active' => fn() => Setting::get('social_threads_active', '1'),
+    'social_facebook_active' => fn() => (bool) Setting::get('social_facebook_active', true),
+    'social_twitter_active' => fn() => (bool) Setting::get('social_twitter_active', true),
+    'social_instagram_active' => fn() => (bool) Setting::get('social_instagram_active', true),
+    'social_linkedin_active' => fn() => (bool) Setting::get('social_linkedin_active', true),
+    'social_whatsapp_active' => fn() => (bool) Setting::get('social_whatsapp_active', true),
+    'social_youtube_active' => fn() => (bool) Setting::get('social_youtube_active', true),
+    'social_tiktok_active' => fn() => (bool) Setting::get('social_tiktok_active', true),
+    'social_snapchat_active' => fn() => (bool) Setting::get('social_snapchat_active', true),
+    'social_telegram_active' => fn() => (bool) Setting::get('social_telegram_active', true),
+    'social_pinterest_active' => fn() => (bool) Setting::get('social_pinterest_active', true),
+    'social_threads_active' => fn() => (bool) Setting::get('social_threads_active', true),
 
 
     // 3. Contact Settings
@@ -1306,13 +1309,42 @@ $deleteBreakingNews = function ($id) use ($logAction) {
     session()->flash('breaking_success', 'Breaking news alert deleted.');
 };
 
+$getPinnedArticles = function () {
+    $query = Article::with('category');
+
+    if ($this->featured_filter === 'pinned') {
+        $query->where('is_pinned', true);
+    } elseif ($this->featured_filter === 'featured') {
+        $query->where('is_featured', true);
+    } elseif ($this->featured_filter === 'unpinned') {
+        $query->where('is_pinned', false)->where('is_featured', false);
+    } else {
+        if (empty($this->featured_search)) {
+            $query->where(function ($q) {
+                $q->where('is_pinned', true)->orWhere('is_featured', true);
+            });
+        }
+    }
+
+    if (!empty($this->featured_search)) {
+        $search = '%' . trim($this->featured_search) . '%';
+        $query->where(function ($q) use ($search) {
+            $q->where('title', 'like', $search)
+              ->orWhereHas('category', function ($cq) use ($search) {
+                  $cq->where('name', 'like', $search);
+              });
+        });
+    }
+
+    return $query->orderBy('created_at', 'desc')->paginate(10, ['*'], 'featured_page');
+};
+
 $toggleArticlePinned = function ($id, $field) use ($logAction) {
     $article = Article::findOrFail($id);
     $article->$field = !$article->$field;
     $article->save();
 
     $logAction("Toggled {$field} status on article: " . $article->title);
-    $this->pinned_articles_list = Article::where('is_pinned', true)->orWhere('is_featured', true)->get();
 };
 
 $sendTestEmail = function () {
@@ -3780,7 +3812,18 @@ $sendTestEmail = function () {
 
                     <!-- Pinned & Featured Sliders -->
                     <div class="bg-gray-50 dark:bg-gray-950 border border-gray-250 dark:border-gray-850 rounded-lg p-4 space-y-4">
-                        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase">Slider & Featured Pinned Articles</h4>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase">Slider & Featured Pinned Articles</h4>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <input type="text" wire:model.live.debounce.300ms="featured_search" placeholder="Search title or category..." class="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded px-3 py-1 text-xs text-gray-900 dark:text-white w-48 sm:w-64 focus:ring-[#C8102E]">
+                                <select wire:model.live="featured_filter" class="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded px-2 py-1 text-xs text-gray-900 dark:text-white focus:ring-[#C8102E]">
+                                    <option value="all">Active (Pinned or Featured)</option>
+                                    <option value="pinned">Pinned Only (Hero)</option>
+                                    <option value="featured">Featured Only (Grid)</option>
+                                    <option value="unpinned">All Other Articles (Unpinned)</option>
+                                </select>
+                            </div>
+                        </div>
                         
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse text-xs">
@@ -3793,7 +3836,8 @@ $sendTestEmail = function () {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-150 dark:divide-gray-850 text-gray-700 dark:text-gray-300">
-                                    @forelse($pinned_articles_list as $pinnedArt)
+                                    @php $featuredArticlesList = $getPinnedArticles(); @endphp
+                                    @forelse($featuredArticlesList as $pinnedArt)
                                         <tr class="hover:bg-gray-100/50 dark:hover:bg-gray-900/50">
                                             <td class="p-3 font-semibold text-gray-900 dark:text-white">{{ $pinnedArt->title }}</td>
                                             <td class="p-3 text-gray-500">{{ $pinnedArt->category->name ?? 'Uncategorized' }}</td>
@@ -3810,12 +3854,18 @@ $sendTestEmail = function () {
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="4" class="p-8 text-center text-gray-400 font-sans">No currently pinned or featured articles. Pin them from the Articles section.</td>
+                                            <td colspan="4" class="p-8 text-center text-gray-400 font-sans">No matching articles found.</td>
                                         </tr>
                                     @endforelse
                                 </tbody>
                             </table>
                         </div>
+
+                        @if($featuredArticlesList->hasPages())
+                            <div class="pt-2 border-t border-gray-150 dark:border-gray-850">
+                                {{ $featuredArticlesList->links() }}
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Breaking News Ticker Manager -->

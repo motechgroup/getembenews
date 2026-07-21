@@ -508,7 +508,7 @@
                             @endphp
 
                             <!-- X (Twitter) -->
-                            @if(\App\Models\Setting::get('social_twitter_active', '1') == '1')
+                            @if(\App\Models\Setting::get('social_twitter_active', true))
                             <a href="{{ $twStats['url'] }}" target="_blank" style="background-color: #000000;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
                                 <span class="uppercase">X (Twitter)</span>
                                 <span class="text-[9px] font-medium text-gray-300 mt-0.5">{{ $twStats['formatted'] }} {{ $twStats['label'] }}</span>
@@ -516,7 +516,7 @@
                             @endif
 
                             <!-- Instagram -->
-                            @if(\App\Models\Setting::get('social_instagram_active', '1') == '1')
+                            @if(\App\Models\Setting::get('social_instagram_active', true))
                             <a href="{{ $igStats['url'] }}" target="_blank" style="background-color: #E1306C;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
                                 <span class="uppercase">Instagram</span>
                                 <span class="text-[9px] font-medium text-red-100 mt-0.5">{{ $igStats['formatted'] }} {{ $igStats['label'] }}</span>
@@ -524,7 +524,7 @@
                             @endif
 
                             <!-- Facebook -->
-                            @if(\App\Models\Setting::get('social_facebook_active', '1') == '1')
+                            @if(\App\Models\Setting::get('social_facebook_active', true))
                             <a href="{{ $fbStats['url'] }}" target="_blank" style="background-color: #1877F2;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
                                 <span class="uppercase">Facebook</span>
                                 <span class="text-[9px] font-medium text-blue-100 mt-0.5">{{ $fbStats['formatted'] }} {{ $fbStats['label'] }}</span>
@@ -532,7 +532,7 @@
                             @endif
 
                             <!-- YouTube -->
-                            @if(\App\Models\Setting::get('social_youtube_active', '1') == '1')
+                            @if(\App\Models\Setting::get('social_youtube_active', true))
                             <a href="{{ $ytStats['url'] }}" target="_blank" style="background-color: #FF0000;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
                                 <span class="uppercase">YouTube</span>
                                 <span class="text-[9px] font-medium text-red-100 mt-0.5">{{ $ytStats['formatted'] }} {{ $ytStats['label'] }}</span>
@@ -540,7 +540,7 @@
                             @endif
 
                             <!-- WhatsApp -->
-                            @if(\App\Models\Setting::get('social_whatsapp_active', '1') == '1')
+                            @if(\App\Models\Setting::get('social_whatsapp_active', true))
                             <a href="{{ $waStats['url'] }}" target="_blank" style="background-color: #25D366;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
                                 <span class="uppercase">WhatsApp</span>
                                 <span class="text-[9px] font-medium text-green-100 mt-0.5">{{ $waStats['formatted'] }} {{ $waStats['label'] }}</span>
@@ -548,7 +548,7 @@
                             @endif
 
                             <!-- TikTok -->
-                            @if(\App\Models\Setting::get('social_tiktok_active', '1') == '1')
+                            @if(\App\Models\Setting::get('social_tiktok_active', true))
                             <a href="{{ $tkStats['url'] }}" target="_blank" style="background-color: #111111;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
                                 <span class="uppercase">TikTok</span>
                                 <span class="text-[9px] font-medium text-gray-300 mt-0.5">{{ $tkStats['formatted'] }} {{ $tkStats['label'] }}</span>
@@ -556,7 +556,7 @@
                             @endif
 
                             <!-- Telegram -->
-                            @if(\App\Models\Setting::get('social_telegram_active', '1') == '1')
+                            @if(\App\Models\Setting::get('social_telegram_active', true))
                             <a href="{{ $tgStats['url'] }}" target="_blank" style="background-color: #26A69A;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
                                 <span class="uppercase">Telegram</span>
                                 <span class="text-[9px] font-medium text-teal-100 mt-0.5">{{ $tgStats['formatted'] }} {{ $tgStats['label'] }}</span>
@@ -564,7 +564,7 @@
                             @endif
 
                             <!-- Snapchat -->
-                            @if(\App\Models\Setting::get('social_snapchat_active', '1') == '1')
+                            @if(\App\Models\Setting::get('social_snapchat_active', true))
                             <a href="{{ $snapStats['url'] }}" target="_blank" style="background-color: #FFFC00;" class="flex flex-col items-center justify-center hover:opacity-90 text-black transition py-2 px-3 rounded shadow-sm text-center font-bold">
                                 <span class="uppercase text-black">Snapchat</span>
                                 <span class="text-[9px] font-medium text-gray-800 mt-0.5">{{ $snapStats['formatted'] }} {{ $snapStats['label'] }}</span>
@@ -572,7 +572,7 @@
                             @endif
 
                             <!-- Pinterest -->
-                            @if(\App\Models\Setting::get('social_pinterest_active', '1') == '1')
+                            @if(\App\Models\Setting::get('social_pinterest_active', true))
                             <a href="{{ $pinStats['url'] }}" target="_blank" style="background-color: #BD081C;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
                                 <span class="uppercase">Pinterest</span>
                                 <span class="text-[9px] font-medium text-red-100 mt-0.5">{{ $pinStats['formatted'] }} {{ $pinStats['label'] }}</span>
@@ -580,7 +580,7 @@
                             @endif
 
                             <!-- Threads -->
-                            @if(\App\Models\Setting::get('social_threads_active', '1') == '1')
+                            @if(\App\Models\Setting::get('social_threads_active', true))
                             <a href="{{ $thStats['url'] }}" target="_blank" style="background-color: #222222;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
                                 <span class="uppercase">Threads</span>
                                 <span class="text-[9px] font-medium text-gray-300 mt-0.5">{{ $thStats['formatted'] }} {{ $thStats['label'] }}</span>

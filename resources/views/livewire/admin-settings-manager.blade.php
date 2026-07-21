@@ -211,12 +211,12 @@ state([
     'notifications_email' => fn() => Setting::get('notifications_email', true),
 
     // 16. Advertising Settings
-    'adsense_enabled' => fn() => Setting::get('adsense_enabled', false),
+    'adsense_enabled' => fn() => (bool) Setting::get('adsense_enabled', false),
     'adsense_client_id' => fn() => Setting::get('adsense_client_id', ''),
     'adsense_code' => fn() => Setting::get('adsense_code', ''),
-    'facebook_ads_enabled' => fn() => Setting::get('facebook_ads_enabled', false),
+    'facebook_ads_enabled' => fn() => (bool) Setting::get('facebook_ads_enabled', false),
     'facebook_ads_code' => fn() => Setting::get('facebook_ads_code', ''),
-    'custom_ads_enabled' => fn() => Setting::get('custom_ads_enabled', false),
+    'custom_ads_enabled' => fn() => (bool) Setting::get('custom_ads_enabled', false),
     'ad_top_image' => fn() => Setting::get('ad_top_image', ''),
     'ad_top_link' => fn() => Setting::get('ad_top_link', ''),
     'ad_sidebar_image' => fn() => Setting::get('ad_sidebar_image', ''),

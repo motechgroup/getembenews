@@ -27,6 +27,10 @@ class Setting extends Model
             return $setting ? $setting->value : $default;
         });
 
+        if (is_bool($default)) {
+            $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+        }
+
         // Only decode JSON if the expected default is an array
         if (is_array($default)) {
             if (is_string($value)) {
@@ -44,11 +48,18 @@ class Setting extends Model
 
     public static function set(string $key, $value): self
     {
-        $dbValue = (is_array($value) || is_object($value)) ? json_encode($value) : $value;
+        if (is_bool($value)) {
+            $dbValue = $value ? '1' : '0';
+            $cachedValue = $value;
+        } else {
+            $dbValue = (is_array($value) || is_object($value)) ? json_encode($value) : $value;
+            $cachedValue = $value;
+        }
+
         $setting = static::updateOrCreate(['key' => $key], ['value' => $dbValue]);
         
         Cache::forget('setting_v1_' . $key);
-        static::$cachedSettings[$key] = $value;
+        static::$cachedSettings[$key] = $cachedValue;
         
         return $setting;
     }

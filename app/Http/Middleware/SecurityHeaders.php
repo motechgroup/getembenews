@@ -18,11 +18,10 @@ class SecurityHeaders
         /** @var Response $response */
         $response = $next($request);
 
-        $response->headers->set('Content-Security-Policy', "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self';");
-        
-        if (!$request->is('/')) {
-            $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
-        }
+        $response->headers->set(
+            'Content-Security-Policy',
+            "default-src 'self' https: http: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self' https://*.google.com https://*.doubleclick.net https://*.google.adservices.com;"
+        );
         
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');

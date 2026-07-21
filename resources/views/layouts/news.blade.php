@@ -568,10 +568,16 @@
             $position = \App\Models\Setting::get('cookie_position', 'bottom');
             $isStrict = (bool) \App\Models\Setting::get('cookie_approval_required', false);
             
-            $positionClasses = match($position) {
-                'top' => 'top-4 left-1/2 -translate-x-1/2 max-w-lg',
-                'bottom-right' => 'bottom-4 right-4 max-w-md',
-                default => 'bottom-4 left-1/2 -translate-x-1/2 max-w-lg'
+            $outerClasses = match($position) {
+                'top' => 'top-0 left-0 right-0 w-full',
+                'bottom-right' => 'bottom-4 right-4 max-w-md w-full px-4 sm:px-0',
+                default => 'bottom-0 left-0 right-0 w-full'
+            };
+            
+            $innerClasses = match($position) {
+                'top' => 'border-b border-gray-200 dark:border-gray-800 shadow-lg p-4 md:py-3.5 md:px-6',
+                'bottom-right' => 'border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl p-5',
+                default => 'border-t border-gray-200 dark:border-gray-800 shadow-2xl p-4 md:py-3.5 md:px-6'
             };
         @endphp
         
@@ -595,38 +601,67 @@
              }"
              x-show="showCookieBanner"
              x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-start="opacity-0 @if($position === 'top') -translate-y-4 @else translate-y-4 @endif"
              x-transition:enter-end="opacity-100 translate-y-0"
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0"
-             x-transition:leave-end="opacity-0 translate-y-4"
-             class="fixed {{ $positionClasses }} w-full px-4 sm:px-0 z-[100]"
+             x-transition:leave-end="opacity-0 @if($position === 'top') -translate-y-4 @else translate-y-4 @endif"
+             class="fixed {{ $outerClasses }} z-[100]"
              style="display: none;"
              x-cloak>
              
-             <div class="relative w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl p-5 space-y-4">
-                  <div class="flex items-start space-x-3">
-                      <div class="p-2 bg-[#cc6c3b]/10 text-[#cc6c3b] rounded-xl shrink-0 mt-0.5">
-                          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                          </svg>
-                      </div>
-                      <div class="space-y-1">
-                          <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Cookie Consent Preferences</h4>
-                          <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                              We use cookies to optimize site features, compile visitor analytics, and personalize advertising content. Please choose your preferences below.
-                          </p>
-                      </div>
-                  </div>
-                  
-                  <div class="flex items-center justify-end space-x-2 pt-1">
-                      <button @click="declineCookies()" class="px-4 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-[10px] rounded-xl transition uppercase tracking-wider">
-                          {{ $isStrict ? 'Decline All' : 'Settings' }}
-                      </button>
-                      <button @click="acceptCookies()" class="px-4 py-2 bg-[#cc6c3b] hover:bg-opacity-90 text-white font-bold text-[10px] rounded-xl transition shadow uppercase tracking-wider">
-                          Accept All
-                      </button>
-                  </div>
+             <div class="relative w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md {{ $innerClasses }}">
+                 @if($position === 'top' || $position === 'bottom')
+                     <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                          <div class="flex items-start space-x-3">
+                              <div class="p-2 bg-[#cc6c3b]/10 text-[#cc6c3b] rounded-xl shrink-0 mt-0.5">
+                                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                  </svg>
+                              </div>
+                              <div class="space-y-0.5">
+                                  <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Cookie Consent Preferences</h4>
+                                  <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                                      We use cookies to optimize site features, compile visitor analytics, and personalize advertising content. Please choose your preferences below.
+                                  </p>
+                              </div>
+                          </div>
+                          
+                          <div class="flex items-center justify-end space-x-2 shrink-0">
+                              <button @click="declineCookies()" class="px-4 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-[10px] rounded-xl transition uppercase tracking-wider">
+                                  {{ $isStrict ? 'Decline All' : 'Settings' }}
+                              </button>
+                              <button @click="acceptCookies()" class="px-4 py-2 bg-[#cc6c3b] hover:bg-opacity-90 text-white font-bold text-[10px] rounded-xl transition shadow uppercase tracking-wider">
+                                  Accept All
+                              </button>
+                          </div>
+                     </div>
+                 @else
+                     <div class="space-y-4">
+                          <div class="flex items-start space-x-3">
+                              <div class="p-2 bg-[#cc6c3b]/10 text-[#cc6c3b] rounded-xl shrink-0 mt-0.5">
+                                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                  </svg>
+                              </div>
+                              <div class="space-y-1">
+                                  <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Cookie Consent Preferences</h4>
+                                  <p class="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                                      We use cookies to optimize site features, compile visitor analytics, and personalize advertising content. Please choose your preferences below.
+                                  </p>
+                              </div>
+                          </div>
+                          
+                          <div class="flex items-center justify-end space-x-2 pt-1">
+                              <button @click="declineCookies()" class="px-4 py-2 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-[10px] rounded-xl transition uppercase tracking-wider">
+                                  {{ $isStrict ? 'Decline All' : 'Settings' }}
+                              </button>
+                              <button @click="acceptCookies()" class="px-4 py-2 bg-[#cc6c3b] hover:bg-opacity-90 text-white font-bold text-[10px] rounded-xl transition shadow uppercase tracking-wider">
+                                  Accept All
+                              </button>
+                          </div>
+                     </div>
+                 @endif
              </div>
         </div>
     @endif

@@ -19,7 +19,11 @@ class SecurityHeaders
         $response = $next($request);
 
         $response->headers->set('Content-Security-Policy', "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; frame-ancestors 'self';");
-        $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        
+        if (!$request->is('/')) {
+            $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        }
+        
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');

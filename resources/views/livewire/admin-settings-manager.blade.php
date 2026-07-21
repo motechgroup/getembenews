@@ -1,6 +1,6 @@
 <?php
 
-use function Livewire\Volt\{state, mount, uses};
+use function Livewire\Volt\{state, mount, uses, computed};
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use App\Models\Setting;
@@ -1309,7 +1309,7 @@ $deleteBreakingNews = function ($id) use ($logAction) {
     session()->flash('breaking_success', 'Breaking news alert deleted.');
 };
 
-$getPinnedArticles = function () {
+$pinnedArticlesList = computed(function () {
     $query = Article::with('category');
 
     if ($this->featured_filter === 'pinned') {
@@ -1337,7 +1337,7 @@ $getPinnedArticles = function () {
     }
 
     return $query->orderBy('created_at', 'desc')->paginate(10, ['*'], 'featured_page');
-};
+});
 
 $toggleArticlePinned = function ($id, $field) use ($logAction) {
     $article = Article::findOrFail($id);
@@ -3836,8 +3836,7 @@ $sendTestEmail = function () {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-150 dark:divide-gray-850 text-gray-700 dark:text-gray-300">
-                                    @php $featuredArticlesList = $getPinnedArticles(); @endphp
-                                    @forelse($featuredArticlesList as $pinnedArt)
+                                    @forelse($this->pinnedArticlesList as $pinnedArt)
                                         <tr class="hover:bg-gray-100/50 dark:hover:bg-gray-900/50">
                                             <td class="p-3 font-semibold text-gray-900 dark:text-white">{{ $pinnedArt->title }}</td>
                                             <td class="p-3 text-gray-500">{{ $pinnedArt->category->name ?? 'Uncategorized' }}</td>
@@ -3861,9 +3860,9 @@ $sendTestEmail = function () {
                             </table>
                         </div>
 
-                        @if($featuredArticlesList->hasPages())
+                        @if($this->pinnedArticlesList->hasPages())
                             <div class="pt-2 border-t border-gray-150 dark:border-gray-850">
-                                {{ $featuredArticlesList->links() }}
+                                {{ $this->pinnedArticlesList->links() }}
                             </div>
                         @endif
                     </div>

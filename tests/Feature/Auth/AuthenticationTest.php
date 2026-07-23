@@ -20,11 +20,20 @@ class AuthenticationTest extends TestCase
             ->assertSeeVolt('pages.auth.login');
     }
 
-    public function test_users_can_authenticate_using_the_login_screen(): void
+    public function test_access_screen_can_be_rendered(): void
+    {
+        $response = $this->get('/access');
+
+        $response
+            ->assertOk()
+            ->assertSeeVolt('pages.auth.access');
+    }
+
+    public function test_users_can_authenticate_using_the_access_screen(): void
     {
         $user = User::factory()->create();
 
-        $component = Volt::test('pages.auth.login')
+        $component = Volt::test('pages.auth.access')
             ->set('form.email', $user->email)
             ->set('form.password', 'password');
 
@@ -41,7 +50,7 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $component = Volt::test('pages.auth.login')
+        $component = Volt::test('pages.auth.access')
             ->set('form.email', $user->email)
             ->set('form.password', 'wrong-password');
 
@@ -90,7 +99,7 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSeeVolt('pages.auth.login');
+            ->assertSeeVolt('pages.auth.access');
     }
 
     public function test_unauthenticated_admin_request_redirects_to_admin_login(): void

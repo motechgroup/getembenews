@@ -70,6 +70,11 @@ class MobileAppController extends Controller
                 'mobile_app_facebook_ads_enabled' => (bool) Setting::get('mobile_app_facebook_ads_enabled', false),
                 'mobile_app_facebook_banner_id' => Setting::get('mobile_app_facebook_banner_id', ''),
                 'mobile_app_facebook_interstitial_id' => Setting::get('mobile_app_facebook_interstitial_id', ''),
+                'mobile_app_native_ads_enabled' => (bool) Setting::get('mobile_app_native_ads_enabled', false),
+                'mobile_app_admob_native_id' => Setting::get('mobile_app_admob_native_id', ''),
+                'mobile_app_facebook_native_id' => Setting::get('mobile_app_facebook_native_id', ''),
+                'mobile_app_native_ad_code' => Setting::get('mobile_app_native_ad_code', ''),
+                'mobile_app_native_ad_frequency' => (int) Setting::get('mobile_app_native_ad_frequency', 5),
                 'mobile_app_maintenance_mode' => (bool) Setting::get('mobile_app_maintenance_mode', false),
                 'show_views_count' => (bool) Setting::get('show_views_count', true),
                 'announcement_rate_tv' => (int) Setting::get('announcement_rate_tv', 5),
@@ -131,12 +136,22 @@ class MobileAppController extends Controller
             }
         }
 
+        $nativeAds = Advertisement::active()->where('location', 'mobile_native')->get();
+
         return response()->json([
             'status' => 'success',
             'data' => [
                 'featured_article' => $featuredArticle,
                 'latest_articles' => $latestArticles,
-                'category_sections' => $categorySections
+                'category_sections' => $categorySections,
+                'native_ads' => [
+                    'enabled' => (bool) Setting::get('mobile_app_native_ads_enabled', false),
+                    'admob_native_id' => Setting::get('mobile_app_admob_native_id', ''),
+                    'facebook_native_id' => Setting::get('mobile_app_facebook_native_id', ''),
+                    'native_ad_code' => Setting::get('mobile_app_native_ad_code', ''),
+                    'frequency' => (int) Setting::get('mobile_app_native_ad_frequency', 5),
+                    'items' => $nativeAds
+                ]
             ]
         ]);
     }
@@ -577,15 +592,45 @@ class MobileAppController extends Controller
     /**
      * Retrieve active advertisements.
      */
-    public function advertisements()
+    public function advertisements(Request $request)
     {
         $this->checkMaintenance();
 
-        $ads = Advertisement::active()->get();
+        $query = Advertisement::active();
+
+        if ($request->filled('location')) {
+            $query->location($request->location);
+        }
+
+        $ads = $query->get();
 
         return response()->json([
             'status' => 'success',
             'data' => $ads
+        ]);
+    }
+
+    /**
+     * Retrieve native advertisements and configuration for mobile app.
+     */
+    public function nativeAds()
+    {
+        $this->checkMaintenance();
+
+        $nativeAds = Advertisement::active()
+            ->where('location', 'mobile_native')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'enabled' => (bool) Setting::get('mobile_app_native_ads_enabled', false),
+                'admob_native_id' => Setting::get('mobile_app_admob_native_id', ''),
+                'facebook_native_id' => Setting::get('mobile_app_facebook_native_id', ''),
+                'native_ad_code' => Setting::get('mobile_app_native_ad_code', ''),
+                'frequency' => (int) Setting::get('mobile_app_native_ad_frequency', 5),
+                'items' => $nativeAds
+            ]
         ]);
     }
 

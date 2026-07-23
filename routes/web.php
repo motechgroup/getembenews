@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\Article;
+use App\Models\Video;
+use App\Models\Advertisement;
+use App\Models\Category;
 use Illuminate\Support\Facades\Cache;
 
 Route::get('/', function () {

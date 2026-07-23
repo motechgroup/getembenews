@@ -31,7 +31,7 @@ state([
     'breaking_priority' => 1,
     'breaking_expires_at' => '',
     'breaking_news_list' => fn() => BreakingNews::orderBy('created_at', 'desc')->get(),
-    'pinned_articles_list' => fn() => Article::where('is_pinned', true)->orWhere('is_featured', true)->get(),
+    'pinned_articles_list' => fn() => \App\Models\Article::where('is_pinned', true)->orWhere('is_featured', true)->get(),
 
     // 1. Site Identity & Theme Settings
     'site_name' => fn() => Setting::get('site_name', 'Getembe News'),
@@ -71,6 +71,11 @@ state([
     'mobile_app_facebook_ads_enabled' => fn() => (bool) Setting::get('mobile_app_facebook_ads_enabled', false),
     'mobile_app_facebook_banner_id' => fn() => Setting::get('mobile_app_facebook_banner_id', ''),
     'mobile_app_facebook_interstitial_id' => fn() => Setting::get('mobile_app_facebook_interstitial_id', ''),
+    'mobile_app_native_ads_enabled' => fn() => (bool) Setting::get('mobile_app_native_ads_enabled', false),
+    'mobile_app_admob_native_id' => fn() => Setting::get('mobile_app_admob_native_id', ''),
+    'mobile_app_facebook_native_id' => fn() => Setting::get('mobile_app_facebook_native_id', ''),
+    'mobile_app_native_ad_code' => fn() => Setting::get('mobile_app_native_ad_code', ''),
+    'mobile_app_native_ad_frequency' => fn() => Setting::get('mobile_app_native_ad_frequency', '5'),
     'mobile_app_maintenance_mode' => fn() => (bool) Setting::get('mobile_app_maintenance_mode', false),
 
     // 2. Social Links
@@ -1014,7 +1019,7 @@ $save = function () use ($logAction) {
         'live_tv_url', 'live_radio_url', 'live_tv_active', 'live_radio_active', 'weather_city', 'homepage_categories', 'show_views_count',
         'app_play_store_url', 'app_app_store_url', 'app_banner_title', 'app_banner_desc',
         'tv_schedule', 'radio_schedule',
-        'mobile_app_version_ios', 'mobile_app_version_android', 'mobile_app_force_update', 'mobile_app_ios_link', 'mobile_app_android_link', 'mobile_app_ads_enabled', 'mobile_app_admob_banner_id', 'mobile_app_admob_interstitial_id', 'mobile_app_facebook_ads_enabled', 'mobile_app_facebook_banner_id', 'mobile_app_facebook_interstitial_id', 'mobile_app_maintenance_mode',
+        'mobile_app_version_ios', 'mobile_app_version_android', 'mobile_app_force_update', 'mobile_app_ios_link', 'mobile_app_android_link', 'mobile_app_ads_enabled', 'mobile_app_admob_banner_id', 'mobile_app_admob_interstitial_id', 'mobile_app_facebook_ads_enabled', 'mobile_app_facebook_banner_id', 'mobile_app_facebook_interstitial_id', 'mobile_app_native_ads_enabled', 'mobile_app_admob_native_id', 'mobile_app_facebook_native_id', 'mobile_app_native_ad_code', 'mobile_app_native_ad_frequency', 'mobile_app_maintenance_mode',
         'adsense_enabled', 'adsense_client_id', 'adsense_code',
         'facebook_ads_enabled', 'facebook_ads_code',
         'custom_ads_enabled',
@@ -1069,10 +1074,34 @@ $save = function () use ($logAction) {
     }
 
     \Illuminate\Support\Facades\Cache::forget('homepage_data_v1');
+    \Illuminate\Support\Facades\Cache::forget('homepage_data_v3');
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_newsletter_popup_enabled');
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_app_download_popup_enabled');
 
     $logAction("Saved general website settings configurations");
     $this->dispatch('settings-saved');
 };
+
+$toggleNewsletterPopup = function () use ($logAction) {
+    $current = (bool) Setting::get('newsletter_popup_enabled', true);
+    $newStatus = !$current;
+    Setting::set('newsletter_popup_enabled', $newStatus);
+    $this->newsletter_popup_enabled = $newStatus;
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_newsletter_popup_enabled');
+    $logAction("Toggled Newsletter Popup " . ($newStatus ? 'ON' : 'OFF'));
+    $this->dispatch('settings-saved');
+};
+
+$toggleAppDownloadPopup = function () use ($logAction) {
+    $current = (bool) Setting::get('app_download_popup_enabled', true);
+    $newStatus = !$current;
+    Setting::set('app_download_popup_enabled', $newStatus);
+    $this->app_download_popup_enabled = $newStatus;
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_app_download_popup_enabled');
+    $logAction("Toggled App Download Popup " . ($newStatus ? 'ON' : 'OFF'));
+    $this->dispatch('settings-saved');
+};
+
 
 $sendTestSms = function () {
     $this->validate([
@@ -2755,6 +2784,35 @@ $sendTestEmail = function () {
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Native Ads Settings -->
+                        <div class="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-4">
+                            <div class="flex items-center justify-between pb-2">
+                                <h5 class="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Mobile App Native Ads</h5>
+                                <div class="flex items-center space-x-2">
+                                    <input type="checkbox" id="mobile_app_native_ads_enabled" wire:model="mobile_app_native_ads_enabled" class="h-4 w-4 rounded border-gray-300 text-[#C8102E] focus:ring-[#C8102E]">
+                                    <label for="mobile_app_native_ads_enabled" class="text-xs font-bold text-gray-700 dark:text-gray-300">Enable Mobile Native Ads</label>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">AdMob Native Advanced ID</label>
+                                    <input type="text" wire:model="mobile_app_admob_native_id" placeholder="ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Facebook Native Placement ID</label>
+                                    <input type="text" wire:model="mobile_app_facebook_native_id" placeholder="YOUR_NATIVE_PLACEMENT_ID" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">In-Feed Frequency (Every N Articles)</label>
+                                    <input type="number" min="1" max="50" wire:model="mobile_app_native_ad_frequency" placeholder="5" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Custom Native App Code / HTML / JSON Snippet</label>
+                                <textarea wire:model="mobile_app_native_ad_code" rows="3" placeholder="Enter custom native ad script code, HTML snippet, or JSON payload for mobile app rendering..." class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono"></textarea>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- App Maintenance Mode -->
@@ -2944,9 +3002,18 @@ $sendTestEmail = function () {
                     @endif
 
                     <!-- Newsletter Popup Settings Group -->
-                    <div class="space-y-4 bg-gray-50 dark:bg-gray-950 p-4 border border-gray-250 dark:border-gray-850 rounded-lg">
-                        <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase">Newsletter Subscriber Signup Popup</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div class="space-y-4 bg-gray-50 dark:bg-gray-950 p-5 border border-gray-250 dark:border-gray-850 rounded-xl">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-3 gap-2">
+                            <div>
+                                <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider">Newsletter Subscriber Signup Popup</h4>
+                                <p class="text-[10px] text-gray-500">Toggle whether the newsletter email subscription modal appears for site visitors.</p>
+                            </div>
+                            <button type="button" wire:click="toggleNewsletterPopup" class="px-3.5 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider transition flex items-center space-x-2 shrink-0 {{ $newsletter_popup_enabled ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300' }}">
+                                <span class="w-2 h-2 rounded-full {{ $newsletter_popup_enabled ? 'bg-white animate-pulse' : 'bg-gray-400' }}"></span>
+                                <span>{{ $newsletter_popup_enabled ? 'ON (Active)' : 'OFF (Disabled)' }}</span>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                             <div class="space-y-1">
                                 <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Popup Title</label>
                                 <input type="text" wire:model="newsletter_popup_title" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
@@ -2960,16 +3027,21 @@ $sendTestEmail = function () {
                             <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Popup Description</label>
                             <input type="text" wire:model="newsletter_popup_description" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="flex items-center pt-2">
-                            <input type="checkbox" wire:model="newsletter_popup_enabled" id="newsletter_popup_enabled" class="rounded text-[#C8102E] border-gray-300">
-                            <label for="newsletter_popup_enabled" class="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">Enable Subscriber Popup Widget</label>
-                        </div>
                     </div>
 
                     <!-- App Download Popup Settings Group -->
-                    <div class="space-y-4 bg-gray-50 dark:bg-gray-950 p-4 border border-gray-250 dark:border-gray-850 rounded-lg">
-                        <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase">Getembe TV Mobile App Download Popup</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div class="space-y-4 bg-gray-50 dark:bg-gray-950 p-5 border border-gray-250 dark:border-gray-850 rounded-xl">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-3 gap-2">
+                            <div>
+                                <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider">Getembe TV Mobile App Download Popup</h4>
+                                <p class="text-[10px] text-gray-500">Toggle whether the mobile app download store links popup appears for site visitors.</p>
+                            </div>
+                            <button type="button" wire:click="toggleAppDownloadPopup" class="px-3.5 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider transition flex items-center space-x-2 shrink-0 {{ $app_download_popup_enabled ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300' }}">
+                                <span class="w-2 h-2 rounded-full {{ $app_download_popup_enabled ? 'bg-white animate-pulse' : 'bg-gray-400' }}"></span>
+                                <span>{{ $app_download_popup_enabled ? 'ON (Active)' : 'OFF (Disabled)' }}</span>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                             <div class="space-y-1">
                                 <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Popup Title</label>
                                 <input type="text" wire:model="app_download_popup_title" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
@@ -2983,11 +3055,8 @@ $sendTestEmail = function () {
                             <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Popup Description</label>
                             <input type="text" wire:model="app_download_popup_description" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
-                        <div class="flex items-center pt-2">
-                            <input type="checkbox" wire:model="app_download_popup_enabled" id="app_download_popup_enabled" class="rounded text-[#C8102E] border-gray-300">
-                            <label for="app_download_popup_enabled" class="ml-2 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">Enable Mobile App Download Popup Widget</label>
-                        </div>
                     </div>
+
 
                     <!-- Import/Export Tools -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-950 p-4 border border-gray-250 dark:border-gray-850 rounded-lg">

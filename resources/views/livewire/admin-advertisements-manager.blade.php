@@ -51,7 +51,7 @@ $edit = function ($id) {
 $save = function () {
     $this->validate([
         'title' => 'required|string|max:255',
-        'location' => 'required|string|in:top,sidebar,inline,footer,mobile_sticky',
+        'location' => 'required|string|in:top,sidebar,inline,footer,mobile_sticky,mobile_native',
         'destination_url' => 'nullable|url',
         'starts_at' => 'nullable|date',
         'expires_at' => 'nullable|date|after_or_equal:starts_at',
@@ -209,6 +209,7 @@ $delete = function ($id) {
                         <option value="inline">Inline Article Body (468x60)</option>
                         <option value="footer">Bottom Footer Banner (728x90)</option>
                         <option value="mobile_sticky">Mobile Sticky Bottom (320x50)</option>
+                        <option value="mobile_native">Mobile App Native In-Feed Ad (Card/Banner)</option>
                     </select>
                     @error('location') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>

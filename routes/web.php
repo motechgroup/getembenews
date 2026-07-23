@@ -377,7 +377,21 @@ Route::get('/clear-cache', function () {
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('route:clear');
         \Illuminate\Support\Facades\Artisan::call('view:clear');
-        
+
+        // Delete stale bootstrap cache files
+        @unlink(base_path('bootstrap/cache/config.php'));
+        @unlink(base_path('bootstrap/cache/routes-v7.php'));
+        @unlink(base_path('bootstrap/cache/services.php'));
+        @unlink(base_path('bootstrap/cache/packages.php'));
+
+        // Delete compiled view files
+        $viewFiles = glob(storage_path('framework/views/*.php'));
+        if ($viewFiles) {
+            foreach ($viewFiles as $vFile) {
+                @unlink($vFile);
+            }
+        }
+
         // Clear failed logins/lockout for admin
         try {
             \App\Support\Security::clearFailedLogin('admin@getembenews.com');
@@ -388,10 +402,79 @@ Route::get('/clear-cache', function () {
             $opcacheReset = @opcache_reset();
         }
 
-        return 'Application caches cleared and optimized successfully! ' . ($opcacheReset ? 'PHP OPcache was also reset.' : 'OPcache reset function is disabled or not available.');
+        return 'Application caches, routes, compiled views, and OPcache cleared successfully!';
     } catch (\Exception $e) {
         return 'Error clearing application cache: ' . $e->getMessage();
     }
+});
+
+Route::get('/debug-homepage', function () {
+    $results = [];
+    
+    // 1. Check DB Connection
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $results['db_connection'] = 'OK';
+    } catch (\Exception $e) {
+        $results['db_connection'] = 'FAILED: ' . $e->getMessage();
+    }
+
+    // 2. Check Articles Table
+    try {
+        $count = \App\Models\Article::count();
+        $results['articles_count'] = $count;
+    } catch (\Exception $e) {
+        $results['articles_count'] = 'FAILED: ' . $e->getMessage();
+    }
+
+    // 3. Check Settings Table
+    try {
+        $siteName = \App\Models\Setting::get('site_name', 'Getembe News');
+        $results['setting_site_name'] = $siteName;
+    } catch (\Exception $e) {
+        $results['setting_site_name'] = 'FAILED: ' . $e->getMessage();
+    }
+
+    // 4. Check View Compilation
+    try {
+        $view = view('welcome', [
+            'featuredArticle' => null,
+            'topStories' => collect(),
+            'latestArticles' => collect(),
+            'trendingArticles' => collect(),
+            'politicsArticles' => collect(),
+            'businessArticles' => collect(),
+            'techArticles' => collect(),
+            'sportsArticles' => collect(),
+            'opinionArticles' => collect(),
+            'featuredVideo' => null,
+            'latestVideos' => collect(),
+            'topAd' => null,
+            'sidebarAd' => null,
+            'layout' => 'standard',
+            'categoryBlocks' => [],
+        ])->render();
+        $results['welcome_view_render'] = 'OK (Length: ' . strlen($view) . ')';
+    } catch (\Exception $e) {
+        $results['welcome_view_render'] = 'FAILED: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine();
+    }
+
+    // 5. Test Homepage Data Loader
+    try {
+        $now = now();
+        $baseQuery = Article::with(['category', 'author'])
+            ->where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', $now)
+            ->orderBy('published_at', 'desc');
+
+        $featuredArticle = (clone $baseQuery)->where('is_featured', true)->first() ?? (clone $baseQuery)->first();
+        $results['homepage_data_loader'] = 'OK (Featured: ' . ($featuredArticle ? $featuredArticle->title : 'None') . ')';
+    } catch (\Exception $e) {
+        $results['homepage_data_loader'] = 'FAILED: ' . $e->getMessage();
+    }
+
+    return response()->json($results, 200, [], JSON_PRETTY_PRINT);
 });
 
 Route::get('/force-login-admin', function () {

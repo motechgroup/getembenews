@@ -21,7 +21,10 @@ class SecurityHeaders
         // Remove X-Frame-Options to allow Google AdSense site preview tool to frame pages
         $response->headers->remove('X-Frame-Options');
 
-        $adsenseEnabled = (bool) \App\Models\Setting::get('adsense_enabled', false);
+        $adsenseEnabled = false;
+        try {
+            $adsenseEnabled = (bool) \App\Models\Setting::get('adsense_enabled', false);
+        } catch (\Throwable $e) {}
 
         if (!$adsenseEnabled) {
             $response->headers->set(

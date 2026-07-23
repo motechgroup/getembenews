@@ -35,17 +35,29 @@
             ['label' => 'Video', 'url' => '/tv'],
         ];
         $filterMenu = function($items) use (&$filterMenu) {
+            if (!is_array($items)) return [];
             return array_values(array_filter(array_map(function($item) use ($filterMenu) {
+                if (!is_array($item)) return null;
                 if (!empty($item['is_disabled'])) {
                     return null;
                 }
-                if (!empty($item['children'])) {
+                if (!isset($item['url']) || !isset($item['label'])) {
+                    return null;
+                }
+                if (!empty($item['children']) && is_array($item['children'])) {
                     $item['children'] = $filterMenu($item['children']);
                 }
                 return $item;
             }, $items)));
         };
-        $headerLinks = $filterMenu(\App\Models\Setting::get('header_menu', $defaultHeader));
+        $rawHeader = \App\Models\Setting::get('header_menu', $defaultHeader);
+        if (is_string($rawHeader)) {
+            $rawHeader = json_decode($rawHeader, true) ?? $defaultHeader;
+        }
+        if (!is_array($rawHeader)) {
+            $rawHeader = $defaultHeader;
+        }
+        $headerLinks = $filterMenu($rawHeader);
     @endphp
     <title>{{ isset($title) ? $title : $siteName . ' - Fast, Reliable News & Analysis' }}</title>
     <meta name="description" content="{{ isset($metaDescription) ? $metaDescription : $siteName . ' is your leading source for politics, business, technology, sports, opinion, and global news.' }}">
@@ -567,7 +579,14 @@
                             ['label' => 'Privacy Policy', 'url' => '/privacy'],
                             ['label' => 'Terms of Service', 'url' => '/terms'],
                         ];
-                        $footerLinks = $filterMenu(\App\Models\Setting::get('footer_menu', $defaultFooter));
+                        $rawFooter = \App\Models\Setting::get('footer_menu', $defaultFooter);
+                        if (is_string($rawFooter)) {
+                            $rawFooter = json_decode($rawFooter, true) ?? $defaultFooter;
+                        }
+                        if (!is_array($rawFooter)) {
+                            $rawFooter = $defaultFooter;
+                        }
+                        $footerLinks = $filterMenu($rawFooter);
                     @endphp
                     @foreach($footerLinks as $link)
                         <li><a href="{{ $link['url'] }}" class="hover:text-white transition">{{ $link['label'] }}</a></li>

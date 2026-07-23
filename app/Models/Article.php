@@ -33,12 +33,17 @@ class Article extends Model
     // Relationships
     public function author()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id')->withDefault([
+            'name' => 'Editorial Staff',
+        ]);
     }
 
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class)->withDefault([
+            'name' => 'General',
+            'slug' => 'general',
+        ]);
     }
 
     public function comments()

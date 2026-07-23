@@ -20,7 +20,7 @@
                                 </div>
                                 <div class="space-y-1.5 flex-grow">
                                     <div class="flex items-center space-x-2 text-[10px] font-bold text-[#C8102E] uppercase">
-                                        <span>{{ $featuredArticle->category->name }}</span>
+                                        <span>{{ $featuredArticle->category?->name ?? 'General' }}</span>
                                         <span class="text-gray-300 font-normal">&bull;</span>
                                         <span class="text-gray-500 dark:text-gray-400 font-normal">{{ $featuredArticle->published_at->diffForHumans() }}</span>
                                     </div>
@@ -39,7 +39,7 @@
                                 </div>
                                 <div class="space-y-1.5 flex-grow">
                                     <div class="flex items-center space-x-2 text-[9px] font-bold text-[#C8102E] uppercase">
-                                        <span>{{ $story->category->name }}</span>
+                                        <span>{{ $story->category?->name ?? 'General' }}</span>
                                         <span class="text-gray-300 font-normal">&bull;</span>
                                         <span class="text-gray-500 dark:text-gray-400 font-normal">{{ $story->published_at->diffForHumans() }}</span>
                                     </div>
@@ -97,7 +97,7 @@
                             @foreach($latestArticles as $latest)
                                 <div class="py-3 first:pt-0 last:pb-0 group">
                                     <div class="flex items-center justify-between text-[10px] mb-1">
-                                        <span class="text-[#C8102E] font-bold uppercase">{{ $latest->category->name }}</span>
+                                        <span class="text-[#C8102E] font-bold uppercase">{{ $latest->category?->name ?? 'General' }}</span>
                                         <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $latest->published_at->diffForHumans() }}</span>
                                     </div>
                                     <h4 class="text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition">
@@ -123,7 +123,7 @@
                                 <article class="md:col-span-2 relative aspect-[16/10] overflow-hidden rounded-lg group shadow-md border border-gray-200 dark:border-gray-800 bg-gray-950">
                                     <img src="{{ $featuredArticle->optimizedImage(800, 450) }}" alt="{{ $featuredArticle->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-101 opacity-85 group-hover:opacity-75 transition duration-500" fetchpriority="high" decoding="async">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent flex flex-col justify-end p-6 space-y-1">
-                                        <span class="text-[10px] font-bold text-red-500 uppercase tracking-widest">{{ $featuredArticle->category->name }}</span>
+                                        <span class="text-[10px] font-bold text-red-500 uppercase tracking-widest">{{ $featuredArticle->category?->name ?? 'General' }}</span>
                                         <h3 class="text-xl sm:text-2xl font-serif font-black text-white leading-tight">
                                             <a href="/articles/{{ $featuredArticle->slug }}">{{ $featuredArticle->title }}</a>
                                         </h3>
@@ -136,7 +136,7 @@
                                 <article class="relative aspect-[16/10] overflow-hidden rounded-lg group shadow-sm border border-gray-250 dark:border-gray-800 bg-gray-950">
                                     <img src="{{ $story->optimizedImage(500, 320) }}" alt="{{ $story->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 opacity-85 group-hover:opacity-75 transition duration-500" loading="lazy" decoding="async">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent flex flex-col justify-end p-4 space-y-1">
-                                        <span class="text-[9px] font-bold text-red-500 uppercase tracking-widest">{{ $story->category->name }}</span>
+                                        <span class="text-[9px] font-bold text-red-500 uppercase tracking-widest">{{ $story->category?->name ?? 'General' }}</span>
                                         <h3 class="text-sm font-serif font-bold text-white leading-tight line-clamp-2">
                                             <a href="/articles/{{ $story->slug }}">{{ $story->title }}</a>
                                         </h3>
@@ -190,7 +190,7 @@
                                 @foreach($latestArticles as $latest)
                                     <div class="py-3 first:pt-0 last:pb-0 group">
                                         <div class="flex items-center justify-between text-[10px] mb-1">
-                                            <span class="text-[#C8102E] font-bold uppercase">{{ $latest->category->name }}</span>
+                                            <span class="text-[#C8102E] font-bold uppercase">{{ $latest->category?->name ?? 'General' }}</span>
                                             <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $latest->published_at->diffForHumans() }}</span>
                                         </div>
                                         <h4 class="text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition">
@@ -216,7 +216,7 @@
                         </a>
                         <!-- Red category tag on top-left -->
                         <span class="absolute top-4 left-4 px-3 py-1 bg-[#C8102E] text-white text-[10px] font-black uppercase tracking-widest rounded shadow z-10">
-                            {{ $featuredArticle->category->name }}
+                            {{ $featuredArticle->category?->name ?? 'General' }}
                         </span>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent flex flex-col justify-end p-6 space-y-2 pointer-events-none z-10">
                             <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-black text-white leading-tight group-hover:text-red-400 transition break-words pointer-events-auto">
@@ -261,7 +261,7 @@
                             </a>
                             <!-- Category tag with custom color overlay -->
                             <span class="absolute top-3 left-3 px-2 py-0.5 bg-[#FF7900] text-white text-[9px] font-black uppercase tracking-wider rounded shadow z-10">
-                                {{ $story->category->name }}
+                                {{ $story->category?->name ?? 'General' }}
                             </span>
                             <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent flex flex-col justify-end p-4 space-y-1.5 pointer-events-none z-10">
                                 <h3 class="text-xs sm:text-sm font-serif font-bold text-white leading-tight line-clamp-2 group-hover:text-red-400 transition break-words pointer-events-auto">
@@ -602,7 +602,7 @@
                                 <a href="/articles/{{ $recItem->slug }}" class="relative block aspect-[16/10] overflow-hidden rounded group bg-gray-950 shadow border border-gray-150 dark:border-gray-855">
                                     <img src="{{ $recItem->featured_image }}" alt="{{ $recItem->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85" loading="lazy">
                                     <div class="absolute bottom-3 left-3 bg-[#C8102E] text-white text-[8px] font-black uppercase px-2 py-0.5 tracking-wider rounded z-20">
-                                        {{ $recItem->category->name }}
+                                        {{ $recItem->category?->name ?? 'General' }}
                                     </div>
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent flex flex-col justify-end p-4 space-y-1">
                                         <h4 class="text-xs font-serif font-bold text-white leading-tight line-clamp-2 pt-4">

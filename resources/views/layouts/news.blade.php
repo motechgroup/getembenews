@@ -473,9 +473,11 @@
             @endphp
             <div class="flex items-center space-x-6 overflow-x-auto scrollbar-none py-0.5 text-gray-600 dark:text-gray-300 font-semibold text-[11px]">
                 @forelse($trendingItems as $item)
-                    <a href="/articles/{{ $item->slug }}" class="hover:text-[#FF7900] whitespace-nowrap transition">
-                        {{ $item->title }}
-                    </a>
+                    @if(is_object($item) && isset($item->slug))
+                        <a href="/articles/{{ $item->slug }}" class="hover:text-[#FF7900] whitespace-nowrap transition">
+                            {{ $item->title }}
+                        </a>
+                    @endif
                 @empty
                     <span class="text-gray-400 select-none">No trending stories at the moment.</span>
                 @endforelse
@@ -561,7 +563,9 @@
                         });
                     @endphp
                     @foreach($footerCategories as $cat)
-                        <li><a href="/{{ $cat->slug }}" class="hover:text-white transition">{{ $cat->name }}</a></li>
+                        @if(is_object($cat) && isset($cat->slug))
+                            <li><a href="/{{ $cat->slug }}" class="hover:text-white transition">{{ $cat->name }}</a></li>
+                        @endif
                     @endforeach
                 </ul>
             </div>

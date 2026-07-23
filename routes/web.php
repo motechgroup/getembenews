@@ -343,8 +343,24 @@ Route::get('/run-seeders', function () {
     }
 });
 
+Route::get('/generate-key', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('key:generate', ['--force' => true]);
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        return 'Application encryption key (APP_KEY) generated and environment updated successfully!';
+    } catch (\Exception $e) {
+        return 'Error generating key: ' . $e->getMessage();
+    }
+});
+
 Route::get('/clear-cache', function () {
     try {
+        try {
+            if (empty(env('APP_KEY'))) {
+                \Illuminate\Support\Facades\Artisan::call('key:generate', ['--force' => true]);
+            }
+        } catch (\Exception $e) {}
+
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('route:clear');

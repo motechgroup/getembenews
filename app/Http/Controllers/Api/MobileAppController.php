@@ -58,9 +58,16 @@ class MobileAppController extends Controller
                 'app_banner_title' => Setting::get('app_banner_title', 'Download Getembe News Mobile App'),
                 'app_banner_desc' => Setting::get('app_banner_desc', 'Get fast, reliable news updates directly on your smartphone.'),
                 
+                // Versioning and Developer Attribution
+                'system_version' => Setting::get('system_version', 'v2.5.0'),
+                'app_version' => Setting::get('mobile_app_version_android', 'v1.0.4'),
+                'developer_note' => 'Developed By Motech Digital Agency (0792 758 752)',
+                'developer_agency' => 'Motech Digital Agency',
+                'developer_phone' => '0792 758 752',
+
                 // Mobile configuration
                 'mobile_app_version_ios' => Setting::get('mobile_app_version_ios', '1.0.0'),
-                'mobile_app_version_android' => Setting::get('mobile_app_version_android', '1.0.0'),
+                'mobile_app_version_android' => Setting::get('mobile_app_version_android', 'v1.0.4'),
                 'mobile_app_force_update' => (bool) Setting::get('mobile_app_force_update', false),
                 'mobile_app_ios_link' => Setting::get('mobile_app_ios_link', 'https://www.apple.com/app-store'),
                 'mobile_app_android_link' => Setting::get('mobile_app_android_link', 'https://play.google.com/store'),

@@ -503,6 +503,24 @@
         <main class="p-6 flex-grow overflow-y-auto">
             {{ $slot }}
         </main>
+
+        <!-- Admin Dashboard Footer -->
+        <footer class="px-6 py-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 text-center text-xs text-gray-500 dark:text-gray-400">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] max-w-7xl mx-auto">
+                <div class="flex items-center space-x-2">
+                    <span class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2.5 py-0.5 rounded font-mono font-semibold">
+                        System Version: {{ \App\Models\Setting::get('system_version', 'v2.5.0') }}
+                    </span>
+                    <span>&bull;</span>
+                    <span class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2.5 py-0.5 rounded font-mono font-semibold">
+                        App Version: {{ \App\Models\Setting::get('mobile_app_version_android', 'v1.0.4') }}
+                    </span>
+                </div>
+                <div>
+                    Developed By <strong class="text-gray-900 dark:text-white font-bold">Motech Digital Agency</strong> (<a href="tel:0792758752" class="text-[#C8102E] font-bold hover:underline">0792 758 752</a>)
+                </div>
+            </div>
+        </footer>
     </div>
 
     @livewireScripts

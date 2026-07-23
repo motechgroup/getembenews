@@ -585,8 +585,19 @@
             </div>
         </div>
 
-        <div class="max-w-7xl mx-auto border-t border-gray-800 mt-10 pt-6 text-center text-xs text-gray-500">
-            &copy; {{ date('Y') }} {{ $siteName }}. All rights reserved. Built for speed, accessibility and integrity.
+        <div class="max-w-7xl mx-auto border-t border-gray-800 mt-10 pt-6 text-center text-xs text-gray-500 space-y-2">
+            <div>
+                &copy; {{ date('Y') }} {{ $siteName }}. All rights reserved. Built for speed, accessibility and integrity.
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-3 text-[11px] text-gray-400 pt-1">
+                <span class="bg-gray-800 text-gray-300 px-2.5 py-0.5 rounded font-mono font-semibold">
+                    System Version: {{ \App\Models\Setting::get('system_version', 'v2.5.0') }}
+                </span>
+                <span>&bull;</span>
+                <span class="text-gray-400">
+                    Developed By <strong class="text-gray-200 font-bold">Motech Digital Agency</strong> (<a href="tel:0792758752" class="text-[#cc6c3b] hover:underline font-bold">0792 758 752</a>)
+                </span>
+            </div>
         </div>
     </footer>
 

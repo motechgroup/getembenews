@@ -35,6 +35,7 @@ state([
 
     // 1. Site Identity & Theme Settings
     'site_name' => fn() => Setting::get('site_name', 'Getembe News'),
+    'system_version' => fn() => Setting::get('system_version', 'v2.5.0'),
     'site_logo' => fn() => Setting::get('site_logo', ''),
     'brand_color' => fn() => Setting::get('brand_color', '#C8102E'),
     'favicon' => fn() => Setting::get('favicon', ''),
@@ -1000,7 +1001,7 @@ $save = function () use ($logAction) {
     }
 
     $fields = [
-        'site_name', 'site_logo', 'brand_color', 'favicon',
+        'site_name', 'site_logo', 'brand_color', 'favicon', 'system_version',
         'website', 'facebook', 'twitter', 'instagram', 'linkedin', 'whatsapp', 'youtube', 'tiktok', 'snapchat', 'telegram', 'pinterest', 'threads', 'other_social_links',
         'social_facebook_active', 'social_twitter_active', 'social_instagram_active', 'social_linkedin_active', 'social_whatsapp_active', 'social_youtube_active', 'social_tiktok_active', 'social_snapchat_active', 'social_telegram_active', 'social_pinterest_active', 'social_threads_active',
         'contact_email', 'contact_phone', 'contact_open_hours', 'contact_address',
@@ -1510,6 +1511,10 @@ $sendTestEmail = function () {
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Website Name</label>
                             <input type="text" wire:model="site_name" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">System Release Version</label>
+                            <input type="text" wire:model="system_version" placeholder="e.g. v2.5.0" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Favicon Icon</label>

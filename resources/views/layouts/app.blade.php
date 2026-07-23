@@ -40,6 +40,24 @@
             <main>
                 {{ $slot }}
             </main>
+
+            <!-- Dashboard Footer -->
+            <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6 mt-12">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-gray-500 dark:text-gray-400 space-y-1.5">
+                    <div>
+                        &copy; {{ date('Y') }} {{ \App\Models\Setting::get('site_name', 'Getembe News') }}. All rights reserved.
+                    </div>
+                    <div class="flex flex-wrap items-center justify-center gap-3 text-[11px]">
+                        <span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2.5 py-0.5 rounded font-mono font-semibold">
+                            System Version: {{ \App\Models\Setting::get('system_version', 'v2.5.0') }}
+                        </span>
+                        <span>&bull;</span>
+                        <span>
+                            Developed By <strong class="text-gray-900 dark:text-white font-bold">Motech Digital Agency</strong> (<a href="tel:0792758752" class="text-[#C8102E] font-bold hover:underline">0792 758 752</a>)
+                        </span>
+                    </div>
+                </div>
+            </footer>
         </div>
     </body>
 </html>

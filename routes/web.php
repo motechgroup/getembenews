@@ -1,139 +1,136 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
-use App\Models\Article;
-use App\Models\Video;
-use App\Models\Advertisement;
-use App\Models\Category;
+use Illuminate\Support\Facades\Cache;
 
 Route::get('/', function () {
-    $now = now();
-    
-    $baseQuery = Article::where('status', 'published')
-        ->whereNotNull('published_at')
-        ->where('published_at', '<=', $now)
-        ->orderBy('published_at', 'desc');
+    $homepageData = Cache::remember('homepage_data_v3', 300, function () {
+        $now = now();
+        
+        $baseQuery = Article::where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', $now)
+            ->orderBy('published_at', 'desc');
 
-    $featuredArticle = (clone $baseQuery)->where('is_featured', true)->first() ?? (clone $baseQuery)->first();
-    $featuredId = $featuredArticle ? $featuredArticle->id : 0;
+        $featuredArticle = (clone $baseQuery)->where('is_featured', true)->first() ?? (clone $baseQuery)->first();
+        $featuredId = $featuredArticle ? $featuredArticle->id : 0;
 
-    $topStories = (clone $baseQuery)
-        ->where('id', '!=', $featuredId)
-        ->take(4)
-        ->get();
+        $topStories = (clone $baseQuery)
+            ->where('id', '!=', $featuredId)
+            ->take(4)
+            ->get();
 
-    $latestArticles = (clone $baseQuery)
-        ->take(6)
-        ->get();
+        $latestArticles = (clone $baseQuery)
+            ->take(6)
+            ->get();
 
-    $trendingArticles = (clone $baseQuery)
-        ->orderBy('views_count', 'desc')
-        ->take(5)
-        ->get();
+        $trendingArticles = (clone $baseQuery)
+            ->orderBy('views_count', 'desc')
+            ->take(5)
+            ->get();
 
-    // Specific category feeds
-    $politicsArticles = (clone $baseQuery)
-        ->forCategory('politics')
-        ->take(4)
-        ->get();
+        // Specific category feeds
+        $politicsArticles = (clone $baseQuery)
+            ->forCategory('politics')
+            ->take(4)
+            ->get();
 
-    $businessArticles = (clone $baseQuery)
-        ->forCategory('business')
-        ->take(4)
-        ->get();
+        $businessArticles = (clone $baseQuery)
+            ->forCategory('business')
+            ->take(4)
+            ->get();
 
-    $techArticles = (clone $baseQuery)
-        ->forCategory('technology')
-        ->take(4)
-        ->get();
+        $techArticles = (clone $baseQuery)
+            ->forCategory('technology')
+            ->take(4)
+            ->get();
 
-    $sportsArticles = (clone $baseQuery)
-        ->forCategory('sports')
-        ->take(4)
-        ->get();
+        $sportsArticles = (clone $baseQuery)
+            ->forCategory('sports')
+            ->take(4)
+            ->get();
 
-    $opinionArticles = (clone $baseQuery)
-        ->forCategory('opinion')
-        ->take(4)
-        ->get();
+        $opinionArticles = (clone $baseQuery)
+            ->forCategory('opinion')
+            ->take(4)
+            ->get();
 
-    $featuredVideo = Video::published()->where('is_featured', true)->first() ?? Video::published()->first();
-    $latestVideos = Video::published()
-        ->where('id', '!=', $featuredVideo ? $featuredVideo->id : 0)
-        ->take(3)
-        ->get();
+        $featuredVideo = Video::published()->where('is_featured', true)->first() ?? Video::published()->first();
+        $latestVideos = Video::published()
+            ->where('id', '!=', $featuredVideo ? $featuredVideo->id : 0)
+            ->take(3)
+            ->get();
 
-    $topAd = Advertisement::active()->location('top')->first();
-    $sidebarAd = Advertisement::active()->location('sidebar')->first();
-    $layout = \App\Models\Setting::get('theme_layout', 'standard');
+        $topAd = Advertisement::active()->location('top')->first();
+        $sidebarAd = Advertisement::active()->location('sidebar')->first();
+        $layout = \App\Models\Setting::get('theme_layout', 'standard');
 
-    // Dynamic Category Blocks for Section 5 (Managed by Admin / Synced with Header Menu)
-    $headerMenu = \App\Models\Setting::get('header_menu', []);
-    $selectedCategorySlugs = [];
+        // Dynamic Category Blocks for Section 5 (Managed by Admin / Synced with Header Menu)
+        $headerMenu = \App\Models\Setting::get('header_menu', []);
+        $selectedCategorySlugs = [];
 
-    $extractSlugs = function ($items) use (&$extractSlugs, &$selectedCategorySlugs) {
-        foreach ($items as $item) {
-            $url = $item['url'] ?? '';
-            if (str_starts_with($url, '/')) {
-                $slug = ltrim($url, '/');
-                if ($slug && !in_array($slug, ['live-tv', 'tv', 'live-radio', 'gallery', 'contact', 'about', 'privacy', 'terms'])) {
-                    $selectedCategorySlugs[] = $slug;
+        $extractSlugs = function ($items) use (&$extractSlugs, &$selectedCategorySlugs) {
+            foreach ($items as $item) {
+                $url = $item['url'] ?? '';
+                if (str_starts_with($url, '/')) {
+                    $slug = ltrim($url, '/');
+                    if ($slug && !in_array($slug, ['live-tv', 'tv', 'live-radio', 'gallery', 'contact', 'about', 'privacy', 'terms'])) {
+                        $selectedCategorySlugs[] = $slug;
+                    }
+                }
+                if (!empty($item['children'])) {
+                    $extractSlugs($item['children']);
                 }
             }
-            if (!empty($item['children'])) {
-                $extractSlugs($item['children']);
+        };
+
+        if (is_array($headerMenu) && !empty($headerMenu)) {
+            $extractSlugs($headerMenu);
+        }
+
+        if (empty($selectedCategorySlugs)) {
+            $homepageCategoriesSlugsString = \App\Models\Setting::get('homepage_categories', 'politics,business,technology,sports');
+            $selectedCategorySlugs = array_filter(array_map('trim', explode(',', $homepageCategoriesSlugsString)));
+        }
+
+        $selectedCategorySlugs = array_unique($selectedCategorySlugs);
+
+        $categoryBlocks = [];
+        if (!empty($selectedCategorySlugs)) {
+            $homepageCategories = Category::whereIn('slug', $selectedCategorySlugs)
+                ->get()
+                ->sortBy(function ($cat) use ($selectedCategorySlugs) {
+                    return array_search($cat->slug, $selectedCategorySlugs);
+                });
+
+            foreach ($homepageCategories as $cat) {
+                $categoryBlocks[] = [
+                    'category' => $cat,
+                    'articles' => (clone $baseQuery)
+                        ->forCategory($cat->id)
+                        ->take(8)
+                        ->get()
+                ];
             }
         }
-    };
 
-    if (is_array($headerMenu) && !empty($headerMenu)) {
-        $extractSlugs($headerMenu);
-    }
-
-    if (empty($selectedCategorySlugs)) {
-        $homepageCategoriesSlugsString = \App\Models\Setting::get('homepage_categories', 'politics,business,technology,sports');
-        $selectedCategorySlugs = array_filter(array_map('trim', explode(',', $homepageCategoriesSlugsString)));
-    }
-
-    $selectedCategorySlugs = array_unique($selectedCategorySlugs);
-
-    $categoryBlocks = [];
-    if (!empty($selectedCategorySlugs)) {
-        $homepageCategories = Category::whereIn('slug', $selectedCategorySlugs)
-            ->get()
-            ->sortBy(function ($cat) use ($selectedCategorySlugs) {
-                return array_search($cat->slug, $selectedCategorySlugs);
-            });
-
-        foreach ($homepageCategories as $cat) {
-            $categoryBlocks[] = [
-                'category' => $cat,
-                'articles' => (clone $baseQuery)
-                    ->forCategory($cat->id)
-                    ->take(8)
-                    ->get()
-            ];
-        }
-    }
-
-    $homepageData = [
-        'featuredArticle' => $featuredArticle,
-        'topStories' => $topStories,
-        'latestArticles' => $latestArticles,
-        'trendingArticles' => $trendingArticles,
-        'politicsArticles' => $politicsArticles,
-        'businessArticles' => $businessArticles,
-        'techArticles' => $techArticles,
-        'sportsArticles' => $sportsArticles,
-        'opinionArticles' => $opinionArticles,
-        'featuredVideo' => $featuredVideo,
-        'latestVideos' => $latestVideos,
-        'topAd' => $topAd,
-        'sidebarAd' => $sidebarAd,
-        'layout' => $layout,
-        'categoryBlocks' => $categoryBlocks,
-    ];
+        return [
+            'featuredArticle' => $featuredArticle,
+            'topStories' => $topStories,
+            'latestArticles' => $latestArticles,
+            'trendingArticles' => $trendingArticles,
+            'politicsArticles' => $politicsArticles,
+            'businessArticles' => $businessArticles,
+            'techArticles' => $techArticles,
+            'sportsArticles' => $sportsArticles,
+            'opinionArticles' => $opinionArticles,
+            'featuredVideo' => $featuredVideo,
+            'latestVideos' => $latestVideos,
+            'topAd' => $topAd,
+            'sidebarAd' => $sidebarAd,
+            'layout' => $layout,
+            'categoryBlocks' => $categoryBlocks,
+        ];
+    });
 
     return view('welcome', $homepageData);
 });

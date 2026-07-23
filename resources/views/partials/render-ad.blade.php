@@ -12,13 +12,13 @@
 @if($adsenseEnabled && \App\Models\Setting::get('adsense_code'))
     <!-- Google AdSense Ad Block -->
     <div class="w-full text-center my-4">
-        <span class="text-[8px] text-gray-400 block mb-1">ADVERTISEMENT (ADSENSE)</span>
+        <span class="text-[9px] text-gray-700 dark:text-gray-300 block mb-1 font-bold tracking-wider">ADVERTISEMENT (ADSENSE)</span>
         {!! \App\Models\Setting::get('adsense_code') !!}
     </div>
 @elseif($facebookAdsEnabled && \App\Models\Setting::get('facebook_ads_code'))
     <!-- Facebook Audience Network Ad Block -->
     <div class="w-full text-center my-4">
-        <span class="text-[8px] text-gray-400 block mb-1">ADVERTISEMENT (FACEBOOK)</span>
+        <span class="text-[9px] text-gray-700 dark:text-gray-300 block mb-1 font-bold tracking-wider">ADVERTISEMENT (FACEBOOK)</span>
         {!! \App\Models\Setting::get('facebook_ads_code') !!}
     </div>
 @elseif($customAdsEnabled)
@@ -50,7 +50,7 @@
                 </div>
             </a>
         @else
-            <div class="w-full bg-gray-50 dark:bg-gray-955 border border-gray-150 dark:border-gray-850 text-center py-6 rounded text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+            <div class="w-full bg-gray-50 dark:bg-gray-955 border border-gray-150 dark:border-gray-850 text-center py-6 rounded text-[10px] text-gray-700 dark:text-gray-300 uppercase tracking-widest font-bold">
                 ADVERTISEMENT
             </div>
         @endif

@@ -115,6 +115,11 @@ class Article extends Model
         return $query->where('is_pinned', true);
     }
 
+    public function optimizedImage(int $w = 600, int $h = 400, int $q = 75): string
+    {
+        return \App\Support\ImageOptimizer::url($this->featured_image, $w, $h, $q);
+    }
+
     // Calculate reading time based on 200 words per minute
     public static function calculateReadTime(string $content): int
     {

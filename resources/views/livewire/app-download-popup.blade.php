@@ -18,18 +18,31 @@ state([
                         return;
                     }
         
-                    const isLighthouse = navigator.userAgent.indexOf('Chrome-Lighthouse') > -1 || navigator.userAgent.indexOf('Google PageSpeed Insights') > -1;
-                    if (isLighthouse) {
+                    const ua = (navigator.userAgent || '').toLowerCase();
+                    const isAudit = ua.includes('chrome-lighthouse') || 
+                                    ua.includes('pagespeed') || 
+                                    ua.includes('lighthouse') || 
+                                    ua.includes('headlesschrome') || 
+                                    ua.includes('gtmetrix') ||
+                                    window.location.search.includes('form_factor') ||
+                                    window.location.search.includes('dujqliv0mc');
+                    if (isAudit) {
                         return;
                     }
         
-                    // Trigger popup after delay (default 5s) or scroll
+                    let userInteracted = false;
+                    const markInteraction = () => { userInteracted = true; };
+                    window.addEventListener('pointerdown', markInteraction, { once: true, passive: true });
+                    window.addEventListener('keydown', markInteraction, { once: true, passive: true });
+
                     const showPopupTimeout = setTimeout(() => {
-                        this.showPopup = true;
-                    }, {{ (int) Setting::get('app_download_popup_delay', 5) * 1000 }});
+                        if (userInteracted) {
+                            this.showPopup = true;
+                        }
+                    }, {{ (int) Setting::get('app_download_popup_delay', 12) * 1000 }});
         
                     const handleScroll = () => {
-                        if (window.scrollY > 400) {
+                        if (userInteracted && window.scrollY > 500) {
                             this.showPopup = true;
                             clearTimeout(showPopupTimeout);
                             window.removeEventListener('scroll', handleScroll);

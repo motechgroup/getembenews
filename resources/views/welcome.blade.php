@@ -16,7 +16,7 @@
                         @if($featuredArticle)
                             <article class="pt-0 group flex flex-col sm:flex-row gap-6">
                                 <div class="w-full sm:w-1/3 aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800">
-                                    <img src="{{ $featuredArticle->featured_image }}" alt="{{ $featuredArticle->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500">
+                                    <img src="{{ $featuredArticle->optimizedImage(800, 450) }}" alt="{{ $featuredArticle->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500" fetchpriority="high" decoding="async">
                                 </div>
                                 <div class="space-y-1.5 flex-grow">
                                     <div class="flex items-center space-x-2 text-[10px] font-bold text-[#C8102E] uppercase">
@@ -35,7 +35,7 @@
                         @foreach($topStories as $story)
                             <article class="pt-6 group flex flex-col sm:flex-row gap-6">
                                 <div class="w-full sm:w-1/3 aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800">
-                                    <img src="{{ $story->featured_image }}" alt="{{ $story->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500" loading="lazy">
+                                    <img src="{{ $story->optimizedImage(500, 320) }}" alt="{{ $story->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500" loading="lazy" decoding="async">
                                 </div>
                                 <div class="space-y-1.5 flex-grow">
                                     <div class="flex items-center space-x-2 text-[9px] font-bold text-[#C8102E] uppercase">
@@ -121,7 +121,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             @if($featuredArticle)
                                 <article class="md:col-span-2 relative aspect-[16/10] overflow-hidden rounded-lg group shadow-md border border-gray-200 dark:border-gray-800 bg-gray-950">
-                                    <img src="{{ $featuredArticle->featured_image }}" alt="{{ $featuredArticle->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-101 opacity-85 group-hover:opacity-75 transition duration-500">
+                                    <img src="{{ $featuredArticle->optimizedImage(800, 450) }}" alt="{{ $featuredArticle->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-101 opacity-85 group-hover:opacity-75 transition duration-500" fetchpriority="high" decoding="async">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent flex flex-col justify-end p-6 space-y-1">
                                         <span class="text-[10px] font-bold text-red-500 uppercase tracking-widest">{{ $featuredArticle->category->name }}</span>
                                         <h3 class="text-xl sm:text-2xl font-serif font-black text-white leading-tight">
@@ -134,7 +134,7 @@
 
                             @foreach($topStories as $story)
                                 <article class="relative aspect-[16/10] overflow-hidden rounded-lg group shadow-sm border border-gray-250 dark:border-gray-800 bg-gray-950">
-                                    <img src="{{ $story->featured_image }}" alt="{{ $story->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 opacity-85 group-hover:opacity-75 transition duration-500" loading="lazy">
+                                    <img src="{{ $story->optimizedImage(500, 320) }}" alt="{{ $story->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 opacity-85 group-hover:opacity-75 transition duration-500" loading="lazy" decoding="async">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent flex flex-col justify-end p-4 space-y-1">
                                         <span class="text-[9px] font-bold text-red-500 uppercase tracking-widest">{{ $story->category->name }}</span>
                                         <h3 class="text-sm font-serif font-bold text-white leading-tight line-clamp-2">
@@ -212,7 +212,7 @@
                 @if($featuredArticle)
                     <div class="lg:col-span-2 relative block aspect-[16/10] lg:aspect-auto lg:h-[450px] overflow-hidden rounded group bg-gray-950 shadow-md">
                         <a href="/articles/{{ $featuredArticle->slug }}" class="absolute inset-0 z-0">
-                            <img src="{{ $featuredArticle->featured_image }}" alt="{{ $featuredArticle->title }}" class="w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85">
+                            <img src="{{ $featuredArticle->optimizedImage(800, 450) }}" alt="{{ $featuredArticle->title }}" class="w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85" fetchpriority="high" decoding="async">
                         </a>
                         <!-- Red category tag on top-left -->
                         <span class="absolute top-4 left-4 px-3 py-1 bg-[#C8102E] text-white text-[10px] font-black uppercase tracking-widest rounded shadow z-10">
@@ -257,7 +257,7 @@
                     @foreach($topStories->take(4) as $story)
                         <div class="relative block aspect-[16/10] overflow-hidden rounded group bg-gray-950 shadow border border-gray-150 dark:border-gray-855">
                             <a href="/articles/{{ $story->slug }}" class="absolute inset-0 z-0">
-                                <img src="{{ $story->featured_image }}" alt="{{ $story->title }}" class="w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85">
+                                <img src="{{ $story->optimizedImage(500, 320) }}" alt="{{ $story->title }}" class="w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85" loading="lazy" decoding="async">
                             </a>
                             <!-- Category tag with custom color overlay -->
                             <span class="absolute top-3 left-3 px-2 py-0.5 bg-[#FF7900] text-white text-[9px] font-black uppercase tracking-wider rounded shadow z-10">
@@ -322,7 +322,7 @@
                                     @foreach($block['articles']->take(2) as $medItem)
                                         <article class="group space-y-3">
                                             <a href="/articles/{{ $medItem->slug }}" class="block aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-855 border border-gray-150 dark:border-gray-850 relative">
-                                                <img src="{{ $medItem->featured_image }}" alt="{{ $medItem->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500" loading="lazy">
+                                                <img src="{{ $medItem->optimizedImage(450, 280) }}" alt="{{ $medItem->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500" loading="lazy" decoding="async">
                                                 @if($medItem->is_featured)
                                                     <span class="absolute top-2.5 right-2.5 bg-yellow-500 text-white p-0.5 rounded-full shadow-md z-10">
                                                         <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -455,7 +455,7 @@
                             @foreach($trendingArticles->take(5) as $popItem)
                                 <article class="group flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
                                     <div class="w-20 h-14 overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800 relative">
-                                        <img src="{{ $popItem->featured_image }}" alt="{{ $popItem->title }}" class="w-full h-full object-cover" loading="lazy">
+                                        <img src="{{ $popItem->optimizedImage(200, 140) }}" alt="{{ $popItem->title }}" class="w-full h-full object-cover" loading="lazy" decoding="async">
                                         @if($popItem->is_featured)
                                             <span class="absolute top-1 right-1 bg-yellow-500 text-white p-0.5 rounded-full shadow z-10 scale-75">
                                                 <svg class="h-2 w-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -517,9 +517,9 @@
 
                             <!-- Instagram -->
                             @if(\App\Models\Setting::get('social_instagram_active', true))
-                            <a href="{{ $igStats['url'] }}" target="_blank" style="background-color: #E1306C;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
-                                <span class="uppercase">Instagram</span>
-                                <span class="text-[9px] font-medium text-red-100 mt-0.5">{{ $igStats['formatted'] }} {{ $igStats['label'] }}</span>
+                            <a href="{{ $igStats['url'] }}" target="_blank" style="background-color: #C13584;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase text-white">Instagram</span>
+                                <span class="text-[9px] font-medium text-white/90 mt-0.5">{{ $igStats['formatted'] }} {{ $igStats['label'] }}</span>
                             </a>
                             @endif
 
@@ -533,17 +533,17 @@
 
                             <!-- YouTube -->
                             @if(\App\Models\Setting::get('social_youtube_active', true))
-                            <a href="{{ $ytStats['url'] }}" target="_blank" style="background-color: #FF0000;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
-                                <span class="uppercase">YouTube</span>
-                                <span class="text-[9px] font-medium text-red-100 mt-0.5">{{ $ytStats['formatted'] }} {{ $ytStats['label'] }}</span>
+                            <a href="{{ $ytStats['url'] }}" target="_blank" style="background-color: #CC0000;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase text-white">YouTube</span>
+                                <span class="text-[9px] font-medium text-white/90 mt-0.5">{{ $ytStats['formatted'] }} {{ $ytStats['label'] }}</span>
                             </a>
                             @endif
 
                             <!-- WhatsApp -->
                             @if(\App\Models\Setting::get('social_whatsapp_active', true))
-                            <a href="{{ $waStats['url'] }}" target="_blank" style="background-color: #25D366;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
-                                <span class="uppercase">WhatsApp</span>
-                                <span class="text-[9px] font-medium text-green-100 mt-0.5">{{ $waStats['formatted'] }} {{ $waStats['label'] }}</span>
+                            <a href="{{ $waStats['url'] }}" target="_blank" style="background-color: #075E54;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase text-white">WhatsApp</span>
+                                <span class="text-[9px] font-medium text-white/90 mt-0.5">{{ $waStats['formatted'] }} {{ $waStats['label'] }}</span>
                             </a>
                             @endif
 
@@ -557,9 +557,9 @@
 
                             <!-- Telegram -->
                             @if(\App\Models\Setting::get('social_telegram_active', true))
-                            <a href="{{ $tgStats['url'] }}" target="_blank" style="background-color: #26A69A;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
-                                <span class="uppercase">Telegram</span>
-                                <span class="text-[9px] font-medium text-teal-100 mt-0.5">{{ $tgStats['formatted'] }} {{ $tgStats['label'] }}</span>
+                            <a href="{{ $tgStats['url'] }}" target="_blank" style="background-color: #0077B5;" class="flex flex-col items-center justify-center hover:opacity-90 transition py-2 px-3 rounded shadow-sm text-center font-bold">
+                                <span class="uppercase text-white">Telegram</span>
+                                <span class="text-[9px] font-medium text-white/90 mt-0.5">{{ $tgStats['formatted'] }} {{ $tgStats['label'] }}</span>
                             </a>
                             @endif
 
@@ -672,7 +672,7 @@
                     <div class="lg:col-span-2 space-y-3">
                         <div class="aspect-video rounded-lg overflow-hidden bg-black relative border border-gray-800 shadow-2xl">
                             @if(Str::contains($tvUrl, 'youtube.com') || Str::contains($tvUrl, 'embed'))
-                                <iframe src="{{ $tvUrl }}" title="Getembe Live TV" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                <iframe src="{{ $tvUrl }}" title="Getembe Live TV" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
                             @else
                                 <video controls autoplay class="w-full h-full">
                                     <source src="{{ $tvUrl }}" type="application/x-mpegURL">

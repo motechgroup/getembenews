@@ -21,7 +21,7 @@
         $firstWord = $parts[0] ?? 'Getembe';
         $secondWord = $parts[1] ?? 'News';
 
-        $brandColor = \App\Models\Setting::get('brand_color', '#cc6c3b');
+        $brandColor = \App\Models\Setting::get('brand_color', '#be5b27');
         $footerBgColor = \App\Models\Setting::get('footer_bg_color', '#111827');
         $footerTextColor = \App\Models\Setting::get('footer_text_color', '#9CA3AF');
 
@@ -75,9 +75,14 @@
     <!-- JSON-LD Structured Data Schema -->
     {!! \App\Support\Seo::generateSchema(get_defined_vars()) !!}
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <!-- Instrument Sans is compiled via Vite, but fallback to Inter -->
+    <!-- Preload Hero LCP Image -->
+    @if(isset($featuredArticle) && !empty($featuredArticle->featured_image))
+        <link rel="preload" as="image" href="{{ $featuredArticle->featured_image }}" fetchpriority="high">
+    @endif
+
+    <!-- Fonts Preconnect & Optimization -->
+    <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|playfair-display:700&display=swap" rel="stylesheet" />
 
     <!-- Dynamic Theme Engine -->
@@ -126,17 +131,23 @@
         </script>
     @endif
 
-    <!-- Google AdSense Integration -->
+    <!-- Google AdSense Integration (Deferred for performance) -->
     @php
         $adsenseEnabled = \App\Models\Setting::get('adsense_enabled', false);
         $adsenseClientId = \App\Models\Setting::get('adsense_client_id');
     @endphp
     @if($adsenseEnabled)
-        @if(!empty($adsenseClientId))
-            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ $adsenseClientId }}" crossorigin="anonymous"></script>
-        @else
-            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" crossorigin="anonymous"></script>
-        @endif
+        <script>
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    const script = document.createElement('script');
+                    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js@if(!empty($adsenseClientId))?client={{ $adsenseClientId }}@endif";
+                    script.async = true;
+                    script.crossOrigin = "anonymous";
+                    document.head.appendChild(script);
+                }, 3500);
+            });
+        </script>
     @endif
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -427,12 +438,14 @@
             
             <!-- Trending Items Horizontal List -->
             @php
-                $trendingItems = \App\Models\Article::where('status', 'published')
-                    ->whereNotNull('published_at')
-                    ->where('published_at', '<=', now())
-                    ->orderBy('views_count', 'desc')
-                    ->take(5)
-                    ->get();
+                $trendingItems = \Illuminate\Support\Facades\Cache::remember('layout_trending_items_v2', 300, function () {
+                    return \App\Models\Article::where('status', 'published')
+                        ->whereNotNull('published_at')
+                        ->where('published_at', '<=', now())
+                        ->orderBy('views_count', 'desc')
+                        ->take(5)
+                        ->get();
+                });
             @endphp
             <div class="flex items-center space-x-6 overflow-x-auto scrollbar-none py-0.5 text-gray-600 dark:text-gray-300 font-semibold text-[11px]">
                 @forelse($trendingItems as $item)
@@ -518,7 +531,12 @@
             <div>
                 <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">News Categories</h4>
                 <ul class="space-y-2 text-xs text-gray-400">
-                    @foreach(\App\Models\Category::orderBy('order')->take(6)->get() as $cat)
+                    @php
+                        $footerCategories = \Illuminate\Support\Facades\Cache::remember('layout_footer_categories_v2', 600, function () {
+                            return \App\Models\Category::orderBy('order')->take(6)->get();
+                        });
+                    @endphp
+                    @foreach($footerCategories as $cat)
                         <li><a href="/{{ $cat->slug }}" class="hover:text-white transition">{{ $cat->name }}</a></li>
                     @endforeach
                 </ul>

@@ -22,7 +22,7 @@
                                     <div class="flex items-center space-x-2 text-[10px] font-bold text-[#C8102E] uppercase">
                                         <span>{{ $featuredArticle->category?->name ?? 'General' }}</span>
                                         <span class="text-gray-300 font-normal">&bull;</span>
-                                        <span class="text-gray-500 dark:text-gray-400 font-normal">{{ $featuredArticle->published_at->diffForHumans() }}</span>
+                                        <span class="text-gray-500 dark:text-gray-400 font-normal">{{ optional($featuredArticle->published_at)->diffForHumans() ?? 'Recently' }}</span>
                                     </div>
                                     <h3 class="text-lg font-serif font-bold text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition">
                                         <a href="/articles/{{ $featuredArticle->slug }}">{{ $featuredArticle->title }}</a>
@@ -41,7 +41,7 @@
                                     <div class="flex items-center space-x-2 text-[9px] font-bold text-[#C8102E] uppercase">
                                         <span>{{ $story->category?->name ?? 'General' }}</span>
                                         <span class="text-gray-300 font-normal">&bull;</span>
-                                        <span class="text-gray-500 dark:text-gray-400 font-normal">{{ $story->published_at->diffForHumans() }}</span>
+                                        <span class="text-gray-500 dark:text-gray-400 font-normal">{{ optional($story->published_at)->diffForHumans() ?? 'Recently' }}</span>
                                     </div>
                                     <h3 class="text-base font-serif font-bold text-gray-900 dark:text-white leading-tight group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition">
                                         <a href="/articles/{{ $story->slug }}">{{ $story->title }}</a>
@@ -98,7 +98,7 @@
                                 <div class="py-3 first:pt-0 last:pb-0 group">
                                     <div class="flex items-center justify-between text-[10px] mb-1">
                                         <span class="text-[#C8102E] font-bold uppercase">{{ $latest->category?->name ?? 'General' }}</span>
-                                        <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $latest->published_at->diffForHumans() }}</span>
+                                        <span class="text-gray-500 dark:text-gray-400 font-medium">{{ optional($latest->published_at)->diffForHumans() ?? 'Recently' }}</span>
                                     </div>
                                     <h4 class="text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition">
                                         <a href="/articles/{{ $latest->slug }}">{{ $latest->title }}</a>
@@ -191,7 +191,7 @@
                                     <div class="py-3 first:pt-0 last:pb-0 group">
                                         <div class="flex items-center justify-between text-[10px] mb-1">
                                             <span class="text-[#C8102E] font-bold uppercase">{{ $latest->category?->name ?? 'General' }}</span>
-                                            <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $latest->published_at->diffForHumans() }}</span>
+                                            <span class="text-gray-500 dark:text-gray-400 font-medium">{{ optional($latest->published_at)->diffForHumans() ?? 'Recently' }}</span>
                                         </div>
                                         <h4 class="text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-[#C8102E] transition">
                                             <a href="/articles/{{ $latest->slug }}">{{ $latest->title }}</a>
@@ -229,7 +229,7 @@
                                     <span>admin</span>
                                 @endif
                                 <span>&bull;</span>
-                                <span>{{ $featuredArticle->published_at->format('M j, Y') }}</span>
+                                <span>{{ optional($featuredArticle->published_at)->format('M j, Y') ?? date('M j, Y') }}</span>
                                 <span>&bull;</span>
                                 <span class="flex items-center space-x-1">
                                     <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
@@ -274,7 +274,7 @@
                                         <span>staff</span>
                                     @endif
                                     <span>&bull;</span>
-                                    <span>{{ $story->published_at->format('M j, Y') }}</span>
+                                    <span>{{ optional($story->published_at)->format('M j, Y') ?? date('M j, Y') }}</span>
                                     @if(\App\Models\Setting::get('show_views_count', true))
                                         <span>&bull;</span>
                                         <span class="flex items-center space-x-0.5">
@@ -340,7 +340,7 @@
                                                         <span>staff</span>
                                                     @endif
                                                     <span>&bull;</span>
-                                                    <span>{{ $medItem->published_at->format('M j, Y') }}</span>
+                                                    <span>{{ optional($medItem->published_at)->format('M j, Y') ?? date('M j, Y') }}</span>
                                                     @if(\App\Models\Setting::get('show_views_count', true))
                                                         <span>&bull;</span>
                                                         <span class="flex items-center space-x-0.5">
@@ -387,7 +387,7 @@
                                                             <span>staff</span>
                                                         @endif
                                                         <span>&bull;</span>
-                                                        <span>{{ $item->published_at->format('M j, Y') }}</span>
+                                                        <span>{{ optional($item->published_at)->format('M j, Y') ?? date('M j, Y') }}</span>
                                                     </div>
                                                 </div>
                                             </article>
@@ -417,7 +417,7 @@
                                                             <span>staff</span>
                                                         @endif
                                                         <span>&bull;</span>
-                                                        <span>{{ $item->published_at->format('M j, Y') }}</span>
+                                                        <span>{{ optional($item->published_at)->format('M j, Y') ?? date('M j, Y') }}</span>
                                                     </div>
                                                 </div>
                                             </article>
@@ -473,7 +473,7 @@
                                                 <span>admin</span>
                                             @endif
                                             <span>&bull;</span>
-                                            <span>{{ $popItem->published_at->format('M j, Y') }}</span>
+                                            <span>{{ optional($popItem->published_at)->format('M j, Y') ?? date('M j, Y') }}</span>
                                             @if(\App\Models\Setting::get('show_views_count', true))
                                                 <span>&bull;</span>
                                                 <span class="flex items-center space-x-0.5">

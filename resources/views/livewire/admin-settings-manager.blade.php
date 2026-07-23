@@ -502,6 +502,7 @@ mount(function ($activeTab = 'identity') {
         'schedules' => 'settings management',
         'security' => 'settings management',
         'sms' => 'settings management',
+        'popups' => 'settings management',
     ];
 
     if (isset($permissionMap[$activeTab])) {
@@ -1478,6 +1479,9 @@ $sendTestEmail = function () {
         </a>
         <a href="/admin/settings/mobile-app" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'mobile-app' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
             Mobile App
+        </a>
+        <a href="/admin/settings/popups" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'popups' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Pop-up Modals
         </a>
         <a href="/admin/settings/sms" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'sms' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
             SMS Alert Gateway
@@ -2830,6 +2834,92 @@ $sendTestEmail = function () {
                     <div class="flex justify-end pt-2">
                         <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs py-2 px-6 rounded transition">
                             Save Mobile App Settings
+                        </button>
+                    </div>
+                </div>
+
+                <!-- POP-UP MODALS MANAGEMENT TAB -->
+                <div x-show="activeTab === 'popups'" class="space-y-6" style="display: none;">
+                    <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Pop-up Modals & Visitor Alert Management</h3>
+                            <p class="text-xs text-gray-500">Manage automated popups, newsletter signup modals, and mobile app download alerts served to visitors.</p>
+                        </div>
+                    </div>
+
+                    <!-- 1. Newsletter Subscription Popup -->
+                    <div class="space-y-4 bg-gray-50 dark:bg-gray-950 p-5 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-3 gap-2">
+                            <div>
+                                <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider flex items-center space-x-2">
+                                    <span>📧 Newsletter Signup Modal Pop-up</span>
+                                </h4>
+                                <p class="text-[10px] text-gray-500">Displays a responsive modal inviting visitors to subscribe to breaking news alerts.</p>
+                            </div>
+                            <button type="button" wire:click="toggleNewsletterPopup" class="px-3.5 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider transition flex items-center space-x-2 shrink-0 {{ $newsletter_popup_enabled ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300' }}">
+                                <span class="w-2 h-2 rounded-full {{ $newsletter_popup_enabled ? 'bg-white animate-pulse' : 'bg-gray-400' }}"></span>
+                                <span>{{ $newsletter_popup_enabled ? 'ON (Active)' : 'OFF (Disabled)' }}</span>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Pop-up Header Title</label>
+                                <input type="text" wire:model="newsletter_popup_title" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Display Delay (Seconds)</label>
+                                <input type="number" wire:model="newsletter_popup_delay" min="0" max="120" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Pop-up Message Description</label>
+                            <input type="text" wire:model="newsletter_popup_description" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        </div>
+                    </div>
+
+                    <!-- 2. Mobile App Download Popup -->
+                    <div class="space-y-4 bg-gray-50 dark:bg-gray-950 p-5 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-200 dark:border-gray-800 pb-3 gap-2">
+                            <div>
+                                <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider flex items-center space-x-2">
+                                    <span>📱 Mobile App Download Modal Pop-up</span>
+                                </h4>
+                                <p class="text-[10px] text-gray-500">Displays direct App Store and Play Store links to visitors on mobile and desktop devices.</p>
+                            </div>
+                            <button type="button" wire:click="toggleAppDownloadPopup" class="px-3.5 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider transition flex items-center space-x-2 shrink-0 {{ $app_download_popup_enabled ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300' }}">
+                                <span class="w-2 h-2 rounded-full {{ $app_download_popup_enabled ? 'bg-white animate-pulse' : 'bg-gray-400' }}"></span>
+                                <span>{{ $app_download_popup_enabled ? 'ON (Active)' : 'OFF (Disabled)' }}</span>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Pop-up Header Title</label>
+                                <input type="text" wire:model="app_download_popup_title" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Display Delay (Seconds)</label>
+                                <input type="number" wire:model="app_download_popup_delay" min="0" max="120" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Pop-up Message Description</label>
+                            <input type="text" wire:model="app_download_popup_description" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                        </div>
+                    </div>
+
+                    <!-- 3. Helper Actions & Reset Memory -->
+                    <div class="p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div class="text-xs text-blue-900 dark:text-blue-200">
+                            <strong class="font-bold">Testing Pop-ups in Browser:</strong> Pop-ups remember when a user closes them via browser storage. To test popups again on your computer, click reset.
+                        </div>
+                        <button type="button" onclick="localStorage.removeItem('newsletter_popup_dismissed'); localStorage.removeItem('app_download_popup_dismissed'); alert('Pop-up dismissal memory cleared! Refresh the homepage to preview pop-ups.');" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded transition shrink-0">
+                            Reset Local Browser Memory
+                        </button>
+                    </div>
+
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs py-2 px-6 rounded transition">
+                            Save Pop-up Settings
                         </button>
                     </div>
                 </div>

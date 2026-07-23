@@ -114,6 +114,7 @@ class User extends Authenticatable
         $defaultRolesPermissions = [
             'admin' => ['all'],
             'editor' => [
+                'user management',
                 'content management',
                 'article management',
                 'category management',

@@ -93,6 +93,26 @@ $deleteUser = function ($id) {
     session()->flash('message', 'User account deleted successfully.');
 };
 
+$quickChangeRole = function ($id, $newRole) {
+    if (auth()->id() == $id && $newRole !== 'admin') {
+        session()->flash('error', 'You cannot downgrade your own administrator account role.');
+        return;
+    }
+
+    $validRoles = ['admin', 'editor', 'author', 'manager', 'user', 'writing-article'];
+    if (!in_array($newRole, $validRoles)) {
+        session()->flash('error', 'Invalid role selected.');
+        return;
+    }
+
+    $targetUser = User::findOrFail($id);
+    $oldRole = $targetUser->role;
+    $targetUser->role = $newRole;
+    $targetUser->save();
+
+    session()->flash('message', "Converted {$targetUser->name}'s role from " . ucfirst($oldRole) . " to " . ucfirst($newRole) . " successfully.");
+};
+
 with(function () {
     $users = User::query()
         ->when($this->search, function ($q) {
@@ -214,8 +234,9 @@ with(function () {
             <table class="w-full text-left border-collapse text-xs">
                 <thead>
                     <tr class="bg-gray-50 dark:bg-gray-950 text-gray-500 font-bold border-b border-gray-200 dark:border-gray-800 uppercase tracking-wider text-[10px]">
-                        <th class="p-4">User</th>
-                        <th class="p-4">Role</th>
+                        <th class="p-4">User Info</th>
+                        <th class="p-4">Current Role</th>
+                        <th class="p-4">Quick Convert Role</th>
                         <th class="p-4">Registered Date</th>
                         <th class="p-4 text-right">Actions</th>
                     </tr>
@@ -249,6 +270,16 @@ with(function () {
                                         ">
                                     {{ $user->role }}
                                 </button>
+                            </td>
+                            <td class="p-4">
+                                <select wire:change="quickChangeRole({{ $user->id }}, $event.target.value)" 
+                                        class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-[11px] font-bold rounded px-2.5 py-1 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C8102E]">
+                                    <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User (Reader)</option>
+                                    <option value="author" {{ $user->role === 'author' ? 'selected' : '' }}>Convert to Author</option>
+                                    <option value="editor" {{ $user->role === 'editor' ? 'selected' : '' }}>Convert to Editor</option>
+                                    <option value="manager" {{ $user->role === 'manager' ? 'selected' : '' }}>Convert to Manager</option>
+                                    <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Convert to Admin</option>
+                                </select>
                             </td>
                             <td class="p-4 text-gray-500">
                                 {{ $user->created_at->format('M d, Y') }}

@@ -397,9 +397,6 @@ Route::get('/debug-log', function () {
 });
 
 Route::get('/run-migrations', function () {
-    if (request()->query('secret') !== 'motechgroup2026') {
-        abort(403);
-    }
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
         return '<h3>Migration Success:</h3><pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';

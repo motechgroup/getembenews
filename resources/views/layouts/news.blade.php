@@ -439,14 +439,25 @@
             
             <!-- Trending Items Horizontal List -->
             @php
-                $trendingItems = \Illuminate\Support\Facades\Cache::remember('layout_trending_items_v2', 300, function () {
-                    return \App\Models\Article::where('status', 'published')
+                try {
+                    $trendingItems = \Illuminate\Support\Facades\Cache::remember('layout_trending_v4_' . filemtime(base_path('routes/web.php')), 300, function () {
+                        return \App\Models\Article::with(['category', 'author'])
+                            ->where('status', 'published')
+                            ->whereNotNull('published_at')
+                            ->where('published_at', '<=', now())
+                            ->orderBy('views_count', 'desc')
+                            ->take(5)
+                            ->get();
+                    });
+                } catch (\Throwable $e) {
+                    $trendingItems = \App\Models\Article::with(['category', 'author'])
+                        ->where('status', 'published')
                         ->whereNotNull('published_at')
                         ->where('published_at', '<=', now())
                         ->orderBy('views_count', 'desc')
                         ->take(5)
                         ->get();
-                });
+                }
             @endphp
             <div class="flex items-center space-x-6 overflow-x-auto scrollbar-none py-0.5 text-gray-600 dark:text-gray-300 font-semibold text-[11px]">
                 @forelse($trendingItems as $item)

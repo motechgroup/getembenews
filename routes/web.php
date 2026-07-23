@@ -7,10 +7,13 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Cache;
 
 Route::get('/', function () {
-    $homepageData = Cache::remember('homepage_data_v3', 300, function () {
+    $cacheKey = 'homepage_data_v5_' . filemtime(__FILE__);
+
+    $buildHomepageData = function () {
         $now = now();
         
-        $baseQuery = Article::where('status', 'published')
+        $baseQuery = Article::with(['category', 'author', 'comments'])
+            ->where('status', 'published')
             ->whereNotNull('published_at')
             ->where('published_at', '<=', $now)
             ->orderBy('published_at', 'desc');
@@ -33,30 +36,11 @@ Route::get('/', function () {
             ->get();
 
         // Specific category feeds
-        $politicsArticles = (clone $baseQuery)
-            ->forCategory('politics')
-            ->take(4)
-            ->get();
-
-        $businessArticles = (clone $baseQuery)
-            ->forCategory('business')
-            ->take(4)
-            ->get();
-
-        $techArticles = (clone $baseQuery)
-            ->forCategory('technology')
-            ->take(4)
-            ->get();
-
-        $sportsArticles = (clone $baseQuery)
-            ->forCategory('sports')
-            ->take(4)
-            ->get();
-
-        $opinionArticles = (clone $baseQuery)
-            ->forCategory('opinion')
-            ->take(4)
-            ->get();
+        $politicsArticles = (clone $baseQuery)->forCategory('politics')->take(4)->get();
+        $businessArticles = (clone $baseQuery)->forCategory('business')->take(4)->get();
+        $techArticles = (clone $baseQuery)->forCategory('technology')->take(4)->get();
+        $sportsArticles = (clone $baseQuery)->forCategory('sports')->take(4)->get();
+        $opinionArticles = (clone $baseQuery)->forCategory('opinion')->take(4)->get();
 
         $featuredVideo = Video::published()->where('is_featured', true)->first() ?? Video::published()->first();
         $latestVideos = Video::published()
@@ -107,6 +91,7 @@ Route::get('/', function () {
                 });
 
             foreach ($homepageCategories as $cat) {
+                if (!$cat) continue;
                 $categoryBlocks[] = [
                     'category' => $cat,
                     'articles' => (clone $baseQuery)
@@ -134,7 +119,18 @@ Route::get('/', function () {
             'layout' => $layout,
             'categoryBlocks' => $categoryBlocks,
         ];
-    });
+    };
+
+    try {
+        $homepageData = Cache::remember($cacheKey, 300, $buildHomepageData);
+    } catch (\Throwable $e) {
+        Cache::forget('homepage_data_v1');
+        Cache::forget('homepage_data_v2');
+        Cache::forget('homepage_data_v3');
+        Cache::forget('homepage_data_v4');
+        Cache::forget($cacheKey);
+        $homepageData = $buildHomepageData();
+    }
 
     return view('welcome', $homepageData);
 });

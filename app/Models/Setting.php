@@ -108,6 +108,59 @@ class Setting extends Model
         ';
     }
 
+    public static function defaultAccountDeletionContent(): string
+    {
+        return '
+        <p class="text-xs text-gray-400">Last updated: July 24, 2026</p>
+
+        <p class="text-sm leading-relaxed">At <strong>Getembe News</strong>, we respect your right to data privacy and give you full control over your personal data and account credentials. This Account Deletion Policy explains how registered users of our website and mobile application can request or perform account deletion and what happens to your data upon account removal.</p>
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white pt-4">1. How to Delete Your Account (Self-Service)</h2>
+        <p class="text-sm leading-relaxed">If you have an active Getembe News user, editor, or author account, you can delete your account and associated profile data at any time by following these steps:</p>
+        <ol class="list-decimal pl-6 space-y-2 text-sm font-medium text-gray-800 dark:text-gray-200">
+            <li>Log into your account at <a href="/login" class="text-[#C8102E] underline">getembetv.co.ke/login</a> or via the Getembe News Mobile Application.</li>
+            <li>Navigate to your <strong>User Profile & Settings</strong> page (or click <a href="/profile" class="text-[#C8102E] underline">getembetv.co.ke/profile</a>).</li>
+            <li>Scroll down to the <strong>Delete Account</strong> section at the bottom of the profile page.</li>
+            <li>Enter your current password to confirm authorization.</li>
+            <li>Click <strong>Delete Account</strong>. Your account will be permanently deleted immediately.</li>
+        </ol>
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white pt-4">2. Manual Account Deletion Request (Mobile App & Web Visitors)</h2>
+        <p class="text-sm leading-relaxed">If you cannot access your account or are using the mobile app and prefer to request manual deletion, you can submit an account deletion request via email or contact form:</p>
+        <ul class="list-disc pl-6 space-y-2 text-sm">
+            <li><strong>Email Request:</strong> Send an email to <a href="mailto:privacy@getembetv.co.ke" class="text-[#C8102E] underline font-bold">privacy@getembetv.co.ke</a> or <a href="mailto:info@getembetv.co.ke" class="text-[#C8102E] underline font-bold">info@getembetv.co.ke</a> with the subject line <code>"Account Deletion Request"</code>. Please send the request from the email address registered with your account.</li>
+            <li><strong>Online Contact Form:</strong> Submit a request via our <a href="/contact" class="text-[#C8102E] underline">Contact Support Page</a> specifying your registered username and email address.</li>
+        </ul>
+        <p class="text-xs text-gray-500">Manual deletion requests submitted via email or contact support are reviewed and completed within <strong>48 hours</strong>.</p>
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white pt-4">3. Data Removed Upon Account Deletion</h2>
+        <p class="text-sm leading-relaxed">When your account is deleted, the following data is permanently erased from our primary database servers and cannot be recovered:</p>
+        <ul class="list-disc pl-6 space-y-2 text-sm">
+            <li>Your account credentials (email address, hashed password, user ID).</li>
+            <li>Your personal profile details (full name, bio, profile photo, social links).</li>
+            <li>Your saved bookmark list and reading history.</li>
+            <li>Your newsletter and alert notification subscriptions.</li>
+            <li>Your active session tokens and mobile app login state.</li>
+        </ul>
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white pt-4">4. Data Retained for Legal & Accounting Compliance</h2>
+        <p class="text-sm leading-relaxed">In accordance with Kenyan commercial regulations and data compliance guidelines, certain records may be retained in anonymized or archived formats:</p>
+        <ul class="list-disc pl-6 space-y-2 text-sm">
+            <li><strong>M-Pesa Financial Receipts:</strong> Records of paid announcements or advertising receipts (such as M-Pesa transaction IDs and audit logs) are retained for financial accounting and tax compliance requirements.</li>
+            <li><strong>Published Articles & Comments:</strong> Articles published by authors remain in the editorial archive. User comments attached to articles will have personal attribution removed or anonymized to "Deleted User".</li>
+        </ul>
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white pt-4">5. Questions & Data Protection Officer Contact</h2>
+        <p class="text-sm leading-relaxed">If you have any questions regarding your data privacy, account deletion, or data protection rights, please reach out to our technical & privacy desk:</p>
+        <p class="text-sm leading-relaxed">
+            <strong>Getembe News Editorial & Privacy Team</strong><br>
+            Email: <a href="mailto:privacy@getembetv.co.ke" class="text-[#C8102E] underline">privacy@getembetv.co.ke</a> / <a href="mailto:info@getembetv.co.ke" class="text-[#C8102E] underline">info@getembetv.co.ke</a><br>
+            Phone: <a href="tel:0792758752" class="text-[#C8102E] underline">+254 792 758 752</a><br>
+            Location: Kisii Town, Kisii County, Kenya.
+        </p>
+        ';
+    }
+
     // Social stats resolver helpers to avoid autoloader issues on live pulling
     public static function getStats(string $platform, ?string $username): array
     {

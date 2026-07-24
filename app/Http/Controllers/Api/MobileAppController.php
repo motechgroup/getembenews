@@ -57,6 +57,7 @@ class MobileAppController extends Controller
                 'app_app_store_url' => Setting::get('app_app_store_url', 'https://www.apple.com/app-store'),
                 'app_banner_title' => Setting::get('app_banner_title', 'Download Getembe News Mobile App'),
                 'app_banner_desc' => Setting::get('app_banner_desc', 'Get fast, reliable news updates directly on your smartphone.'),
+                'account_deletion_url' => url('/account-deletion'),
                 
                 // Versioning and Developer Attribution
                 'system_version' => Setting::get('system_version', 'v2.5.0'),

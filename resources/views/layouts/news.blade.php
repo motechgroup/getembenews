@@ -576,6 +576,7 @@
                             ['label' => 'Contact & Tips', 'url' => '/contact'],
                             ['label' => 'Privacy Policy', 'url' => '/privacy'],
                             ['label' => 'Terms of Service', 'url' => '/terms'],
+                            ['label' => 'Account Deletion Policy', 'url' => '/account-deletion'],
                         ];
                         $rawFooter = \App\Models\Setting::get('footer_menu', $defaultFooter);
                         if (is_string($rawFooter)) {

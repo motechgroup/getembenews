@@ -248,6 +248,8 @@ Route::view('/about', 'about')->name('about');
 Route::view('/contact', 'contact')->name('contact');
 Route::view('/privacy', 'privacy')->name('privacy');
 Route::view('/terms', 'terms')->name('terms');
+Route::view('/account-deletion', 'account-deletion')->name('account-deletion');
+Route::redirect('/delete-account', '/account-deletion');
 
 require __DIR__.'/auth.php';
 

@@ -180,6 +180,7 @@ state([
     'terms_page' => fn() => Setting::get('terms_page', 'terms'),
     'privacy_content' => fn() => Setting::get('privacy_content', Setting::defaultPrivacyContent()),
     'terms_content' => fn() => Setting::get('terms_content', Setting::defaultTermsContent()),
+    'account_deletion_content' => fn() => Setting::get('account_deletion_content', Setting::defaultAccountDeletionContent()),
     'podcast_category_enabled' => fn() => (bool) Setting::get('podcast_category_enabled', true),
 
     // 12. Footer Settings
@@ -1013,7 +1014,7 @@ $save = function () use ($logAction) {
         'theme_font', 'theme_layout', 'theme_color_secondary', 'theme_color_success', 'theme_color_warning',
         'smtp_server', 'smtp_port', 'smtp_username', 'smtp_password', 'smtp_encryption', 'smtp_auth_enabled', 'smtp_from_name', 'smtp_from_email', 'smtp_reply_to_email', 'smtp_reply_to_name',
         'fb_comments_widget', 'fb_comments_position', 'fb_comments_approval_required', 'fb_comments_moderation_enabled',
-        'home_page', 'about_page', 'contact_page', 'privacy_page', 'terms_page', 'privacy_content', 'terms_content', 'podcast_category_enabled',
+        'home_page', 'about_page', 'contact_page', 'privacy_page', 'terms_page', 'privacy_content', 'terms_content', 'account_deletion_content', 'podcast_category_enabled',
         'footer_copyright', 'footer_bg_color', 'footer_text_color', 'footer_logo', 'footer_link_color', 'footer_link_hover_color', 'footer_link_active_color', 'footer_link_visited_color',
         'google_login', 'facebook_login', 'twitter_login', 'github_login', 'linkedin_login', 'whatsapp_login', 'apple_login', 'pinterest_login', 'threads_login',
         'google_client_id', 'google_client_secret', 'facebook_client_id', 'facebook_client_secret', 'github_client_id', 'github_client_secret', 'twitter_client_id', 'twitter_client_secret',
@@ -1915,6 +1916,11 @@ $sendTestEmail = function () {
                             <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Terms of Service Page Content (HTML allowed)</label>
                             <textarea wire:model="terms_content" rows="12" class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs text-gray-905 dark:text-white font-mono" placeholder="Write or paste your Terms of Service HTML content here..."></textarea>
                             @error('terms_content') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Account Deletion Policy Page Content (HTML allowed)</label>
+                            <textarea wire:model="account_deletion_content" rows="12" class="w-full bg-gray-50 dark:bg-gray-850 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-xs text-gray-905 dark:text-white font-mono" placeholder="Write or paste your Account Deletion Policy HTML content here..."></textarea>
+                            @error('account_deletion_content') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                         </div>
                     </div>
 

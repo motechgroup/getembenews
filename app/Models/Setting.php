@@ -143,11 +143,11 @@ class Setting extends Model
             <li>Your active session tokens and mobile app login state.</li>
         </ul>
 
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white pt-4">4. Data Retained for Legal & Accounting Compliance</h2>
-        <p class="text-sm leading-relaxed">In accordance with Kenyan commercial regulations and data compliance guidelines, certain records may be retained in anonymized or archived formats:</p>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white pt-4">4. Retention of Financial Records & Editorial Scope</h2>
+        <p class="text-sm leading-relaxed">This policy governs user account deletion, profile removal, and personal credentials. Please note:</p>
         <ul class="list-disc pl-6 space-y-2 text-sm">
-            <li><strong>M-Pesa Financial Receipts:</strong> Records of paid announcements or advertising receipts (such as M-Pesa transaction IDs and audit logs) are retained for financial accounting and tax compliance requirements.</li>
-            <li><strong>Published Articles & Comments:</strong> Articles published by authors remain in the editorial archive. User comments attached to articles will have personal attribution removed or anonymized to "Deleted User".</li>
+            <li><strong>Financial Records:</strong> Payment receipts for paid announcements or advertising (such as M-Pesa transaction codes) are retained for accounting and legal compliance.</li>
+            <li><strong>Public Comments & Editorial Content:</strong> Public comments submitted by the account will have personal profile links removed and anonymized to "Deleted User". This policy covers user account deletion and does not govern editorial news content.</li>
         </ul>
 
         <h2 class="text-xl font-bold text-gray-900 dark:text-white pt-4">5. Questions & Data Protection Officer Contact</h2>

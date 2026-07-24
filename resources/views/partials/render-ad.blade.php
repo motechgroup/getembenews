@@ -1,19 +1,37 @@
 @php
     $location = $location ?? 'top';
-    $adsenseEnabled = \App\Models\Setting::get('adsense_enabled', false);
-    $facebookAdsEnabled = \App\Models\Setting::get('facebook_ads_enabled', false);
-    $customAdsEnabled = \App\Models\Setting::get('custom_ads_enabled', false);
+    $adsenseEnabled = filter_var(\App\Models\Setting::get('adsense_enabled', false), FILTER_VALIDATE_BOOLEAN);
+    $facebookAdsEnabled = filter_var(\App\Models\Setting::get('facebook_ads_enabled', false), FILTER_VALIDATE_BOOLEAN);
+    $customAdsEnabled = filter_var(\App\Models\Setting::get('custom_ads_enabled', false), FILTER_VALIDATE_BOOLEAN);
     
+    $adsenseCode = \App\Models\Setting::get('adsense_code');
+    $adsenseClientId = \App\Models\Setting::get('adsense_client_id');
+    if (!empty($adsenseClientId) && !\Illuminate\Support\Str::startsWith($adsenseClientId, 'ca-pub-') && \Illuminate\Support\Str::startsWith($adsenseClientId, 'pub-')) {
+        $adsenseClientId = 'ca-' . $adsenseClientId;
+    }
+
     // Retrieve custom banner image & destination
     $bannerImage = \App\Models\Setting::get("ad_{$location}_image");
     $bannerLink = \App\Models\Setting::get("ad_{$location}_link");
 @endphp
 
-@if($adsenseEnabled && \App\Models\Setting::get('adsense_code'))
+@if($adsenseEnabled && (!empty($adsenseCode) || !empty($adsenseClientId)))
     <!-- Google AdSense Ad Block -->
-    <div class="w-full text-center my-4">
-        <span class="text-[9px] text-gray-700 dark:text-gray-300 block mb-1 font-bold tracking-wider">ADVERTISEMENT (ADSENSE)</span>
-        {!! \App\Models\Setting::get('adsense_code') !!}
+    <div class="w-full text-center my-4 overflow-hidden min-h-[90px] flex flex-col items-center justify-center">
+        <span class="text-[9px] text-gray-400 dark:text-gray-500 block mb-1 font-bold tracking-wider uppercase">ADVERTISEMENT</span>
+        @if(!empty($adsenseCode))
+            {!! $adsenseCode !!}
+        @else
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="{{ $adsenseClientId }}"
+                 data-ad-slot="auto"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        @endif
     </div>
 @elseif($facebookAdsEnabled && \App\Models\Setting::get('facebook_ads_code'))
     <!-- Facebook Audience Network Ad Block -->

@@ -23,7 +23,7 @@ class SecurityHeaders
 
         $adsenseEnabled = false;
         try {
-            $adsenseEnabled = (bool) \App\Models\Setting::get('adsense_enabled', false);
+            $adsenseEnabled = filter_var(\App\Models\Setting::get('adsense_enabled', false), FILTER_VALIDATE_BOOLEAN);
         } catch (\Throwable $e) {}
 
         if (!$adsenseEnabled) {

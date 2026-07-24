@@ -143,24 +143,17 @@
         </script>
     @endif
 
-    <!-- Google AdSense Integration (Deferred for performance) -->
+    <!-- Google AdSense Integration -->
     @php
-        $adsenseEnabled = \App\Models\Setting::get('adsense_enabled', false);
+        $adsenseEnabled = filter_var(\App\Models\Setting::get('adsense_enabled', false), FILTER_VALIDATE_BOOLEAN);
         $adsenseClientId = \App\Models\Setting::get('adsense_client_id');
+        if (!empty($adsenseClientId) && !\Illuminate\Support\Str::startsWith($adsenseClientId, 'ca-pub-') && \Illuminate\Support\Str::startsWith($adsenseClientId, 'pub-')) {
+            $adsenseClientId = 'ca-' . $adsenseClientId;
+        }
         $adsenseQuery = !empty($adsenseClientId) ? '?client=' . urlencode($adsenseClientId) : '';
     @endphp
     @if($adsenseEnabled)
-        <script>
-            window.addEventListener('load', () => {
-                setTimeout(() => {
-                    const script = document.createElement('script');
-                    script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js{{ $adsenseQuery }}";
-                    script.async = true;
-                    script.crossOrigin = "anonymous";
-                    document.head.appendChild(script);
-                }, 3500);
-            });
-        </script>
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js{{ $adsenseQuery }}" crossorigin="anonymous"></script>
     @endif
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -79,10 +79,28 @@ class ArticleController extends Controller
      */
     public function category(string $slug)
     {
-        $category = Category::where('slug', $slug)->firstOrFail();
-        
+        $category = Category::where('slug', $slug)->first();
+
+        if (!$category) {
+            $category = Category::whereRaw('LOWER(slug) = ?', [strtolower($slug)])->first();
+        }
+
+        if (!$category) {
+            $category = new Category([
+                'name' => ucfirst($slug),
+                'slug' => $slug,
+                'description' => 'Latest news and updates in ' . ucfirst($slug) . '.',
+            ]);
+            $category->id = 0;
+        }
+
         $articles = Article::published()
-            ->forCategory($category->id)
+            ->when($category->id > 0, function ($q) use ($category) {
+                $q->forCategory($category->id);
+            }, function ($q) use ($slug) {
+                $q->forCategory($slug);
+            })
+            ->orderBy('published_at', 'desc')
             ->paginate(17);
 
         return view('categories.show', compact('category', 'articles'));

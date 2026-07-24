@@ -86,7 +86,7 @@
                                 <p class="text-xs sm:text-sm text-gray-650 dark:text-gray-400 leading-relaxed font-medium line-clamp-3">
                                     {{ $spotlight->subtitle }}
                                 </p>
-                                <span class="text-[10px] text-gray-400 font-bold block">{{ $spotlight->published_at->format('j M Y') }}</span>
+                                <span class="text-[10px] text-gray-400 font-bold block">{{ optional($spotlight->published_at)->format('j M Y') ?? date('j M Y') }}</span>
                             </div>
                         </article>
                     @endif
@@ -104,7 +104,7 @@
                                 <h3 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition break-words">
                                     <a href="/articles/{{ $centerFeatured->slug }}">{{ $centerFeatured->title }}</a>
                                 </h3>
-                                <span class="text-[10px] text-gray-400 font-bold block">{{ $centerFeatured->published_at->format('j M Y') }}</span>
+                                <span class="text-[10px] text-gray-400 font-bold block">{{ optional($centerFeatured->published_at)->format('j M Y') ?? date('j M Y') }}</span>
                             </div>
                         </article>
 
@@ -119,7 +119,7 @@
                                             <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-3 break-words">
                                                 <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
                                             </h4>
-                                            <span class="text-[9px] text-gray-400 font-bold block">{{ $article->published_at->format('j M Y') }}</span>
+                                            <span class="text-[9px] text-gray-400 font-bold block">{{ optional($article->published_at)->format('j M Y') ?? date('j M Y') }}</span>
                                         </div>
                                         <div class="w-20 sm:w-24 aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-855 shrink-0 border border-gray-200 dark:border-gray-800">
                                             <img src="{{ $article->featured_image }}" alt="{{ $article->title }}" class="w-full h-full object-cover">
@@ -142,7 +142,7 @@
                                 <h3 class="text-base font-bold font-serif text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition break-words">
                                     <a href="/articles/{{ $rightFeatured->slug }}">{{ $rightFeatured->title }}</a>
                                 </h3>
-                                <span class="text-[10px] text-gray-400 font-bold block">{{ $rightFeatured->published_at->format('j M Y') }}</span>
+                                <span class="text-[10px] text-gray-400 font-bold block">{{ optional($rightFeatured->published_at)->format('j M Y') ?? date('j M Y') }}</span>
                             </div>
                         </article>
 
@@ -154,7 +154,7 @@
                                             <h4 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white leading-snug group-hover:text-[#C8102E] dark:group-hover:text-red-400 transition line-clamp-3 break-words">
                                                 <a href="/articles/{{ $article->slug }}">{{ $article->title }}</a>
                                             </h4>
-                                            <span class="text-[9px] text-gray-400 font-bold block">{{ $article->published_at->format('j M Y') }}</span>
+                                            <span class="text-[9px] text-gray-400 font-bold block">{{ optional($article->published_at)->format('j M Y') ?? date('j M Y') }}</span>
                                         </div>
                                         <div class="w-20 sm:w-24 aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-855 shrink-0 border border-gray-200 dark:border-gray-800">
                                             <img src="{{ $article->featured_image }}" alt="{{ $article->title }}" class="w-full h-full object-cover">
@@ -185,7 +185,7 @@
                                     </div>
                                     <div class="space-y-1.5">
                                         <div class="flex items-center space-x-2 text-[10px] text-gray-400 font-semibold">
-                                            <span>{{ $article->published_at->diffForHumans() }}</span>
+                                            <span>{{ optional($article->published_at)->diffForHumans() ?? 'Recently' }}</span>
                                             <span>&bull;</span>
                                             <span>{{ $article->read_time }} min read</span>
                                         </div>

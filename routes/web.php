@@ -516,4 +516,20 @@ Route::get('/run-migrations', function () {
     }
 });
 
+Route::get('/llms.txt', function () {
+    $path = public_path('llms.txt');
+    if (file_exists($path)) {
+        return response()->file($path, ['Content-Type' => 'text/markdown; charset=UTF-8']);
+    }
+    return response("# Getembe News\n\n> Getembe News is a leading digital news publication providing breaking news, politics, business, technology, and culture from Kisii County.", 200, ['Content-Type' => 'text/markdown; charset=UTF-8']);
+});
+
+Route::get('/llms-full.txt', function () {
+    $path = public_path('llms-full.txt');
+    if (file_exists($path)) {
+        return response()->file($path, ['Content-Type' => 'text/markdown; charset=UTF-8']);
+    }
+    return response("# Getembe News Full Index\n\nhttps://getembetv.co.ke/", 200, ['Content-Type' => 'text/markdown; charset=UTF-8']);
+});
+
 Route::get('/{slug}', [ArticleController::class, 'category'])->name('category.show');

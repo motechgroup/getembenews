@@ -1,0 +1,20 @@
+# Getembe News
+
+> Getembe News is a leading digital news publication providing breaking news, politics, business, technology, culture, opinion, and community stories from Kisii County and across Kenya.
+
+## News Categories
+
+- [Latest News](https://getembetv.co.ke/): Main homepage featuring breaking headlines and top stories.
+- [Politics](https://getembetv.co.ke/politics): Local and national political updates, analysis, and governance news.
+- [Business](https://getembetv.co.ke/business): Economy, commerce, agriculture, mobile money, and regional markets.
+- [Technology](https://getembetv.co.ke/technology): Digital transformation, tech innovations, and mobile updates.
+- [Sports](https://getembetv.co.ke/sports): Regional sports, football, athletics, and local games.
+- [Lifestyle & Culture](https://getembetv.co.ke/lifestyle): Soapstone craft, arts, entertainment, and Kisii cultural heritage.
+
+## Information & Feeds
+
+- [RSS Feed](https://getembetv.co.ke/feed): RSS 2.0 XML feed of latest published articles.
+- [Announcements](https://getembetv.co.ke/announcements): Community notices, funeral announcements, and classifieds.
+- [Contact Us](https://getembetv.co.ke/contact): Editorial desk, newsroom inquiries, and advertising.
+- [About Us](https://getembetv.co.ke/about): Mission, editorial team, and publisher information.
+- [Privacy Policy](https://getembetv.co.ke/privacy): Visitor data protection and privacy policy.

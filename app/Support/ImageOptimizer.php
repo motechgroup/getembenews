@@ -42,15 +42,20 @@ class ImageOptimizer
                 return $cachedUrl;
             }
 
+            // Verify GD extension functions are available
+            if (!function_exists('imagecreatetruecolor') || !function_exists('imagewebp') || !function_exists('getimagesize')) {
+                return $url;
+            }
+
             // Generate WebP thumbnail using GD
             try {
                 $info = @getimagesize($fullPath);
                 if ($info) {
                     $mime = $info['mime'];
                     $srcImg = match ($mime) {
-                        'image/jpeg' => @imagecreatefromjpeg($fullPath),
-                        'image/png' => @imagecreatefrompng($fullPath),
-                        'image/webp' => @imagecreatefromwebp($fullPath),
+                        'image/jpeg' => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($fullPath) : null,
+                        'image/png' => function_exists('imagecreatefrompng') ? @imagecreatefrompng($fullPath) : null,
+                        'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($fullPath) : null,
                         default => null
                     };
 

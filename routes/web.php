@@ -144,10 +144,19 @@ Route::get('/', function () {
             }
         });
 
-        return view('welcome', array_merge($fallbackData, $homepageData));
+        try {
+            return view('welcome', array_merge($fallbackData, $homepageData));
+        } catch (\Throwable $e2) {
+            \Illuminate\Support\Facades\Log::error('Homepage view render error: ' . $e2->getMessage());
+            return view('welcome', $fallbackData);
+        }
     } catch (\Throwable $e) {
-        \Illuminate\Support\Facades\Log::error('Homepage view render error: ' . $e->getMessage());
-        return view('welcome', $fallbackData);
+        \Illuminate\Support\Facades\Log::error('Homepage outer error: ' . $e->getMessage());
+        try {
+            return view('welcome', $fallbackData);
+        } catch (\Throwable $e3) {
+            return response()->make('<!DOCTYPE html><html><head><title>Getembe News</title><meta name="description" content="Getembe News is your leading source for politics, business, technology, and global news."></head><body><h1>Getembe News</h1><p>Welcome to Getembe News. Latest stories updating.</p></body></html>', 200);
+        }
     }
 });
 

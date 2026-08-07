@@ -818,5 +818,167 @@ class AnnouncementTest extends TestCase
         $comp->call('removeImage', 0);
         $this->assertCount(1, $comp->get('images'));
     }
+
+    public function test_announcement_text_download(): void
+    {
+        $announcement = Announcement::create([
+            'visitor_name' => 'Paul Nyanchoka',
+            'visitor_phone' => '+254712345678',
+            'type' => 'funeral',
+            'media' => 'tv',
+            'content' => 'Text content for plain file test.',
+            'word_count' => 6,
+            'days_count' => 2,
+            'rate_per_word' => 5,
+            'total_amount' => 60,
+            'payment_status' => 'paid',
+            'is_approved' => true,
+        ]);
+
+        $response = $this->get(route('announcements.download.txt', $announcement->id));
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
+        $response->assertSee('GETEMBE DIGITAL - ANNOUNCEMENT DESK');
+        $response->assertSee('Paul Nyanchoka');
+        $response->assertSee('Text content for plain file test.');
+    }
+
+    public function test_announcement_word_doc_download(): void
+    {
+        $announcement = Announcement::create([
+            'visitor_name' => 'Paul Nyanchoka',
+            'visitor_phone' => '+254712345678',
+            'type' => 'funeral',
+            'media' => 'both',
+            'content' => 'Word doc content test body.',
+            'word_count' => 5,
+            'days_count' => 1,
+            'rate_per_word' => 7,
+            'total_amount' => 35,
+            'payment_status' => 'paid',
+            'is_approved' => true,
+        ]);
+
+        $response = $this->get(route('announcements.download.doc', $announcement->id));
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/msword; charset=UTF-8');
+        $response->assertSee('Getembe Digital News');
+        $response->assertSee('Word doc content test body.');
+    }
+
+    public function test_announcement_printable_sheet(): void
+    {
+        $announcement = Announcement::create([
+            'visitor_name' => 'Paul Nyanchoka',
+            'visitor_phone' => '+254712345678',
+            'type' => 'general',
+            'media' => 'radio',
+            'content' => 'Print sheet text body test.',
+            'word_count' => 5,
+            'days_count' => 1,
+            'rate_per_word' => 3,
+            'total_amount' => 15,
+            'payment_status' => 'paid',
+            'is_approved' => true,
+        ]);
+
+        $response = $this->get(route('announcements.print', $announcement->id));
+        $response->assertOk();
+        $response->assertSee('Print Sheet');
+        $response->assertSee('Print sheet text body test.');
+    }
+
+    public function test_announcement_pdf_download(): void
+    {
+        $announcement = Announcement::create([
+            'visitor_name' => 'Paul Nyanchoka',
+            'visitor_phone' => '+254712345678',
+            'type' => 'funeral',
+            'media' => 'tv',
+            'content' => 'PDF document generation test content.',
+            'word_count' => 5,
+            'days_count' => 1,
+            'rate_per_word' => 5,
+            'total_amount' => 25,
+            'payment_status' => 'paid',
+            'is_approved' => true,
+        ]);
+
+        $response = $this->get(route('announcements.download.pdf', $announcement->id));
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_admin_can_open_and_view_announcement_modal(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'email' => 'admin_view_' . uniqid() . '@example.com']);
+        $announcement = Announcement::create([
+            'visitor_name' => 'Jane Kemunto',
+            'visitor_phone' => '+254711223344',
+            'type' => 'general',
+            'media' => 'radio',
+            'content' => 'Viewing details in modal test.',
+            'word_count' => 5,
+            'days_count' => 2,
+            'rate_per_word' => 3,
+            'total_amount' => 30,
+            'payment_status' => 'paid',
+            'is_approved' => false,
+        ]);
+
+        $comp = Livewire::actingAs($admin)->test(\App\Livewire\AdminAnnouncements::class);
+        $comp->call('openViewModal', $announcement->id);
+        $comp->assertSet('showViewModal', true);
+        $comp->assertSee('Jane Kemunto');
+        $comp->assertSee('Viewing details in modal test.');
+
+        $comp->call('closeViewModal');
+        $comp->assertSet('showViewModal', false);
+    }
+
+    public function test_admin_can_edit_announcement(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'email' => 'admin_edit_' . uniqid() . '@example.com']);
+        $announcement = Announcement::create([
+            'visitor_name' => 'Original Submitter',
+            'visitor_phone' => '+254700000000',
+            'type' => 'general',
+            'media' => 'radio',
+            'content' => 'Original content text before editing.',
+            'word_count' => 5,
+            'days_count' => 1,
+            'rate_per_word' => 3,
+            'total_amount' => 15,
+            'payment_status' => 'pending',
+            'is_approved' => false,
+        ]);
+
+        $comp = Livewire::actingAs($admin)->test(\App\Livewire\AdminAnnouncements::class);
+        $comp->call('openEditModal', $announcement->id);
+        $comp->assertSet('showEditModal', true);
+        $comp->assertSet('edit_visitor_name', 'Original Submitter');
+
+        $comp->set('edit_visitor_name', 'Updated Submitter Name')
+            ->set('edit_visitor_phone', '+254799999999')
+            ->set('edit_content', 'Updated announcement content text from admin edit modal.')
+            ->set('edit_media', 'tv')
+            ->set('edit_days_count', 3)
+            ->set('edit_payment_status', 'paid')
+            ->set('edit_is_approved', 1)
+            ->call('saveAnnouncement');
+
+        $comp->assertSet('showEditModal', false);
+
+        $announcement->refresh();
+        $this->assertEquals('Updated Submitter Name', $announcement->visitor_name);
+        $this->assertEquals('+254799999999', $announcement->visitor_phone);
+        $this->assertEquals('Updated announcement content text from admin edit modal.', $announcement->content);
+        $this->assertEquals('tv', $announcement->media);
+        $this->assertEquals(3, $announcement->days_count);
+        $this->assertEquals('paid', $announcement->payment_status);
+        $this->assertTrue($announcement->is_approved);
+    }
 }
+
+
 

@@ -304,6 +304,26 @@
                                     @endif
                                 </span>
                             </div>
+                            <div class="flex items-center justify-between pt-1.5 border-t border-gray-100 dark:border-gray-800/60 text-[9px] font-bold">
+                                <div class="flex items-center space-x-1.5 text-gray-500 dark:text-gray-400">
+                                    <span>Download:</span>
+                                    <a href="{{ route('announcements.download.txt', $ann->id) }}" target="_blank" wire:navigate.skip class="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono transition" title="Download Text File">
+                                        .TXT
+                                    </a>
+                                    <a href="{{ route('announcements.download.doc', $ann->id) }}" target="_blank" wire:navigate.skip class="px-1.5 py-0.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 rounded font-mono transition" title="Download Word Document">
+                                        .DOC
+                                    </a>
+                                    <a href="{{ route('announcements.download.pdf', $ann->id) }}" target="_blank" wire:navigate.skip class="px-1.5 py-0.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 rounded font-mono transition" title="Download PDF Document">
+                                        .PDF
+                                    </a>
+                                </div>
+                                <a href="{{ route('announcements.print', $ann->id) }}" target="_blank" class="inline-flex items-center space-x-1 text-[#cc6c3b] hover:text-orange-700 font-black hover:underline" title="Print Announcement Sheet">
+                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    <span>Print</span>
+                                </a>
+                            </div>
                         </div>
                     @empty
                         <div class="text-center py-12 text-gray-400 text-xs font-semibold">

@@ -19,6 +19,11 @@ state([
     'activeTab' => 'identity',
     'saved' => false,
 
+    // Git Updates & Migrations state
+    'gitTerminalOutput' => '',
+    'gitStatusSummary' => '',
+    'pendingMigrationsSummary' => '',
+
     // File Upload Temporary States
     'uploadedLogo' => null,
     'uploadedFavicon' => null,
@@ -498,6 +503,7 @@ mount(function ($activeTab = 'identity') {
         'rss' => 'rss management',
         'webhooks' => 'webhooks management',
         'api-keys' => 'api keys management',
+        'updates' => 'cache management',
         'cache' => 'cache management',
         'backup' => 'backup management',
         'audit' => 'audit logs management',
@@ -515,6 +521,22 @@ mount(function ($activeTab = 'identity') {
 
     if ($activeTab === 'roles') {
         $this->loadRolePermissions();
+    }
+
+    if ($activeTab === 'updates') {
+        $cwd = base_path();
+        $branch = trim(shell_exec("cd {$cwd} && git rev-parse --abbrev-ref HEAD 2>&1") ?? 'main');
+        $status = trim(shell_exec("cd {$cwd} && git status -sb 2>&1") ?? 'No git status');
+        $lastCommits = trim(shell_exec("cd {$cwd} && git log -n 5 --oneline 2>&1") ?? 'No commits');
+
+        $this->gitStatusSummary = "Branch: {$branch}\n\n[Status Overview]\n{$status}\n\n[Recent Commit History]\n{$lastCommits}";
+
+        try {
+            Artisan::call('migrate:status');
+            $this->pendingMigrationsSummary = Artisan::output();
+        } catch (\Throwable $e) {
+            $this->pendingMigrationsSummary = "Error fetching migration status: " . $e->getMessage();
+        }
     }
 });
 
@@ -1141,13 +1163,106 @@ $sendTestSms = function () {
 };
 
 $clearCache = function () use ($logAction) {
-    Artisan::call('cache:clear');
-    Artisan::call('view:clear');
-    Artisan::call('route:clear');
-    Artisan::call('config:clear');
+    Artisan::call('optimize:clear');
     
     $logAction("Cleared system cache tables & mapping structures");
     session()->flash('cache_cleared', 'Application caches cleared successfully.');
+};
+
+$checkGitStatus = function () {
+    $cwd = base_path();
+
+    $branch = trim(shell_exec("cd {$cwd} && git rev-parse --abbrev-ref HEAD 2>&1") ?? 'main');
+    $status = trim(shell_exec("cd {$cwd} && git status -sb 2>&1") ?? 'No git status');
+    $lastCommits = trim(shell_exec("cd {$cwd} && git log -n 5 --oneline 2>&1") ?? 'No commits');
+
+    $this->gitStatusSummary = "Branch: {$branch}\n\n[Status Overview]\n{$status}\n\n[Recent Commit History]\n{$lastCommits}";
+
+    try {
+        Artisan::call('migrate:status');
+        $this->pendingMigrationsSummary = Artisan::output();
+    } catch (\Throwable $e) {
+        $this->pendingMigrationsSummary = "Error fetching migration status: " . $e->getMessage();
+    }
+};
+
+$pullGitCode = function () use ($logAction, $checkGitStatus) {
+    if (!auth()->user() || !auth()->user()->isAdmin()) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    $cwd = base_path();
+    $out = "=== PULLING GIT CODE ===\n";
+    $out .= shell_exec("cd {$cwd} && git pull 2>&1") ?? 'No output returned.';
+    $out .= "\n\n=== RECENT COMMITS AFTER PULL ===\n";
+    $out .= shell_exec("cd {$cwd} && git log -n 3 --oneline 2>&1") ?? '';
+
+    $this->gitTerminalOutput = $out;
+    $logAction("Executed Git Pull in admin panel");
+    session()->flash('git_success', 'Git repository updated successfully.');
+
+    $checkGitStatus->bindTo($this)();
+};
+
+$runDatabaseMigrations = function () use ($logAction, $checkGitStatus) {
+    if (!auth()->user() || !auth()->user()->isAdmin()) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    $out = "=== RUNNING DATABASE MIGRATIONS ===\n";
+    try {
+        Artisan::call('migrate', ['--force' => true]);
+        $out .= Artisan::output();
+    } catch (\Throwable $e) {
+        $out .= "MIGRATION ERROR:\n" . $e->getMessage();
+    }
+
+    $this->gitTerminalOutput = $out;
+    $logAction("Executed database migrations from admin panel");
+    session()->flash('migration_success', 'Database migrations executed.');
+
+    $checkGitStatus->bindTo($this)();
+};
+
+$runFullDeployUpdate = function () use ($logAction, $checkGitStatus) {
+    if (!auth()->user() || !auth()->user()->isAdmin()) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    $cwd = base_path();
+    $out = "==========================================\n";
+    $out .= "  GETEMBE DIGITAL SYSTEM UPDATE & DEPLOY  \n";
+    $out .= "==========================================\n\n";
+
+    $out .= "[1/3] Pulling Latest Git Changes...\n";
+    $out .= shell_exec("cd {$cwd} && git pull 2>&1") ?? 'No output.';
+    $out .= "\n------------------------------------------\n";
+
+    $out .= "[2/3] Running Database Migrations...\n";
+    try {
+        Artisan::call('migrate', ['--force' => true]);
+        $out .= Artisan::output();
+    } catch (\Throwable $e) {
+        $out .= "Error: " . $e->getMessage() . "\n";
+    }
+    $out .= "------------------------------------------\n";
+
+    $out .= "[3/3] Clearing Application & Config Caches...\n";
+    try {
+        Artisan::call('optimize:clear');
+        $out .= Artisan::output();
+    } catch (\Throwable $e) {
+        $out .= "Error: " . $e->getMessage() . "\n";
+    }
+    $out .= "\n==========================================\n";
+    $out .= "  UPDATE COMPLETED SUCCESSFULLY!          \n";
+    $out .= "==========================================\n";
+
+    $this->gitTerminalOutput = $out;
+    $logAction("Executed full system update (Git pull + migrations + cache clear)");
+    session()->flash('deploy_success', 'Full system update completed successfully!');
+
+    $checkGitStatus->bindTo($this)();
 };
 
 $resetArticles = function () use ($logAction) {
@@ -1490,6 +1605,9 @@ $sendTestEmail = function () {
         </a>
         <a href="/admin/settings/security" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'security' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
             Security & Privacy
+        </a>
+        <a href="/admin/settings/updates" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'updates' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Git & Migrations
         </a>
         <a href="/admin/settings/cache" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'cache' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
             System Cache
@@ -3484,6 +3602,101 @@ $sendTestEmail = function () {
                             @empty
                                 <p class="text-gray-400 text-center text-xs py-4">No active API keys generated.</p>
                             @endforelse
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GIT UPDATES & MIGRATIONS TAB -->
+                <div x-show="activeTab === 'updates'" class="space-y-6" style="display: none;">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 dark:border-gray-800 pb-3 gap-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Git Code Updates & Database Migrations</h3>
+                            <p class="text-xs text-gray-500">Pull latest git repository commits, execute pending database migrations, and purge system caches.</p>
+                        </div>
+                        <button type="button" wire:click="checkGitStatus" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold text-xs px-3.5 py-2 rounded-lg transition flex items-center space-x-1.5 shrink-0 shadow-sm">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 12H19M4 20v-5h.581m0 0a8.003 8.003 0 0115.357-2M15 15h.01M19 15h.01M11 15h.01M7 15h.01"/>
+                            </svg>
+                            <span>Refresh Repository Status</span>
+                        </button>
+                    </div>
+
+                    @if (session()->has('git_success'))
+                        <div class="p-3 bg-green-900/10 border border-green-800 text-green-300 text-xs rounded-lg font-bold">
+                            {{ session('git_success') }}
+                        </div>
+                    @endif
+
+                    @if (session()->has('migration_success'))
+                        <div class="p-3 bg-blue-900/10 border border-blue-800 text-blue-300 text-xs rounded-lg font-bold">
+                            {{ session('migration_success') }}
+                        </div>
+                    @endif
+
+                    @if (session()->has('deploy_success'))
+                        <div class="p-3 bg-emerald-900/10 border border-emerald-800 text-emerald-300 text-xs rounded-lg font-bold">
+                            {{ session('deploy_success') }}
+                        </div>
+                    @endif
+
+                    <!-- Control Actions -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-xl space-y-3">
+                            <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider flex items-center space-x-1.5">
+                                <span>1. Pull Git Code</span>
+                            </h4>
+                            <p class="text-[11px] text-gray-500">Fetches and pulls the latest source code commits from the remote Git repository (`git pull`).</p>
+                            <button type="button" wire:click="pullGitCode" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition shadow-sm">
+                                Pull Latest Git Code
+                            </button>
+                        </div>
+
+                        <div class="p-4 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-xl space-y-3">
+                            <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider flex items-center space-x-1.5">
+                                <span>2. Run Migrations</span>
+                            </h4>
+                            <p class="text-[11px] text-gray-500">Executes any pending database migrations (`php artisan migrate --force`).</p>
+                            <button type="button" wire:click="runDatabaseMigrations" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition shadow-sm">
+                                Run Database Migrations
+                            </button>
+                        </div>
+
+                        <div class="p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900/60 rounded-xl space-y-3">
+                            <h4 class="text-xs font-black text-[#cc6c3b] uppercase tracking-wider flex items-center space-x-1.5">
+                                <span>3. Full Deploy Update</span>
+                            </h4>
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400">Pulls Git code, runs database migrations, and flushes all caches in one click.</p>
+                            <button type="button" wire:click="runFullDeployUpdate" class="w-full bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition shadow-sm">
+                                Run Full Update & Deploy
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Terminal Output Log Window -->
+                    @if(!empty($gitTerminalOutput))
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Execution Terminal Output
+                                </h4>
+                                <button type="button" wire:click="$set('gitTerminalOutput', '')" class="text-[10px] text-gray-400 hover:underline">Clear Terminal Output</button>
+                            </div>
+                            <pre class="bg-gray-900 text-green-400 p-4 rounded-xl font-mono text-xs overflow-x-auto leading-relaxed border border-gray-800 shadow-inner max-h-80">{{ $gitTerminalOutput }}</pre>
+                        </div>
+                    @endif
+
+                    <!-- Repository & Migration Status Grids -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Git Repository Status -->
+                        <div class="space-y-2">
+                            <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Git Branch & Status</h4>
+                            <pre class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl font-mono text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-800 overflow-x-auto max-h-72 whitespace-pre-wrap">{{ $gitStatusSummary ?: 'Click "Refresh Repository Status" to load repository status.' }}</pre>
+                        </div>
+
+                        <!-- Pending Migrations Status -->
+                        <div class="space-y-2">
+                            <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Database Migration Status</h4>
+                            <pre class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl font-mono text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-800 overflow-x-auto max-h-72 whitespace-pre-wrap">{{ $pendingMigrationsSummary ?: 'Click "Refresh Repository Status" to inspect migration status.' }}</pre>
                         </div>
                     </div>
                 </div>

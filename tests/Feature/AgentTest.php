@@ -25,7 +25,7 @@ class AgentTest extends TestCase
 
         $this->actingAs($admin)->get('/admin/agents')->assertOk();
         $this->actingAs($manager)->get('/admin/agents')->assertOk();
-        $this->actingAs($editor)->get('/admin/agents')->assertOk();
+        $this->actingAs($editor)->get('/admin/agents')->assertForbidden();
         $this->actingAs($user)->get('/admin/agents')->assertForbidden();
     }
 

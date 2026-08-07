@@ -46,6 +46,159 @@ class AdminAnnouncements extends Component
         return $months;
     }
 
+    // View Modal State
+    public $showViewModal = false;
+    public $viewingAnnouncement = null;
+
+    // Edit Modal State
+    public $showEditModal = false;
+    public $editingAnnouncementId = null;
+    public $edit_visitor_name = '';
+    public $edit_visitor_phone = '';
+    public $edit_visitor_email = '';
+    public $edit_type = 'funeral';
+    public $edit_media = 'tv';
+    public $edit_content = '';
+    public $edit_airing_date = '';
+    public $edit_days_count = 1;
+    public $edit_rate_per_word = 5;
+    public $edit_word_count = 0;
+    public $edit_total_amount = 0;
+    public $edit_payment_status = 'pending';
+    public $edit_payment_reference = '';
+    public $edit_is_approved = false;
+
+    public function openViewModal($id)
+    {
+        $this->viewingAnnouncement = Announcement::with('agent')->findOrFail($id);
+        $this->showViewModal = true;
+    }
+
+    public function closeViewModal()
+    {
+        $this->showViewModal = false;
+        $this->viewingAnnouncement = null;
+    }
+
+    public function openEditModal($id)
+    {
+        $ann = Announcement::findOrFail($id);
+        $this->editingAnnouncementId = $ann->id;
+        $this->edit_visitor_name = $ann->visitor_name;
+        $this->edit_visitor_phone = $ann->visitor_phone;
+        $this->edit_visitor_email = $ann->visitor_email ?? '';
+        $this->edit_type = $ann->type;
+        $this->edit_media = $ann->media;
+        $this->edit_content = $ann->content;
+        $this->edit_airing_date = $ann->airing_date ? $ann->airing_date->format('Y-m-d') : now()->toDateString();
+        $this->edit_days_count = $ann->days_count;
+        $this->edit_rate_per_word = $ann->rate_per_word;
+        $this->edit_word_count = $ann->word_count;
+        $this->edit_total_amount = $ann->total_amount;
+        $this->edit_payment_status = $ann->payment_status;
+        $this->edit_payment_reference = $ann->payment_reference ?? '';
+        $this->edit_is_approved = (bool) $ann->is_approved;
+
+        $this->updateEditCalculations();
+        $this->resetValidation();
+        $this->showEditModal = true;
+    }
+
+    public function closeEditModal()
+    {
+        $this->showEditModal = false;
+        $this->editingAnnouncementId = null;
+        $this->resetValidation();
+    }
+
+    public function updatedEditContent()
+    {
+        $this->updateEditCalculations();
+    }
+
+    public function updatedEditMedia()
+    {
+        $this->updateEditCalculations();
+    }
+
+    public function updatedEditDaysCount()
+    {
+        $this->updateEditCalculations();
+    }
+
+    public function updateEditCalculations()
+    {
+        if ($this->edit_media === 'tv') {
+            $this->edit_rate_per_word = (int) \App\Models\Setting::get('announcement_rate_tv', 5);
+        } elseif ($this->edit_media === 'radio') {
+            $this->edit_rate_per_word = (int) \App\Models\Setting::get('announcement_rate_radio', 3);
+        } else {
+            $this->edit_rate_per_word = (int) \App\Models\Setting::get('announcement_rate_both', 7);
+        }
+
+        if (empty(trim($this->edit_content))) {
+            $this->edit_word_count = 0;
+        } else {
+            $this->edit_word_count = count(array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($this->edit_content)))));
+        }
+
+        $this->edit_total_amount = $this->edit_word_count * $this->edit_rate_per_word * max(1, (int) $this->edit_days_count);
+    }
+
+    public function saveAnnouncement()
+    {
+        $this->validate([
+            'edit_visitor_name' => 'required|string|max:255',
+            'edit_visitor_phone' => 'required|string|max:20',
+            'edit_visitor_email' => 'nullable|email|max:255',
+            'edit_type' => 'required|in:funeral,general',
+            'edit_media' => 'required|in:tv,radio,both',
+            'edit_content' => 'required|string',
+            'edit_days_count' => 'required|integer|min:1|max:30',
+            'edit_airing_date' => 'required|date',
+            'edit_payment_status' => 'required|in:pending,paid',
+            'edit_is_approved' => 'required|boolean',
+        ]);
+
+        $announcement = Announcement::findOrFail($this->editingAnnouncementId);
+
+        $commissionAmount = $announcement->commission_amount;
+        if ($this->edit_payment_status === 'paid' && $announcement->agent_id) {
+            $agent = \App\Models\Agent::find($announcement->agent_id);
+            if ($agent) {
+                $commissionAmount = (int) round(($this->edit_total_amount * $agent->commission_percentage) / 100);
+            }
+        }
+
+        $paymentRef = $this->edit_payment_reference;
+        if ($this->edit_payment_status === 'paid' && empty($paymentRef)) {
+            $paymentRef = 'MANUAL-' . strtoupper(uniqid());
+        }
+
+        $announcement->update([
+            'visitor_name' => strip_tags(trim($this->edit_visitor_name)),
+            'visitor_phone' => strip_tags(trim($this->edit_visitor_phone)),
+            'visitor_email' => $this->edit_visitor_email ? strip_tags(trim(strtolower($this->edit_visitor_email))) : null,
+            'type' => $this->edit_type,
+            'media' => $this->edit_media,
+            'content' => strip_tags(trim($this->edit_content)),
+            'airing_date' => $this->edit_airing_date,
+            'days_count' => (int) $this->edit_days_count,
+            'word_count' => $this->edit_word_count,
+            'rate_per_word' => $this->edit_rate_per_word,
+            'total_amount' => $this->edit_total_amount,
+            'payment_status' => $this->edit_payment_status,
+            'payment_reference' => $paymentRef,
+            'is_approved' => (bool) $this->edit_is_approved,
+            'commission_amount' => $commissionAmount,
+        ]);
+
+        $this->showEditModal = false;
+        $this->editingAnnouncementId = null;
+
+        session()->flash('message', 'Announcement details updated successfully.');
+    }
+
     public function toggleApproval($id)
     {
         $announcement = Announcement::findOrFail($id);

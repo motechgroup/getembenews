@@ -196,7 +196,14 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
+use App\Http\Controllers\AnnouncementController;
+
 Route::get('/announcements', \App\Livewire\AnnouncementSubmit::class)->name('announcements');
+Route::get('/announcements/{id}/download/txt', [AnnouncementController::class, 'downloadTxt'])->name('announcements.download.txt');
+Route::get('/announcements/{id}/download/doc', [AnnouncementController::class, 'downloadDoc'])->name('announcements.download.doc');
+Route::get('/announcements/{id}/download/pdf', [AnnouncementController::class, 'downloadPdf'])->name('announcements.download.pdf');
+Route::get('/announcements/{id}/print', [AnnouncementController::class, 'print'])->name('announcements.print');
+
 Route::get('/agent/dashboard', \App\Livewire\AgentDashboard::class)
     ->middleware(\App\Http\Middleware\RedirectIfAgentNotLoggedIn::class)
     ->name('agent.dashboard');

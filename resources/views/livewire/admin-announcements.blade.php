@@ -388,7 +388,41 @@
 
                             <!-- Actions -->
                             <td class="py-4 px-4 text-right space-y-1.5">
-                                <div class="flex items-center justify-end space-x-2">
+                                <div class="flex items-center justify-end space-x-1.5">
+                                    <button type="button" 
+                                            wire:click="openViewModal({{ $ann->id }})"
+                                            class="bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/60 text-purple-600 dark:text-purple-400 font-bold py-1 px-2 rounded text-[9px] uppercase tracking-wider transition flex items-center space-x-1" title="Open Announcement Details">
+                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        <span>Open</span>
+                                    </button>
+                                    <button type="button" 
+                                            wire:click="openEditModal({{ $ann->id }})"
+                                            class="bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 font-bold py-1 px-2 rounded text-[9px] uppercase tracking-wider transition flex items-center space-x-1" title="Edit Announcement">
+                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span>Edit</span>
+                                    </button>
+                                    <a href="{{ route('announcements.download.txt', $ann->id) }}" target="_blank" wire:navigate.skip class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold py-1 px-1.5 rounded text-[9px] font-mono uppercase tracking-wider transition" title="Download TXT">
+                                        TXT
+                                    </a>
+                                    <a href="{{ route('announcements.download.doc', $ann->id) }}" target="_blank" wire:navigate.skip class="bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 font-bold py-1 px-1.5 rounded text-[9px] font-mono uppercase tracking-wider transition" title="Download Word DOC">
+                                        DOC
+                                    </a>
+                                    <a href="{{ route('announcements.download.pdf', $ann->id) }}" target="_blank" wire:navigate.skip class="bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 font-bold py-1 px-1.5 rounded text-[9px] font-mono uppercase tracking-wider transition" title="Download PDF">
+                                        PDF
+                                    </a>
+                                    <a href="{{ route('announcements.print', $ann->id) }}" target="_blank" class="bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 text-[#cc6c3b] font-bold py-1 px-1.5 rounded text-[9px] uppercase tracking-wider transition flex items-center space-x-1" title="Print Sheet">
+                                        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                        <span>Print</span>
+                                    </a>
+                                </div>
+                                <div class="flex items-center justify-end space-x-1.5 pt-1">
                                     @if($ann->payment_status !== 'paid')
                                         <button type="button" 
                                                 wire:click="markAsPaid({{ $ann->id }})"
@@ -423,4 +457,248 @@
             </div>
         @endif
     </div>
+
+    <!-- VIEW ANNOUNCEMENT DETAILS MODAL -->
+    @if($showViewModal && $viewingAnnouncement)
+        <div class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 max-w-2xl w-full p-6 space-y-6 animate-in fade-in zoom-in duration-200">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-4">
+                    <div>
+                        <h3 class="text-lg font-black text-gray-900 dark:text-white flex items-center space-x-2">
+                            <span>Announcement #{{ $viewingAnnouncement->id }}</span>
+                            <span class="bg-orange-50 dark:bg-orange-950/20 text-[#cc6c3b] text-xs font-bold uppercase px-2 py-0.5 rounded">
+                                {{ $viewingAnnouncement->type }}
+                            </span>
+                        </h3>
+                        <p class="text-xs text-gray-500">Submitted {{ $viewingAnnouncement->created_at->format('M d, Y \a\t H:i') }}</p>
+                    </div>
+                    <button wire:click="closeViewModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Submitter & Payment Details Grid -->
+                <div class="grid grid-cols-2 gap-4 text-xs bg-gray-50 dark:bg-gray-850 p-4 rounded-lg">
+                    <div>
+                        <span class="text-gray-400 font-bold uppercase text-[10px] block">Submitter Name</span>
+                        <span class="font-bold text-gray-900 dark:text-white text-sm">{{ $viewingAnnouncement->visitor_name }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 font-bold uppercase text-[10px] block">Phone & Email</span>
+                        <span class="font-bold text-gray-900 dark:text-white">{{ $viewingAnnouncement->visitor_phone }}</span>
+                        @if($viewingAnnouncement->visitor_email)
+                            <span class="text-gray-500 block text-[11px]">{{ $viewingAnnouncement->visitor_email }}</span>
+                        @endif
+                    </div>
+                    <div>
+                        <span class="text-gray-400 font-bold uppercase text-[10px] block">Media Target & Duration</span>
+                        <span class="font-bold text-[#cc6c3b] uppercase">{{ $viewingAnnouncement->media }}</span> &bull; 
+                        <span>{{ $viewingAnnouncement->days_count }} {{ Str::plural('day', $viewingAnnouncement->days_count) }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 font-bold uppercase text-[10px] block">Airing Date</span>
+                        <span class="font-bold text-gray-900 dark:text-white">
+                            {{ $viewingAnnouncement->airing_date ? $viewingAnnouncement->airing_date->format('F d, Y') : 'N/A' }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 font-bold uppercase text-[10px] block">Financial Summary</span>
+                        <span class="font-bold text-green-600 dark:text-green-400 text-sm">KSh {{ number_format($viewingAnnouncement->total_amount) }}</span>
+                        <span class="text-gray-500 block text-[10px]">({{ $viewingAnnouncement->word_count }} words @ KSh {{ $viewingAnnouncement->rate_per_word }}/word)</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 font-bold uppercase text-[10px] block">Payment Status & Ref</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase inline-block {{ $viewingAnnouncement->payment_status === 'paid' ? 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-400' }}">
+                            {{ $viewingAnnouncement->payment_status }}
+                        </span>
+                        @if($viewingAnnouncement->payment_reference)
+                            <span class="block font-mono text-[10px] text-gray-500 mt-0.5">{{ $viewingAnnouncement->payment_reference }}</span>
+                        @endif
+                    </div>
+                    @if($viewingAnnouncement->agent)
+                        <div class="col-span-2 border-t border-gray-200 dark:border-gray-750 pt-2">
+                            <span class="text-gray-400 font-bold uppercase text-[10px] block">Agent Attribution</span>
+                            <span class="font-bold text-indigo-600 dark:text-indigo-400">{{ $viewingAnnouncement->agent->name }} (Code: {{ $viewingAnnouncement->agent->agent_code }})</span>
+                            <span class="text-gray-500 ml-2">Commission: KSh {{ number_format($viewingAnnouncement->commission_amount) }}</span>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Text Body -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Announcement Content</h4>
+                    <div class="bg-gray-50 dark:bg-gray-800/60 p-4 rounded-lg text-sm italic text-gray-800 dark:text-gray-200 border-l-4 border-[#cc6c3b] leading-relaxed">
+                        &ldquo;{{ $viewingAnnouncement->content }}&rdquo;
+                    </div>
+                </div>
+
+                <!-- Attached Images -->
+                @if(!empty($viewingAnnouncement->images) && is_array($viewingAnnouncement->images))
+                    <div>
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Attached Images ({{ count($viewingAnnouncement->images) }})</h4>
+                        <div class="grid grid-cols-3 gap-3">
+                            @foreach($viewingAnnouncement->images as $img)
+                                <a href="{{ asset($img) }}" target="_blank" class="block aspect-square overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 group">
+                                    <img src="{{ asset($img) }}" alt="Announcement image" class="w-full h-full object-cover group-hover:scale-105 transition">
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
+                <!-- Modal Actions -->
+                <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center space-x-2">
+                        <a href="{{ route('announcements.download.txt', $viewingAnnouncement->id) }}" target="_blank" wire:navigate.skip class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs font-bold font-mono transition">
+                            .TXT
+                        </a>
+                        <a href="{{ route('announcements.download.doc', $viewingAnnouncement->id) }}" target="_blank" wire:navigate.skip class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 rounded text-xs font-bold font-mono transition">
+                            .DOC
+                        </a>
+                        <a href="{{ route('announcements.download.pdf', $viewingAnnouncement->id) }}" target="_blank" wire:navigate.skip class="px-3 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 rounded text-xs font-bold font-mono transition">
+                            .PDF
+                        </a>
+                        <a href="{{ route('announcements.print', $viewingAnnouncement->id) }}" target="_blank" class="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/60 text-[#cc6c3b] rounded text-xs font-bold transition flex items-center space-x-1">
+                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            <span>Print</span>
+                        </a>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button type="button" 
+                                wire:click="closeViewModal" 
+                                wire:click.then="openEditModal({{ $viewingAnnouncement->id }})"
+                                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition">
+                            Edit Announcement
+                        </button>
+                        <button type="button" wire:click="closeViewModal" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold rounded-lg transition">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- EDIT ANNOUNCEMENT MODAL FOR ADMIN & MANAGER -->
+    @if($showEditModal)
+        <div class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 max-w-2xl w-full p-6 space-y-6 animate-in fade-in zoom-in duration-200">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-4">
+                    <div>
+                        <h3 class="text-lg font-black text-gray-900 dark:text-white flex items-center space-x-2">
+                            <span>Edit Announcement #{{ $editingAnnouncementId }}</span>
+                        </h3>
+                        <p class="text-xs text-gray-500">Update submitter details, content text, pricing, and moderation flags.</p>
+                    </div>
+                    <button wire:click="closeEditModal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <form wire:submit.prevent="saveAnnouncement" class="space-y-4 text-xs">
+                    <!-- Submitter Info -->
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Submitter Name *</label>
+                            <input type="text" wire:model="edit_visitor_name" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-[#cc6c3b] focus:ring-[#cc6c3b] text-xs">
+                            @error('edit_visitor_name') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Phone Number *</label>
+                            <input type="text" wire:model="edit_visitor_phone" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-[#cc6c3b] focus:ring-[#cc6c3b] text-xs">
+                            @error('edit_visitor_phone') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+                            <input type="email" wire:model="edit_visitor_email" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-[#cc6c3b] focus:ring-[#cc6c3b] text-xs">
+                            @error('edit_visitor_email') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <!-- Type, Media, Airing Date & Days -->
+                    <div class="grid grid-cols-4 gap-3">
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Type *</label>
+                            <select wire:model="edit_type" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-[#cc6c3b] focus:ring-[#cc6c3b] text-xs">
+                                <option value="funeral">Funeral</option>
+                                <option value="general">General</option>
+                            </select>
+                            @error('edit_type') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Media Channel *</label>
+                            <select wire:model.live="edit_media" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-[#cc6c3b] focus:ring-[#cc6c3b] text-xs">
+                                <option value="tv">TV Only</option>
+                                <option value="radio">Radio Only</option>
+                                <option value="both">TV & Radio</option>
+                            </select>
+                            @error('edit_media') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Airing Date *</label>
+                            <input type="date" wire:model="edit_airing_date" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-[#cc6c3b] focus:ring-[#cc6c3b] text-xs">
+                            @error('edit_airing_date') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Duration (Days) *</label>
+                            <input type="number" min="1" max="30" wire:model.live="edit_days_count" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-[#cc6c3b] focus:ring-[#cc6c3b] text-xs">
+                            @error('edit_days_count') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+
+                    <!-- Announcement Content -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block font-bold text-gray-700 dark:text-gray-300">Content Text *</label>
+                            <span class="text-[10px] text-gray-500 font-bold">
+                                {{ $edit_word_count }} words &bull; KSh {{ $edit_rate_per_word }}/word &bull; Total: <strong class="text-green-600 dark:text-green-400">KSh {{ number_format($edit_total_amount) }}</strong>
+                            </span>
+                        </div>
+                        <textarea wire:model.live.debounce.300ms="edit_content" rows="4" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-[#cc6c3b] focus:ring-[#cc6c3b] text-xs leading-relaxed"></textarea>
+                        @error('edit_content') <span class="text-red-500 text-[10px]">{{ $message }}</span> @enderror
+                    </div>
+
+                    <!-- Status & Approval -->
+                    <div class="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Payment Status *</label>
+                            <select wire:model="edit_payment_status" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-[#cc6c3b] focus:ring-[#cc6c3b] text-xs">
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Payment Reference</label>
+                            <input type="text" wire:model="edit_payment_reference" placeholder="e.g. MPESA-ABC123" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-[#cc6c3b] focus:ring-[#cc6c3b] text-xs font-mono">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1">Approval Moderation</label>
+                            <select wire:model="edit_is_approved" class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white shadow-sm focus:border-[#cc6c3b] focus:ring-[#cc6c3b] text-xs">
+                                <option value="0">Pending Moderation</option>
+                                <option value="1">Approved for Airing</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Modal Actions -->
+                    <div class="flex justify-end space-x-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                        <button type="button" wire:click="closeEditModal" class="px-4 py-2 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold rounded-lg transition">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-5 py-2 bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold rounded-lg shadow-sm transition">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>

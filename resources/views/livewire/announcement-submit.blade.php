@@ -129,6 +129,78 @@
                         @error('content') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
                     </div>
 
+                    <!-- Announcement Image Attachments -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-[10px] font-bold uppercase">
+                            <label class="text-gray-700 dark:text-gray-300">
+                                Attach Images 
+                                <span class="text-[9px] font-normal text-gray-500 lowercase">(max 3 images)</span>
+                            </label>
+                            @if(in_array($media, ['tv', 'both']))
+                                <span class="bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400 text-[9px] font-black uppercase px-2 py-0.5 rounded">
+                                    * Required for TV Announcements (Min 1, Max 3)
+                                </span>
+                            @else
+                                <span class="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 text-[9px] font-bold uppercase px-2 py-0.5 rounded">
+                                    Optional for Radio
+                                </span>
+                            @endif
+                        </div>
+
+                        <!-- Upload Input Box -->
+                        <div class="relative border-2 border-dashed border-gray-250 dark:border-gray-800 hover:border-[#cc6c3b] rounded-lg p-4 transition text-center bg-gray-50/50 dark:bg-gray-900/50">
+                            <input type="file" wire:model="images" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <div class="space-y-1 text-center pointer-events-none">
+                                <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                    <span class="text-[#cc6c3b] font-bold hover:underline">Click to upload</span> or drag and drop images
+                                </p>
+                                <p class="text-[10px] text-gray-400">
+                                    PNG, JPG, JPEG, WEBP up to 5MB each (Maximum 3 images)
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Livewire Upload Progress Indicator -->
+                        <div wire:loading wire:target="images" class="text-[10px] text-[#cc6c3b] font-bold flex items-center space-x-1">
+                            <svg class="animate-spin h-3.5 w-3.5 text-[#cc6c3b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            <span>Uploading image(s)... Please wait.</span>
+                        </div>
+
+                        <!-- Error Messages -->
+                        @error('images') <p class="text-red-550 text-[10px] font-bold">{{ $message }}</p> @enderror
+                        @error('images.*') <p class="text-red-550 text-[10px] font-bold">{{ $message }}</p> @enderror
+
+                        <!-- Selected Images Preview Gallery -->
+                        @if(!empty($images))
+                            <div class="mt-3">
+                                <p class="text-[10px] font-bold text-gray-500 uppercase mb-1.5">Attached Image Previews ({{ count($images) }}/3):</p>
+                                <div class="grid grid-cols-3 gap-3">
+                                    @foreach($images as $index => $img)
+                                        <div class="relative group aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                                            @if(is_object($img) && method_exists($img, 'temporaryUrl'))
+                                                <img src="{{ $img->temporaryUrl() }}" class="w-full h-full object-cover rounded-lg">
+                                            @endif
+                                            <button type="button" 
+                                                    wire:click="removeImage({{ $index }})" 
+                                                    class="absolute top-1 right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 shadow-md transition"
+                                                    title="Remove image">
+                                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
                     <!-- Price breakdown summary -->
                     <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div class="space-y-1 text-xs">
@@ -213,6 +285,15 @@
                             <p class="text-gray-800 dark:text-gray-250 leading-relaxed italic">
                                 "{{ $ann->content }}"
                             </p>
+                            @if(!empty($ann->images) && is_array($ann->images))
+                                <div class="grid grid-cols-3 gap-1.5 pt-1">
+                                    @foreach($ann->images as $imgUrl)
+                                        <a href="{{ asset($imgUrl) }}" target="_blank" class="block aspect-square overflow-hidden rounded border border-gray-100 dark:border-gray-800">
+                                            <img src="{{ asset($imgUrl) }}" alt="Announcement image" class="w-full h-full object-cover hover:scale-105 transition">
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
                             <div class="flex justify-between items-center text-[9px] text-gray-400 font-semibold pt-1.5 border-t border-gray-50 dark:border-gray-850">
                                 <span>By: {{ $ann->visitor_name }}</span>
                                 <span>

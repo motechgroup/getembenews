@@ -10,7 +10,9 @@ use App\Models\ContactMessage;
 use App\Models\Newsletter;
 use App\Models\Announcement;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Volt\Volt;
 use Tests\TestCase;
 
@@ -70,12 +72,15 @@ class SecurityValidationTest extends TestCase
      */
     public function test_announcement_submission_sanitizes_inputs(): void
     {
+        Storage::fake('public');
+
         Volt::test('announcement-submit')
             ->set('visitor_name', '<b>Hacker Visitor</b>')
             ->set('visitor_email', 'visitor@example.com')
             ->set('visitor_phone', '0712345678')
             ->set('type', 'general')
             ->set('media', 'tv')
+            ->set('images', [UploadedFile::fake()->image('photo.jpg')])
             ->set('content', '<i>Funeral announcement info here.</i>')
             ->set('days_count', 1)
             ->set('submitter_type', 'self')

@@ -7,6 +7,8 @@ use App\Models\Agent;
 use App\Models\Announcement;
 use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -82,11 +84,15 @@ class AgentTest extends TestCase
             'commission_percentage' => 20, // 20% commission
         ]);
 
+        Storage::fake('public');
+        $file = UploadedFile::fake()->image('announcement.jpg');
+
         $component = Livewire::test(\App\Livewire\AnnouncementSubmit::class)
             ->set('visitor_name', 'Emma Nyabera')
             ->set('visitor_phone', '+254712345678')
             ->set('type', 'funeral')
             ->set('media', 'tv')
+            ->set('images', [$file])
             ->set('days_count', 3)
             ->set('content', 'This is a test funeral announcement containing exactly eight words here.')
             ->set('submitter_type', 'agent')
@@ -160,6 +166,7 @@ class AgentTest extends TestCase
             ->set('visitor_phone', '+254712345678')
             ->set('type', 'funeral')
             ->set('media', 'tv')
+            ->set('images', [UploadedFile::fake()->image('photo.jpg')])
             ->set('days_count', 3)
             ->set('content', 'This is a test funeral announcement containing exactly eight words here.')
             ->set('submitter_type', 'agent')
@@ -403,12 +410,15 @@ class AgentTest extends TestCase
         Setting::set('sms_admin_phone', '+254711111111');
         Setting::set('sms_provider', 'mock');
 
+        Storage::fake('public');
+
         // Verify draft submission triggers SMS mock
         $component = Livewire::test(\App\Livewire\AnnouncementSubmit::class)
             ->set('visitor_name', 'Emma Nyabera')
             ->set('visitor_phone', '+254712345678')
             ->set('type', 'funeral')
             ->set('media', 'tv')
+            ->set('images', [UploadedFile::fake()->image('photo.jpg')])
             ->set('days_count', 2)
             ->set('content', 'Draft content representing funeral announcement.')
             ->call('submitAnnouncement');

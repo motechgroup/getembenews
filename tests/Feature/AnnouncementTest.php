@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Announcement;
 use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -21,7 +23,10 @@ class AnnouncementTest extends TestCase
 
     public function test_announcement_submit_flow(): void
     {
+        Storage::fake('public');
         Setting::set('announcement_rate_tv', '5');
+
+        $file = UploadedFile::fake()->image('announcement.jpg');
 
         $component = Livewire::test(\App\Livewire\AnnouncementSubmit::class)
             ->set('visitor_name', 'Emma Nyabera')
@@ -29,6 +34,7 @@ class AnnouncementTest extends TestCase
             ->set('visitor_phone', '+254712345678')
             ->set('type', 'funeral')
             ->set('media', 'tv')
+            ->set('images', [$file])
             ->set('days_count', 3)
             ->set('content', 'This is a test funeral announcement containing exactly eight words here.');
 
@@ -714,4 +720,103 @@ class AnnouncementTest extends TestCase
             ->assertOk()
             ->assertDontSee('Get the Custom Getembe App Now');
     }
+
+    public function test_tv_announcement_requires_images(): void
+    {
+        Livewire::test(\App\Livewire\AnnouncementSubmit::class)
+            ->set('visitor_name', 'Jane Doe')
+            ->set('visitor_phone', '+254711223344')
+            ->set('type', 'funeral')
+            ->set('media', 'tv')
+            ->set('content', 'Sample announcement text for TV.')
+            ->set('images', [])
+            ->call('submitAnnouncement')
+            ->assertHasErrors(['images']);
+    }
+
+    public function test_both_media_target_announcement_requires_images(): void
+    {
+        Livewire::test(\App\Livewire\AnnouncementSubmit::class)
+            ->set('visitor_name', 'Jane Doe')
+            ->set('visitor_phone', '+254711223344')
+            ->set('type', 'funeral')
+            ->set('media', 'both')
+            ->set('content', 'Sample announcement text for Both TV and Radio.')
+            ->set('images', [])
+            ->call('submitAnnouncement')
+            ->assertHasErrors(['images']);
+    }
+
+    public function test_radio_announcement_allows_submission_without_images(): void
+    {
+        Livewire::test(\App\Livewire\AnnouncementSubmit::class)
+            ->set('visitor_name', 'John Radio')
+            ->set('visitor_phone', '+254711223344')
+            ->set('type', 'general')
+            ->set('media', 'radio')
+            ->set('content', 'Sample radio notice text content here.')
+            ->set('images', [])
+            ->call('submitAnnouncement')
+            ->assertHasNoErrors(['images'])
+            ->assertSet('showCheckoutModal', true);
+    }
+
+    public function test_announcement_accepts_max_3_images(): void
+    {
+        Storage::fake('public');
+
+        // Test uploading 4 images fails validation
+        Livewire::test(\App\Livewire\AnnouncementSubmit::class)
+            ->set('visitor_name', 'Max Test')
+            ->set('visitor_phone', '+254711223344')
+            ->set('type', 'general')
+            ->set('media', 'tv')
+            ->set('content', 'Testing max images validation.')
+            ->set('images', [
+                UploadedFile::fake()->image('img1.jpg'),
+                UploadedFile::fake()->image('img2.jpg'),
+                UploadedFile::fake()->image('img3.jpg'),
+                UploadedFile::fake()->image('img4.jpg'),
+            ])
+            ->call('submitAnnouncement')
+            ->assertHasErrors(['images']);
+
+        // Test uploading exactly 3 images succeeds
+        $comp = Livewire::test(\App\Livewire\AnnouncementSubmit::class)
+            ->set('visitor_name', 'Valid Max Test')
+            ->set('visitor_phone', '+254711223344')
+            ->set('type', 'general')
+            ->set('media', 'tv')
+            ->set('content', 'Testing exactly 3 images submission.')
+            ->set('images', [
+                UploadedFile::fake()->image('img1.jpg'),
+                UploadedFile::fake()->image('img2.jpg'),
+                UploadedFile::fake()->image('img3.jpg'),
+            ]);
+
+        $comp->call('submitAnnouncement');
+        $comp->assertHasNoErrors();
+        $comp->assertSet('showCheckoutModal', true);
+
+        $annId = $comp->get('currentAnnouncementId');
+        $ann = Announcement::findOrFail($annId);
+        $this->assertCount(3, $ann->images);
+    }
+
+    public function test_remove_image_method_works(): void
+    {
+        Storage::fake('public');
+
+        $comp = Livewire::test(\App\Livewire\AnnouncementSubmit::class)
+            ->set('images', [
+                UploadedFile::fake()->image('img1.jpg'),
+                UploadedFile::fake()->image('img2.jpg'),
+            ]);
+
+        $this->assertCount(2, $comp->get('images'));
+
+        $comp->call('removeImage', 0);
+        $this->assertCount(1, $comp->get('images'));
+    }
 }
+

@@ -335,10 +335,20 @@
                             </td>
 
                             <!-- Content -->
-                            <td class="py-4 px-4">
+                            <td class="py-4 px-4 space-y-2">
                                 <p class="line-clamp-3 leading-relaxed italic text-gray-650 dark:text-gray-350">
                                     "{{ $ann->content }}"
                                 </p>
+                                @if(!empty($ann->images) && is_array($ann->images))
+                                    <div class="flex items-center gap-1.5 pt-1">
+                                        <span class="text-[9px] font-bold text-gray-400 uppercase shrink-0">Images ({{ count($ann->images) }}):</span>
+                                        @foreach($ann->images as $imgUrl)
+                                            <a href="{{ asset($imgUrl) }}" target="_blank" class="block h-8 w-8 rounded overflow-hidden border border-gray-200 dark:border-gray-700 shrink-0" title="View full image">
+                                                <img src="{{ asset($imgUrl) }}" class="w-full h-full object-cover hover:scale-110 transition">
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </td>
 
                             <!-- Cost Details -->

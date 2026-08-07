@@ -16,6 +16,7 @@ class Announcement extends Model
         'type',
         'media',
         'content',
+        'images',
         'airing_date',
         'expiry_date',
         'word_count',
@@ -39,6 +40,7 @@ class Announcement extends Model
         'commission_amount' => 'integer',
         'airing_date' => 'date',
         'expiry_date' => 'date',
+        'images' => 'array',
     ];
 
     protected static function booted()

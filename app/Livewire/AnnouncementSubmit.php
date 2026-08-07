@@ -7,10 +7,11 @@ use App\Models\Announcement;
 use App\Models\Setting;
 use Illuminate\Support\Str;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 
 class AnnouncementSubmit extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     // Form Inputs
     public $visitor_name = '';
@@ -19,6 +20,7 @@ class AnnouncementSubmit extends Component
     public $type = 'funeral'; // funeral, general
     public $media = 'tv'; // tv, radio, both
     public $content = '';
+    public $images = [];
     public $days_count = 1;
     public $airing_date = '';
     public $submitter_type = 'self'; // self, agent
@@ -42,18 +44,13 @@ class AnnouncementSubmit extends Component
     public $showAgentLoginModal = false;
     public $login_pin = '';
 
-    protected $rules = [
-        'visitor_name' => 'required|string|max:255',
-        'visitor_email' => 'nullable|email|max:255',
-        'visitor_phone' => 'required|string|max:20',
-        'type' => 'required|in:funeral,general',
-        'media' => 'required|in:tv,radio,both',
-        'content' => 'required|string',
-        'days_count' => 'required|integer|min:1|max:30',
-        'airing_date' => 'required|date|after_or_equal:today',
-        'submitter_type' => 'required|in:self,agent',
-        'agent_pin' => 'required_if:submitter_type,agent|nullable|string|size:4',
-    ];
+    public function removeImage($index)
+    {
+        if (isset($this->images[$index])) {
+            unset($this->images[$index]);
+            $this->images = array_values($this->images);
+        }
+    }
 
     public function mount()
     {
@@ -98,7 +95,32 @@ class AnnouncementSubmit extends Component
      */
     public function submitAnnouncement()
     {
-        $this->validate();
+        $isTv = in_array($this->media, ['tv', 'both']);
+
+        $rules = [
+            'visitor_name' => 'required|string|max:255',
+            'visitor_email' => 'nullable|email|max:255',
+            'visitor_phone' => 'required|string|max:20',
+            'type' => 'required|in:funeral,general',
+            'media' => 'required|in:tv,radio,both',
+            'content' => 'required|string',
+            'images' => $isTv ? 'required|array|min:1|max:3' : 'nullable|array|max:3',
+            'images.*' => 'image|max:5120',
+            'days_count' => 'required|integer|min:1|max:30',
+            'airing_date' => 'required|date|after_or_equal:today',
+            'submitter_type' => 'required|in:self,agent',
+            'agent_pin' => 'required_if:submitter_type,agent|nullable|string|size:4',
+        ];
+
+        $messages = [
+            'images.required' => 'At least 1 image is required for TV announcements.',
+            'images.min' => 'At least 1 image is required for TV announcements.',
+            'images.max' => 'You can attach a maximum of 3 images.',
+            'images.*.image' => 'Each attached file must be a valid image.',
+            'images.*.max' => 'Each image must not exceed 5MB.',
+        ];
+
+        $this->validate($rules, $messages);
 
         // Rate Limiting: 3 submissions per IP per minute
         $ip = request()->ip();
@@ -119,6 +141,16 @@ class AnnouncementSubmit extends Component
             $selectedAgentId = $agent->id;
         }
 
+        $imagePaths = [];
+        if (!empty($this->images)) {
+            foreach ($this->images as $image) {
+                if ($image) {
+                    $path = $image->store('announcements', 'public');
+                    $imagePaths[] = '/storage/' . $path;
+                }
+            }
+        }
+
         $announcement = Announcement::create([
             'visitor_name' => strip_tags(trim($this->visitor_name)),
             'visitor_email' => $this->visitor_email ? strip_tags(trim(strtolower($this->visitor_email))) : null,
@@ -126,6 +158,7 @@ class AnnouncementSubmit extends Component
             'type' => $this->type,
             'media' => $this->media,
             'content' => strip_tags(trim($this->content)),
+            'images' => $imagePaths,
             'airing_date' => $this->airing_date,
             'word_count' => $this->word_count,
             'days_count' => (int) $this->days_count,
@@ -318,7 +351,7 @@ class AnnouncementSubmit extends Component
             $this->mpesa_status = 'success';
             
             // Reset input values
-            $this->reset(['visitor_name', 'visitor_email', 'visitor_phone', 'content', 'days_count', 'submitter_type', 'agent_pin']);
+            $this->reset(['visitor_name', 'visitor_email', 'visitor_phone', 'content', 'images', 'days_count', 'submitter_type', 'agent_pin']);
             $this->airing_date = now()->toDateString();
             $this->updateCalculations();
         }

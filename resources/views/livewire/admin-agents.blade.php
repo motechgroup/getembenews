@@ -9,17 +9,84 @@
                 Manage registered agents, their commission percentages, and view performance reports.
             </p>
         </div>
-        <button type="button" 
-                wire:click="openForm()"
-                class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-sm">
-            Create Agent Account
-        </button>
+        <div class="flex items-center space-x-2">
+            <button type="button" 
+                    wire:click="openImport()"
+                    class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold text-xs px-4 py-2 rounded-lg transition shadow-sm border border-gray-300 dark:border-gray-700 flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-[#cc6c3b]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                Import Bulk Agents
+            </button>
+            <button type="button" 
+                    wire:click="openForm()"
+                    class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-sm">
+                Create Agent Account
+            </button>
+        </div>
     </div>
 
     <!-- Feedback Banner -->
     @if(session()->has('message'))
         <div class="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800/30 text-green-700 dark:text-green-455 px-4 py-3 rounded-lg font-bold">
             {{ session('message') }}
+        </div>
+    @endif
+
+    <!-- Import Modal / Block -->
+    @if($isImportOpen)
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm space-y-4 font-semibold">
+            <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-3">
+                <div>
+                    <h3 class="text-sm font-black uppercase text-gray-900 dark:text-white tracking-wider">
+                        Import Bulk Agents (Excel / CSV)
+                    </h3>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                        Upload a CSV, TXT, or Excel file containing agent data. Missing PINs will automatically be generated.
+                    </p>
+                </div>
+                <button type="button" wire:click="downloadSampleCsv()" class="text-xs text-[#cc6c3b] hover:underline font-bold flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Download Sample CSV Template
+                </button>
+            </div>
+
+            <form wire:submit.prevent="importAgents" class="space-y-4">
+                <div class="space-y-2">
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Select File (.csv, .xlsx, .xls, .txt)</label>
+                    <input type="file" wire:model="importFile" accept=".csv, .xlsx, .xls, .txt"
+                           class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-bold file:bg-[#cc6c3b] file:text-white hover:file:bg-orange-700">
+                    <div wire:loading wire:target="importFile" class="text-[10px] text-orange-600 font-bold">Uploading & analyzing file...</div>
+                    @error('importFile') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
+                </div>
+
+                @if($importResults)
+                    <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 text-xs space-y-2">
+                        <div class="font-black text-gray-900 dark:text-white uppercase tracking-wider">Import Summary:</div>
+                        <div class="flex space-x-4 text-xs font-bold">
+                            <span class="text-green-700 dark:text-green-400">✓ Added: {{ $importResults['success'] }}</span>
+                            <span class="text-gray-500">⏭ Skipped: {{ $importResults['skipped'] }}</span>
+                            @if(count($importResults['errors']) > 0)
+                                <span class="text-red-600">⚠ Errors: {{ count($importResults['errors']) }}</span>
+                            @endif
+                        </div>
+                        @if(count($importResults['errors']) > 0)
+                            <ul class="text-[10px] text-red-500 font-normal list-disc list-inside space-y-0.5 max-h-32 overflow-y-auto pt-1">
+                                @foreach($importResults['errors'] as $err)
+                                    <li>{{ $err }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                @endif
+
+                <div class="pt-2 flex space-x-2">
+                    <button type="submit" wire:loading.attr="disabled" class="bg-[#cc6c3b] hover:bg-orange-700 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-lg transition text-xs">
+                        Start Importing
+                    </button>
+                    <button type="button" wire:click="closeImport()" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-750 text-gray-700 dark:text-gray-300 font-bold px-4 py-2 rounded-lg transition text-xs">
+                        Close
+                    </button>
+                </div>
+            </form>
         </div>
     @endif
 
@@ -46,9 +113,16 @@
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[10px] uppercase font-bold text-gray-500">Agent PIN (4 digits)</label>
-                    <input type="text" wire:model="pin" required placeholder="e.g. 1234" maxlength="4"
-                           class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[10px] uppercase font-bold text-gray-500">Agent PIN (Auto-Generated)</label>
+                        <button type="button" wire:click="regeneratePin" class="text-[9px] font-bold text-[#cc6c3b] hover:underline">
+                            ↻ Generate New
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <input type="text" wire:model="pin" required placeholder="Auto-generated" maxlength="4"
+                               class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs font-mono font-bold text-gray-900 dark:text-white focus:outline-none tracking-widest">
+                    </div>
                     @error('pin') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
                 </div>
 
@@ -125,6 +199,10 @@
                             </td>
                             <td class="py-4 px-4 text-right space-x-2">
                                 <button type="button" 
+                                        wire:confirm="Are you sure you want to generate a new PIN code for {{ $agent->name }}?"
+                                        wire:click="regenerateAgentPin({{ $agent->id }})" 
+                                        class="text-orange-600 hover:text-orange-800 font-bold" title="Generate new 4-digit PIN">Reset PIN</button>
+                                <button type="button" 
                                         wire:click="openForm({{ $agent->id }})" 
                                         class="text-blue-600 hover:text-blue-800 font-bold">Edit</button>
                                 <button type="button" 
@@ -159,7 +237,15 @@
                     <h2 class="text-sm font-black uppercase text-gray-900 dark:text-white tracking-wider">
                         Agent Performance Profile: {{ $selectedAgentForDetails->name }}
                     </h2>
-                    <p class="text-[10px] text-gray-550 dark:text-gray-400 mt-1">Location: {{ $selectedAgentForDetails->location }} &bull; PIN: {{ $selectedAgentForDetails->pin }}</p>
+                    <p class="text-[10px] text-gray-550 dark:text-gray-400 mt-1 flex items-center gap-2">
+                        Location: {{ $selectedAgentForDetails->location }} &bull; PIN: <span class="font-mono font-bold text-[#cc6c3b]">{{ $selectedAgentForDetails->pin }}</span>
+                        <button type="button" 
+                                wire:confirm="Are you sure you want to generate a new PIN code for {{ $selectedAgentForDetails->name }}?"
+                                wire:click="regenerateAgentPin({{ $selectedAgentForDetails->id }})" 
+                                class="text-[9px] font-bold text-[#cc6c3b] hover:underline bg-orange-50 dark:bg-orange-950/30 px-1.5 py-0.5 rounded">
+                            ↻ Regenerate PIN
+                        </button>
+                    </p>
                 </div>
                 <button type="button" wire:click="closeDetails()" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold px-3 py-1.5 rounded-lg transition text-xs uppercase tracking-wider">
                     Close Profile

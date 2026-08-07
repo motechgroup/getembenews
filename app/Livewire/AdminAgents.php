@@ -5,10 +5,12 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Agent;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
+use App\Support\AgentImporter;
 
 class AdminAgents extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public $search = '';
 
@@ -20,6 +22,11 @@ class AdminAgents extends Component
     public $commission_percentage = 10;
 
     public $isFormOpen = false;
+
+    // Import state
+    public $isImportOpen = false;
+    public $importFile = null;
+    public $importResults = null;
 
     // Details state
     public $selectedAgentForDetails = null;
@@ -68,11 +75,16 @@ class AdminAgents extends Component
         } else {
             $this->name = '';
             $this->location = '';
-            $this->pin = '';
+            $this->pin = Agent::generateUniquePin();
             $this->commission_percentage = 10;
         }
 
         $this->isFormOpen = true;
+    }
+
+    public function regeneratePin()
+    {
+        $this->pin = Agent::generateUniquePin();
     }
 
     public function closeForm()
@@ -82,6 +94,10 @@ class AdminAgents extends Component
 
     public function saveAgent()
     {
+        if (empty($this->pin)) {
+            $this->pin = Agent::generateUniquePin();
+        }
+
         $this->validate();
 
         if ($this->agentId) {
@@ -104,6 +120,67 @@ class AdminAgents extends Component
         }
 
         $this->closeForm();
+    }
+
+    public function openImport()
+    {
+        $this->resetValidation();
+        $this->importFile = null;
+        $this->importResults = null;
+        $this->isImportOpen = true;
+    }
+
+    public function closeImport()
+    {
+        $this->isImportOpen = false;
+        $this->importFile = null;
+        $this->importResults = null;
+    }
+
+    public function importAgents()
+    {
+        $this->validate([
+            'importFile' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240',
+        ], [
+            'importFile.required' => 'Please select a CSV or Excel file to upload.',
+            'importFile.mimes' => 'The file must be a valid CSV, TXT, XLS, or XLSX file.',
+            'importFile.max' => 'The file size must not exceed 10MB.',
+        ]);
+
+        $path = $this->importFile->getRealPath();
+        $originalExt = $this->importFile->getClientOriginalExtension();
+
+        $results = AgentImporter::importFromFile($path, $originalExt);
+        $this->importResults = $results;
+
+        if ($results['success'] > 0) {
+            session()->flash('message', "Bulk Import Complete: Successfully imported {$results['success']} agent(s).");
+        }
+    }
+
+    public function downloadSampleCsv()
+    {
+        $csvHeader = "Name,Location,Commission Percentage,PIN\n";
+        $sampleData = "Samuel Mogaka,Kisii Town,15,1234\nFaith Kerubo,Nyamira,10,\nDavid Omwamba,Ogembo,20,5678\n";
+
+        return response()->streamDownload(function () use ($csvHeader, $sampleData) {
+            echo $csvHeader . $sampleData;
+        }, 'agents_sample_template.csv', [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
+
+    public function regenerateAgentPin($agentId)
+    {
+        $agent = Agent::findOrFail($agentId);
+        $newPin = Agent::generateUniquePin();
+        $agent->update(['pin' => $newPin]);
+
+        if ($this->selectedAgentForDetails && $this->selectedAgentForDetails->id === $agent->id) {
+            $this->selectedAgentForDetails = $agent->fresh();
+        }
+
+        session()->flash('message', "Security PIN for agent '{$agent->name}' regenerated successfully: {$newPin}");
     }
 
     public function deleteAgent($id)

@@ -11,17 +11,33 @@
             <h1 class="text-xl font-serif font-black text-gray-900 dark:text-white uppercase tracking-wider mt-1.5">
                 Welcome, {{ $agent->name }}
             </h1>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-2">
                 Location: <span class="font-bold text-gray-700 dark:text-gray-300">{{ $agent->location }}</span> &bull; 
-                Commission Rate: <span class="font-bold text-gray-755 dark:text-gray-300">{{ $agent->commission_percentage }}%</span>
+                Commission Rate: <span class="font-bold text-gray-755 dark:text-gray-300">{{ $agent->commission_percentage }}%</span> &bull;
+                Security PIN: <span class="font-mono font-bold text-[#cc6c3b] tracking-wider">{{ $agent->pin }}</span>
             </p>
         </div>
-        <button type="button" 
-                wire:click="logoutAgent"
-                class="bg-red-50 hover:bg-red-150 border border-red-200 text-red-750 font-bold text-xs px-4 py-2 rounded-lg transition shadow-sm uppercase tracking-wider">
-            Logout Agent Session
-        </button>
+        <div class="flex items-center space-x-2">
+            <button type="button" 
+                    wire:confirm="Are you sure you want to generate a new Security PIN code?"
+                    wire:click="regenerateMyPin"
+                    class="bg-orange-50 hover:bg-orange-100 border border-orange-200 text-[#cc6c3b] font-bold text-xs px-3 py-2 rounded-lg transition shadow-sm flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Regenerate PIN
+            </button>
+            <button type="button" 
+                    wire:click="logoutAgent"
+                    class="bg-red-50 hover:bg-red-150 border border-red-200 text-red-750 font-bold text-xs px-4 py-2 rounded-lg transition shadow-sm uppercase tracking-wider">
+                Logout Session
+            </button>
+        </div>
     </div>
+
+    @if(session()->has('pin_message'))
+        <div class="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800/30 text-[#cc6c3b] dark:text-orange-400 px-4 py-3 rounded-lg font-bold">
+            {{ session('pin_message') }}
+        </div>
+    @endif
 
     <!-- Performance Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-4 gap-6 font-bold text-center">

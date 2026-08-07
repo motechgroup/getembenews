@@ -16,6 +16,30 @@ class Agent extends Model
         'pin',
     ];
 
+    /**
+     * Generate a unique 4-digit numeric PIN for agents.
+     */
+    public static function generateUniquePin(): string
+    {
+        do {
+            $pin = str_pad((string) mt_rand(0, 9999), 4, '0', STR_PAD_LEFT);
+        } while (static::where('pin', $pin)->exists());
+
+        return $pin;
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function ($agent) {
+            if (empty($agent->pin)) {
+                $agent->pin = static::generateUniquePin();
+            }
+        });
+    }
+
     protected $casts = [
         'commission_percentage' => 'integer',
     ];

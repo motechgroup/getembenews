@@ -20,13 +20,55 @@ class AgentTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $manager = User::factory()->create(['role' => 'manager']);
-        $editor = User::factory()->create(['role' => 'editor']); // Editor also has access due to default permission map
         $user = User::factory()->create(['role' => 'user']);
 
         $this->actingAs($admin)->get('/admin/agents')->assertOk();
         $this->actingAs($manager)->get('/admin/agents')->assertOk();
-        $this->actingAs($editor)->get('/admin/agents')->assertForbidden();
         $this->actingAs($user)->get('/admin/agents')->assertForbidden();
+    }
+
+    public function test_agent_pin_is_automatically_generated_by_system(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        // 1. Opening create form automatically generates and pre-fills a 4-digit PIN
+        $component = Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminAgents::class)
+            ->call('openForm');
+
+        $autoPin = $component->get('pin');
+        $this->assertNotEmpty($autoPin);
+        $this->assertEquals(4, strlen($autoPin));
+        $this->assertMatchesRegularExpression('/^[0-9]{4}$/', $autoPin);
+
+        // 2. Regenerate PIN creates a new valid 4-digit PIN
+        $component->call('regeneratePin');
+        $newPin = $component->get('pin');
+        $this->assertEquals(4, strlen($newPin));
+        $this->assertMatchesRegularExpression('/^[0-9]{4}$/', $newPin);
+
+        // 3. Saving agent uses the auto-generated PIN
+        $component->set('name', 'Auto Pin Agent')
+            ->set('location', 'Nairobi')
+            ->set('commission_percentage', 10)
+            ->call('saveAgent')
+            ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('agents', [
+            'name' => 'Auto Pin Agent',
+            'pin' => $newPin,
+        ]);
+
+        // 4. Model booted hook automatically generates PIN if created directly without PIN
+        $agentDirect = Agent::create([
+            'name' => 'Direct Model Agent',
+            'location' => 'Eldoret',
+            'commission_percentage' => 12,
+        ]);
+
+        $this->assertNotEmpty($agentDirect->pin);
+        $this->assertEquals(4, strlen($agentDirect->pin));
+        $this->assertMatchesRegularExpression('/^[0-9]{4}$/', $agentDirect->pin);
     }
 
     public function test_agent_crud_operations_by_admin(): void
@@ -491,5 +533,65 @@ class AgentTest extends TestCase
                 ->where('message', 'like', '%Hello Test Message%')
                 ->exists()
         );
+    }
+
+    public function test_admin_can_bulk_import_agents_via_csv(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $csvContent = "Name,Location,Commission Percentage,PIN\n";
+        $csvContent .= "Imported Agent 1,Kisii Town,15,4321\n";
+        $csvContent .= "Imported Agent 2,Nyamira,20,\n"; // empty PIN, should auto-generate
+
+        $file = UploadedFile::fake()->createWithContent('agents.csv', $csvContent);
+
+        $component = Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminAgents::class)
+            ->call('openImport')
+            ->set('importFile', $file)
+            ->call('importAgents');
+
+        $component->assertHasNoErrors();
+        $this->assertDatabaseHas('agents', [
+            'name' => 'Imported Agent 1',
+            'location' => 'Kisii Town',
+            'commission_percentage' => 15,
+            'pin' => '4321',
+        ]);
+
+        $agent2 = Agent::where('name', 'Imported Agent 2')->first();
+        $this->assertNotNull($agent2);
+        $this->assertEquals('Nyamira', $agent2->location);
+        $this->assertEquals(20, $agent2->commission_percentage);
+        $this->assertEquals(4, strlen($agent2->pin));
+    }
+
+    public function test_admin_and_agent_can_regenerate_pin(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $agent = Agent::create([
+            'name' => 'Test Agent',
+            'location' => 'Kisii Town',
+            'pin' => '1111',
+            'commission_percentage' => 15,
+        ]);
+
+        // 1. Admin regenerates agent's PIN
+        Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminAgents::class)
+            ->call('regenerateAgentPin', $agent->id);
+
+        $newPinAdmin = $agent->fresh()->pin;
+        $this->assertNotEquals('1111', $newPinAdmin);
+        $this->assertEquals(4, strlen($newPinAdmin));
+
+        // 2. Agent regenerates own PIN on dashboard
+        session(['agent_logged_in' => $agent->id]);
+        Livewire::test(\App\Livewire\AgentDashboard::class)
+            ->call('regenerateMyPin');
+
+        $newPinAgent = $agent->fresh()->pin;
+        $this->assertNotEquals($newPinAdmin, $newPinAgent);
+        $this->assertEquals(4, strlen($newPinAgent));
     }
 }

@@ -39,6 +39,15 @@ class AgentDashboard extends Component
         return $this->redirect('/announcements');
     }
 
+    public function regenerateMyPin()
+    {
+        $newPin = Agent::generateUniquePin();
+        $this->agent->update(['pin' => $newPin]);
+        $this->agent = $this->agent->fresh();
+
+        session()->flash('pin_message', "Your Security PIN has been regenerated successfully: {$newPin}");
+    }
+
     public function setActiveTab($tab)
     {
         $this->activeTab = $tab;

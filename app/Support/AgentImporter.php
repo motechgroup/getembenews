@@ -166,6 +166,7 @@ class AgentImporter
         // Detect column indices
         $nameIdx = static::findColumnIndex($headerRow, ['name', 'agent name', 'agent_name', 'fullname', 'full name']);
         $businessNameIdx = static::findColumnIndex($headerRow, ['business', 'business name', 'business_name', 'company', 'company name', 'company_name', 'shop', 'shop name']);
+        $phoneIdx = static::findColumnIndex($headerRow, ['phone', 'phone number', 'phone_number', 'mobile', 'telephone', 'contact', 'contact phone']);
         $locationIdx = static::findColumnIndex($headerRow, ['location', 'agent location', 'agent_location', 'town', 'city']);
         $commissionIdx = static::findColumnIndex($headerRow, ['commission', 'commission percentage', 'commission_percentage', 'rate', 'commission rate', 'commission_rate', '%']);
         $pinIdx = static::findColumnIndex($headerRow, ['pin', 'agent pin', 'agent_pin', 'security pin', 'code']);
@@ -194,6 +195,7 @@ class AgentImporter
             }
 
             $businessName = ($businessNameIdx !== null && isset($row[$businessNameIdx]) && trim((string)$row[$businessNameIdx]) !== '') ? trim((string)$row[$businessNameIdx]) : null;
+            $phone = ($phoneIdx !== null && isset($row[$phoneIdx]) && trim((string)$row[$phoneIdx]) !== '') ? trim((string)$row[$phoneIdx]) : null;
             $location = (isset($row[$locationIdx]) && trim((string)$row[$locationIdx]) !== '') ? trim((string)$row[$locationIdx]) : 'General';
             
             $commission = 10;
@@ -212,6 +214,7 @@ class AgentImporter
                 Agent::create([
                     'name' => $name,
                     'business_name' => $businessName,
+                    'phone' => $phone,
                     'location' => $location,
                     'commission_percentage' => $commission,
                     'pin' => $pin,

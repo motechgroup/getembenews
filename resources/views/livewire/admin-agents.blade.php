@@ -97,7 +97,7 @@
                 {{ $agentId ? 'Edit Agent Account' : 'Create New Agent' }}
             </h3>
 
-            <form wire:submit.prevent="saveAgent" class="grid grid-cols-1 sm:grid-cols-5 gap-4">
+            <form wire:submit.prevent="saveAgent" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="space-y-1">
                     <label class="text-[10px] uppercase font-bold text-gray-500">Agent Name</label>
                     <input type="text" wire:model="name" required placeholder="e.g. Samuel Mogaka"
@@ -110,6 +110,13 @@
                     <input type="text" wire:model="business_name" placeholder="e.g. Mogaka Enterprises"
                            class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
                     @error('business_name') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Phone Number (Optional)</label>
+                    <input type="text" wire:model="phone" placeholder="e.g. +254712345678"
+                           class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
+                    @error('phone') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="space-y-1">
@@ -140,7 +147,7 @@
                     @error('commission_percentage') <p class="text-red-550 text-[10px]">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="sm:col-span-5 pt-4 flex space-x-2">
+                <div class="sm:col-span-3 pt-4 flex space-x-2">
                     <button type="submit" class="bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold px-4 py-2 rounded-lg transition text-xs">
                         {{ $agentId ? 'Save Changes' : 'Create Agent' }}
                     </button>
@@ -156,7 +163,7 @@
     <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-4 rounded-xl shadow-sm">
         <div class="w-full font-semibold">
             <label class="text-[10px] uppercase font-bold text-gray-500">Search Agents</label>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by name, business, location or PIN..." 
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by name, business, phone, location or PIN..." 
                    class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-350 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none mt-1">
         </div>
     </div>
@@ -177,7 +184,7 @@
                         <th class="py-3.5 px-4 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-150 dark:divide-gray-800 font-semibold text-gray-700 dark:text-gray-300">
+                <tbody class="divide-y divide-gray-150 dark:divide-gray-800 font-semibold text-gray-770 dark:text-gray-300">
                     @forelse($agents as $agent)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-850/50 transition">
                             <td class="py-4 px-4 cursor-pointer" wire:click="viewDetails({{ $agent->id }})">
@@ -186,6 +193,12 @@
                                     <div class="text-[10px] text-[#cc6c3b] font-semibold flex items-center gap-1">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m3 0h1m-1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                         {{ $agent->business_name }}
+                                    </div>
+                                @endif
+                                @if($agent->phone)
+                                    <div class="text-[10px] text-gray-500 font-mono flex items-center gap-1 mt-0.5">
+                                        <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                        {{ $agent->phone }}
                                     </div>
                                 @endif
                                 <div class="text-[9px] text-gray-400">Agent ID: {{ $agent->id }}</div>
@@ -250,7 +263,13 @@
                     <h2 class="text-sm font-black uppercase text-gray-900 dark:text-white tracking-wider">
                         Agent Performance Profile: {{ $selectedAgentForDetails->name }}
                     </h2>
-                    <p class="text-[10px] text-gray-550 dark:text-gray-400 mt-1 flex items-center gap-2">
+                    <p class="text-[10px] text-gray-550 dark:text-gray-400 mt-1 flex flex-wrap items-center gap-2">
+                        @if($selectedAgentForDetails->business_name)
+                            Business: <span class="font-bold text-gray-700 dark:text-gray-300">{{ $selectedAgentForDetails->business_name }}</span> &bull;
+                        @endif
+                        @if($selectedAgentForDetails->phone)
+                            Phone: <span class="font-mono font-bold text-gray-700 dark:text-gray-300">{{ $selectedAgentForDetails->phone }}</span> &bull;
+                        @endif
                         Location: {{ $selectedAgentForDetails->location }} &bull; PIN: <span class="font-mono font-bold text-[#cc6c3b]">{{ $selectedAgentForDetails->pin }}</span>
                         <button type="button" 
                                 wire:confirm="Are you sure you want to generate a new PIN code for {{ $selectedAgentForDetails->name }}?"

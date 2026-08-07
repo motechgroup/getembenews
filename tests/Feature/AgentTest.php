@@ -75,12 +75,13 @@ class AgentTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
-        // 1. Create Agent with optional Business Name
+        // 1. Create Agent with optional Business Name and Phone
         $component = Livewire::actingAs($admin)
             ->test(\App\Livewire\AdminAgents::class)
             ->call('openForm')
             ->set('name', 'Samuel Mogaka')
             ->set('business_name', 'Mogaka Enterprises')
+            ->set('phone', '+254712345678')
             ->set('location', 'Kisii Town')
             ->set('pin', '9999')
             ->set('commission_percentage', 15)
@@ -90,6 +91,7 @@ class AgentTest extends TestCase
         $this->assertDatabaseHas('agents', [
             'name' => 'Samuel Mogaka',
             'business_name' => 'Mogaka Enterprises',
+            'phone' => '+254712345678',
             'location' => 'Kisii Town',
             'pin' => '9999',
             'commission_percentage' => 15,

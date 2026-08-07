@@ -18,6 +18,7 @@ class AdminAgents extends Component
     public $agentId = null;
     public $name = '';
     public $business_name = '';
+    public $phone = '';
     public $location = '';
     public $pin = '';
     public $commission_percentage = 10;
@@ -52,6 +53,7 @@ class AdminAgents extends Component
         return [
             'name' => 'required|string|max:255',
             'business_name' => 'nullable|string|max:255',
+            'phone' => 'nullable|string|max:50',
             'location' => 'required|string|max:255',
             'pin' => 'required|string|size:4|regex:/^[0-9]{4}$/|unique:agents,pin,' . $this->agentId,
             'commission_percentage' => 'required|integer|min:0|max:100',
@@ -72,12 +74,14 @@ class AdminAgents extends Component
             $agent = Agent::findOrFail($id);
             $this->name = $agent->name;
             $this->business_name = $agent->business_name;
+            $this->phone = $agent->phone;
             $this->location = $agent->location;
             $this->pin = $agent->pin;
             $this->commission_percentage = $agent->commission_percentage;
         } else {
             $this->name = '';
             $this->business_name = '';
+            $this->phone = '';
             $this->location = '';
             $this->pin = Agent::generateUniquePin();
             $this->commission_percentage = 10;
@@ -109,6 +113,7 @@ class AdminAgents extends Component
             $agent->update([
                 'name' => $this->name,
                 'business_name' => $this->business_name ?: null,
+                'phone' => $this->phone ?: null,
                 'location' => $this->location,
                 'pin' => $this->pin,
                 'commission_percentage' => (int) $this->commission_percentage,
@@ -118,6 +123,7 @@ class AdminAgents extends Component
             Agent::create([
                 'name' => $this->name,
                 'business_name' => $this->business_name ?: null,
+                'phone' => $this->phone ?: null,
                 'location' => $this->location,
                 'pin' => $this->pin,
                 'commission_percentage' => (int) $this->commission_percentage,
@@ -166,8 +172,8 @@ class AdminAgents extends Component
 
     public function downloadSampleCsv()
     {
-        $csvHeader = "Name,Business Name,Location,Commission Percentage,PIN\n";
-        $sampleData = "Samuel Mogaka,Mogaka Enterprises,Kisii Town,15,1234\nFaith Kerubo,Kerubo Traders,Nyamira,10,\nDavid Omwamba,,Ogembo,20,5678\n";
+        $csvHeader = "Name,Business Name,Phone,Location,Commission Percentage,PIN\n";
+        $sampleData = "Samuel Mogaka,Mogaka Enterprises,+254712345678,Kisii Town,15,1234\nFaith Kerubo,Kerubo Traders,+254722334455,Nyamira,10,\nDavid Omwamba,,+254700001122,Ogembo,20,5678\n";
 
         return response()->streamDownload(function () use ($csvHeader, $sampleData) {
             echo $csvHeader . $sampleData;
@@ -277,6 +283,7 @@ class AdminAgents extends Component
             $query->where(function($q) {
                 $q->where('name', 'like', '%' . $this->search . '%')
                   ->orWhere('business_name', 'like', '%' . $this->search . '%')
+                  ->orWhere('phone', 'like', '%' . $this->search . '%')
                   ->orWhere('location', 'like', '%' . $this->search . '%')
                   ->orWhere('pin', 'like', '%' . $this->search . '%');
             });

@@ -113,8 +113,8 @@
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[10px] uppercase font-bold text-gray-500">Phone Number (Optional)</label>
-                    <input type="text" wire:model="phone" placeholder="e.g. +254712345678"
+                    <label class="text-[10px] uppercase font-bold text-gray-500">Phone Number</label>
+                    <input type="text" wire:model="phone" required placeholder="e.g. +254712345678"
                            class="w-full bg-gray-55 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none">
                     @error('phone') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>

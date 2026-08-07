@@ -53,7 +53,7 @@ class AdminAgents extends Component
         return [
             'name' => 'required|string|max:255',
             'business_name' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:50',
+            'phone' => 'required|string|max:50',
             'location' => 'required|string|max:255',
             'pin' => 'required|string|size:4|regex:/^[0-9]{4}$/|unique:agents,pin,' . $this->agentId,
             'commission_percentage' => 'required|integer|min:0|max:100',
@@ -113,7 +113,7 @@ class AdminAgents extends Component
             $agent->update([
                 'name' => $this->name,
                 'business_name' => $this->business_name ?: null,
-                'phone' => $this->phone ?: null,
+                'phone' => $this->phone,
                 'location' => $this->location,
                 'pin' => $this->pin,
                 'commission_percentage' => (int) $this->commission_percentage,
@@ -123,7 +123,7 @@ class AdminAgents extends Component
             Agent::create([
                 'name' => $this->name,
                 'business_name' => $this->business_name ?: null,
-                'phone' => $this->phone ?: null,
+                'phone' => $this->phone,
                 'location' => $this->location,
                 'pin' => $this->pin,
                 'commission_percentage' => (int) $this->commission_percentage,

@@ -49,6 +49,7 @@ class AgentTest extends TestCase
 
         // 3. Saving agent uses the auto-generated PIN
         $component->set('name', 'Auto Pin Agent')
+            ->set('phone', '+254712345678')
             ->set('location', 'Nairobi')
             ->set('commission_percentage', 10)
             ->call('saveAgent')
@@ -255,6 +256,7 @@ class AgentTest extends TestCase
             ->test(\App\Livewire\AdminAgents::class)
             ->call('openForm')
             ->set('name', 'Samuel Mogaka')
+            ->set('phone', '+254712345678')
             ->set('location', 'Kisii Town')
             ->set('pin', 'abcd') // non-numeric
             ->set('commission_percentage', 15)
@@ -266,11 +268,28 @@ class AgentTest extends TestCase
             ->test(\App\Livewire\AdminAgents::class)
             ->call('openForm')
             ->set('name', 'Samuel Mogaka')
+            ->set('phone', '+254712345678')
             ->set('location', 'Kisii Town')
             ->set('pin', '123') // 3 digits
             ->set('commission_percentage', 15)
             ->call('saveAgent')
             ->assertHasErrors(['pin']);
+    }
+
+    public function test_agent_phone_number_is_required(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminAgents::class)
+            ->call('openForm')
+            ->set('name', 'Samuel Mogaka')
+            ->set('location', 'Kisii Town')
+            ->set('pin', '1234')
+            ->set('phone', '') // empty phone
+            ->set('commission_percentage', 15)
+            ->call('saveAgent')
+            ->assertHasErrors(['phone']);
     }
 
     public function test_agent_portal_login_flow(): void

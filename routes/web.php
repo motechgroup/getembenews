@@ -26,7 +26,7 @@ Route::get('/', function () {
     ];
 
     try {
-        $cacheKey = 'homepage_data_v7_' . filemtime(__FILE__);
+        $cacheKey = 'homepage_data_v8_' . filemtime(__FILE__);
 
         $homepageData = Cache::remember($cacheKey, 300, function () use ($fallbackData) {
             try {

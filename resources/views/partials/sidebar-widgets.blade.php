@@ -1,13 +1,15 @@
 @php
-    $polls = json_decode(\App\Models\Setting::get('simulated_polls', '[]'), true);
-    $activePoll = !empty($polls) ? $polls[0] : [
+    $pollsRaw = \App\Models\Setting::get('simulated_polls', '[]');
+    $polls = is_array($pollsRaw) ? $pollsRaw : json_decode($pollsRaw ?? '[]', true);
+    $activePoll = (is_array($polls) && !empty($polls) && isset($polls[0])) ? $polls[0] : [
         'id' => 'default_poll',
         'question' => 'What should Getembe County prioritize in the next budget cycle?',
         'options' => ['Road Networks', 'Youth Tech Hubs', 'Agriculture', 'Healthcare']
     ];
 
-    $quizzes = json_decode(\App\Models\Setting::get('simulated_quizzes', '[]'), true);
-    $activeQuiz = !empty($quizzes) ? $quizzes[0] : [
+    $quizzesRaw = \App\Models\Setting::get('simulated_quizzes', '[]');
+    $quizzes = is_array($quizzesRaw) ? $quizzesRaw : json_decode($quizzesRaw ?? '[]', true);
+    $activeQuiz = (is_array($quizzes) && !empty($quizzes) && isset($quizzes[0])) ? $quizzes[0] : [
         'id' => 'default_quiz',
         'title' => 'Getembe County History & Culture Trivia',
         'questions_count' => 3

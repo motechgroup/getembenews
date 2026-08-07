@@ -35,7 +35,7 @@
 
     <!-- Header -->
     <header class="max-w-7xl mx-auto w-full px-6 py-8 flex justify-between items-center z-10">
-        <a href="/" class="flex items-center overflow-hidden rounded-md border border-gray-800 shadow-lg">
+        <a href="/" wire:navigate.skip class="flex items-center overflow-hidden rounded-md border border-gray-800 shadow-lg">
             <div class="bg-[#cc6c3b] px-3.5 py-1.5 text-white font-sans font-black tracking-tight text-xs sm:text-sm uppercase">
                 Getembe
             </div>
@@ -43,7 +43,7 @@
                 News
             </div>
         </a>
-        <a href="/" class="text-xs font-bold text-gray-400 hover:text-white transition uppercase tracking-wider">
+        <a href="/" wire:navigate.skip class="text-xs font-bold text-gray-400 hover:text-white transition uppercase tracking-wider">
             &larr; Back to Home
         </a>
     </header>
@@ -84,7 +84,7 @@
 
             <!-- Shortcut Navigation Links -->
             <div class="flex flex-wrap items-center justify-center gap-4 text-xs font-bold text-gray-400 pt-2">
-                <a href="/" class="px-4 py-2 bg-gray-900 border border-gray-800 hover:border-gray-700 text-white rounded transition shadow-sm">
+                <a href="/" wire:navigate.skip class="px-4 py-2 bg-gray-900 border border-gray-800 hover:border-gray-700 text-white rounded transition shadow-sm">
                     📰 News Home
                 </a>
                 <a href="/tv" class="px-4 py-2 bg-gray-900 border border-gray-800 hover:border-gray-700 text-white rounded transition shadow-sm flex items-center space-x-1">

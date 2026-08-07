@@ -38,7 +38,7 @@
                         $firstWord = $parts[0] ?? 'Getembe';
                         $secondWord = $parts[1] ?? 'News';
                     @endphp
-                    <a href="/" class="flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-lg" wire:navigate>
+                    <a href="/" class="flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-lg" wire:navigate.skip>
                         <!-- Left: Orange -->
                         <div class="bg-[#cc6c3b] px-4 py-2 text-white font-sans font-black tracking-tight text-sm uppercase">
                             {{ $firstWord }}

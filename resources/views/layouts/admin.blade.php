@@ -69,7 +69,7 @@
     <aside x-data="{ sidebarOpen: false }" class="w-full md:w-64 bg-gray-900 text-gray-300 flex flex-col border-r border-gray-800 shrink-0">
         <!-- Sidebar Brand Header -->
         <div class="h-16 px-6 border-b border-gray-800 flex items-center justify-between">
-            <a href="/" class="flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-sm">
+            <a href="/" wire:navigate.skip class="flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-sm">
                 <!-- Left: Orange -->
                 <div class="bg-[#cc6c3b] px-2.5 py-1 text-white font-sans font-black tracking-tight text-[10px] uppercase">
                     {{ $firstWord }}
@@ -450,7 +450,7 @@
             </div>
             @endif
             <hr class="border-gray-800 my-4">
-            <a href="/" class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition">
+            <a href="/" wire:navigate.skip class="flex items-center space-x-3 px-3 py-2 text-xs font-semibold rounded hover:bg-gray-800 hover:text-white transition">
                 <svg class="h-4 w-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                 </svg>

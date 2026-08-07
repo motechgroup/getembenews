@@ -193,7 +193,7 @@
         <div class="max-w-7xl mx-auto flex items-center justify-between h-16 px-4 sm:px-6">
             <!-- Left Side: Logo Emblem (Getembe Digital) -->
             <div class="flex items-center space-x-6 h-full shrink-0">
-                <a href="/" class="flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-sm">
+                <a href="/" wire:navigate.skip class="flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-sm">
                     <!-- Left: Orange -->
                     <div class="bg-[#cc6c3b] px-3.5 py-1.5 text-white font-sans font-black tracking-tight text-xs sm:text-sm uppercase">
                         {{ $firstWord }}
@@ -514,7 +514,7 @@
     <footer class="py-12 px-4 sm:px-6 border-t-4 transition-colors" style="background-color: {{ $footerBgColor }}; color: {{ $footerTextColor }}; border-top-color: {{ $brandColor }};">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
             <div class="space-y-4">
-                <a href="/" class="inline-flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-sm mb-2">
+                <a href="/" wire:navigate.skip class="inline-flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-sm mb-2">
                     <!-- Left: Orange -->
                     <div class="bg-[#cc6c3b] px-3.5 py-1.5 text-white font-sans font-black tracking-tight text-xs uppercase">
                         {{ $firstWord }}

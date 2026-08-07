@@ -223,6 +223,19 @@ Route::middleware(['auth', 'can:access-admin'])->prefix('admin')->group(function
     Route::get('/settings/{tab?}', function ($tab = 'identity') {
         return view('admin.settings', compact('tab'));
     })->name('admin.settings');
+    Route::get('/run-migrations', function () {
+        if (!auth()->user() || !auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized access.');
+        }
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+            $output = \Illuminate\Support\Facades\Artisan::output();
+            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+            return response('<div style="background:#0f172a;color:#38bdf8;padding:24px;font-family:monospace;border-radius:12px;margin:20px;"><h2 style="color:#22c55e;">✔ Database Migrations Executed Successfully!</h2><pre>' . e($output) . '</pre><br><a href="/admin/settings/updates" style="color:#fff;background:#0284c7;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;">Return to Admin Updates</a></div>');
+        } catch (\Throwable $e) {
+            return response('<div style="background:#0f172a;color:#ef4444;padding:24px;font-family:monospace;border-radius:12px;margin:20px;"><h2>✖ Migration Error Occurred</h2><pre>' . e($e->getMessage()) . '</pre><br><a href="/admin/settings/updates" style="color:#fff;background:#0284c7;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;">Return to Admin Updates</a></div>', 500);
+        }
+    })->name('admin.run-migrations');
 });
 
 use App\Http\Controllers\SeoSitemapController;

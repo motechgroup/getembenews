@@ -525,9 +525,26 @@ mount(function ($activeTab = 'identity') {
 
     if ($activeTab === 'updates') {
         $cwd = base_path();
-        $branch = trim(shell_exec("cd {$cwd} && git rev-parse --abbrev-ref HEAD 2>&1") ?? 'main');
-        $status = trim(shell_exec("cd {$cwd} && git status -sb 2>&1") ?? 'No git status');
-        $lastCommits = trim(shell_exec("cd {$cwd} && git log -n 5 --oneline 2>&1") ?? 'No commits');
+
+        $runSafeShell = function ($cmd) {
+            if (!function_exists('shell_exec')) {
+                return 'Note: shell_exec() function is disabled on this server (php.ini).';
+            }
+            try {
+                $disabled = array_map('trim', explode(',', ini_get('disable_functions') ?? ''));
+                if (in_array('shell_exec', $disabled)) {
+                    return 'Note: shell_exec() is disabled in php.ini disable_functions.';
+                }
+                $output = @shell_exec($cmd);
+                return $output !== null ? trim($output) : 'Command executed with no output returned.';
+            } catch (\Throwable $e) {
+                return 'Shell Execution Warning: ' . $e->getMessage();
+            }
+        };
+
+        $branch = $runSafeShell("cd {$cwd} && git rev-parse --abbrev-ref HEAD 2>&1");
+        $status = $runSafeShell("cd {$cwd} && git status -sb 2>&1");
+        $lastCommits = $runSafeShell("cd {$cwd} && git log -n 5 --oneline 2>&1");
 
         $this->gitStatusSummary = "Branch: {$branch}\n\n[Status Overview]\n{$status}\n\n[Recent Commit History]\n{$lastCommits}";
 
@@ -1169,12 +1186,28 @@ $clearCache = function () use ($logAction) {
     session()->flash('cache_cleared', 'Application caches cleared successfully.');
 };
 
-$checkGitStatus = function () {
+$runSafeShell = function ($cmd) {
+    if (!function_exists('shell_exec')) {
+        return 'Note: shell_exec() function is disabled on this server (php.ini).';
+    }
+    try {
+        $disabled = array_map('trim', explode(',', ini_get('disable_functions') ?? ''));
+        if (in_array('shell_exec', $disabled)) {
+            return 'Note: shell_exec() is disabled in php.ini disable_functions.';
+        }
+        $output = @shell_exec($cmd);
+        return $output !== null ? trim($output) : 'Command executed with no output returned.';
+    } catch (\Throwable $e) {
+        return 'Shell Execution Warning: ' . $e->getMessage();
+    }
+};
+
+$checkGitStatus = function () use ($runSafeShell) {
     $cwd = base_path();
 
-    $branch = trim(shell_exec("cd {$cwd} && git rev-parse --abbrev-ref HEAD 2>&1") ?? 'main');
-    $status = trim(shell_exec("cd {$cwd} && git status -sb 2>&1") ?? 'No git status');
-    $lastCommits = trim(shell_exec("cd {$cwd} && git log -n 5 --oneline 2>&1") ?? 'No commits');
+    $branch = $runSafeShell("cd {$cwd} && git rev-parse --abbrev-ref HEAD 2>&1");
+    $status = $runSafeShell("cd {$cwd} && git status -sb 2>&1");
+    $lastCommits = $runSafeShell("cd {$cwd} && git log -n 5 --oneline 2>&1");
 
     $this->gitStatusSummary = "Branch: {$branch}\n\n[Status Overview]\n{$status}\n\n[Recent Commit History]\n{$lastCommits}";
 
@@ -1186,16 +1219,16 @@ $checkGitStatus = function () {
     }
 };
 
-$pullGitCode = function () use ($logAction, $checkGitStatus) {
+$pullGitCode = function () use ($logAction, $checkGitStatus, $runSafeShell) {
     if (!auth()->user() || !auth()->user()->isAdmin()) {
         abort(403, 'Unauthorized action.');
     }
 
     $cwd = base_path();
     $out = "=== PULLING GIT CODE ===\n";
-    $out .= shell_exec("cd {$cwd} && git pull 2>&1") ?? 'No output returned.';
+    $out .= $runSafeShell("cd {$cwd} && git pull 2>&1");
     $out .= "\n\n=== RECENT COMMITS AFTER PULL ===\n";
-    $out .= shell_exec("cd {$cwd} && git log -n 3 --oneline 2>&1") ?? '';
+    $out .= $runSafeShell("cd {$cwd} && git log -n 3 --oneline 2>&1");
 
     $this->gitTerminalOutput = $out;
     $logAction("Executed Git Pull in admin panel");
@@ -1224,7 +1257,7 @@ $runDatabaseMigrations = function () use ($logAction, $checkGitStatus) {
     $checkGitStatus->bindTo($this)();
 };
 
-$runFullDeployUpdate = function () use ($logAction, $checkGitStatus) {
+$runFullDeployUpdate = function () use ($logAction, $checkGitStatus, $runSafeShell) {
     if (!auth()->user() || !auth()->user()->isAdmin()) {
         abort(403, 'Unauthorized action.');
     }
@@ -1235,7 +1268,7 @@ $runFullDeployUpdate = function () use ($logAction, $checkGitStatus) {
     $out .= "==========================================\n\n";
 
     $out .= "[1/3] Pulling Latest Git Changes...\n";
-    $out .= shell_exec("cd {$cwd} && git pull 2>&1") ?? 'No output.';
+    $out .= $runSafeShell("cd {$cwd} && git pull 2>&1");
     $out .= "\n------------------------------------------\n";
 
     $out .= "[2/3] Running Database Migrations...\n";

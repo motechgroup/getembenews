@@ -1,12 +1,18 @@
 <div class="space-y-6 text-xs">
     <!-- Header -->
-    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-xl shadow-sm">
-        <h1 class="text-lg font-serif font-black text-gray-900 dark:text-white uppercase tracking-wider">
-            Announcements Management
-        </h1>
-        <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
-            Moderation dashboard for visitors' submitted TV/Radio announcements.
-        </p>
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-6 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-lg font-serif font-black text-gray-900 dark:text-white uppercase tracking-wider">
+                Announcements Management
+            </h1>
+            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-1">
+                Moderation dashboard for visitors' submitted TV/Radio announcements.
+            </p>
+        </div>
+        <a href="/admin/announcements/reports" class="bg-orange-50 hover:bg-orange-100 border border-orange-200 text-[#cc6c3b] font-bold text-xs px-4 py-2.5 rounded-lg transition shadow-sm flex items-center gap-1.5 self-start md:self-auto">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 01-2 2h-2a2 2 0 01-2-2zm9 0v-8a2 2 0 00-2-2h-2a2 2 0 00-2 2v8a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
+            <span>View Detailed Reports & Analytics &rarr;</span>
+        </a>
     </div>
 
     <!-- Session Feedback Banner -->

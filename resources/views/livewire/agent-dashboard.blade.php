@@ -10,8 +10,14 @@
             </div>
             <h1 class="text-xl font-serif font-black text-gray-900 dark:text-white uppercase tracking-wider mt-1.5">
                 Welcome, {{ $agent->name }}
+                @if($agent->business_name)
+                    <span class="text-sm font-sans font-bold text-[#cc6c3b] capitalize font-normal block sm:inline sm:ml-2">({{ $agent->business_name }})</span>
+                @endif
             </h1>
-            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-2">
+            <p class="text-[10px] text-gray-550 dark:text-gray-400 mt-0.5 flex flex-wrap items-center gap-2">
+                @if($agent->business_name)
+                    Business: <span class="font-bold text-gray-700 dark:text-gray-300">{{ $agent->business_name }}</span> &bull;
+                @endif
                 Location: <span class="font-bold text-gray-700 dark:text-gray-300">{{ $agent->location }}</span> &bull; 
                 Commission Rate: <span class="font-bold text-gray-755 dark:text-gray-300">{{ $agent->commission_percentage }}%</span> &bull;
                 Security PIN: <span class="font-mono font-bold text-[#cc6c3b] tracking-wider">{{ $agent->pin }}</span>

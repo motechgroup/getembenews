@@ -661,12 +661,33 @@ class DatabaseSeeder extends Seeder
 
         // 12. Seed Agents
         \App\Models\Agent::firstOrCreate(['name' => 'Agent Mogaka'], [
+            'business_name' => 'Mogaka Enterprises',
+            'phone' => '+254712345678',
             'location' => 'Kisii Town',
             'commission_percentage' => 15,
+            'pin' => '1234',
         ]);
         \App\Models\Agent::firstOrCreate(['name' => 'Agent Nyabuto'], [
+            'business_name' => 'Nyabuto Traders',
+            'phone' => '+254722334455',
             'location' => 'Nyamira',
             'commission_percentage' => 10,
+            'pin' => '5678',
+        ]);
+        \App\Models\Agent::firstOrCreate(['name' => 'John Bosire'], [
+            'business_name' => 'Bosire Tech & Electronics',
+            'phone' => '+254712987654',
+            'location' => 'Kisii Town',
+            'commission_percentage' => 15,
+            'pin' => '7419',
+        ]);
+        \App\Models\Agent::firstOrCreate(['name' => 'Mary Kwamboka'], [
+            'business_name' => 'Kwamboka Media Agency',
+            'phone' => '+254723456789',
+            'location' => 'Nyamira',
+            'commission_percentage' => 12,
+            'pin' => '6862',
         ]);
     }
 }
+

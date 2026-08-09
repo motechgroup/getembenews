@@ -617,4 +617,37 @@ class AgentTest extends TestCase
         $this->assertNotEquals($newPinAdmin, $newPinAgent);
         $this->assertEquals(4, strlen($newPinAgent));
     }
+
+    public function test_bulk_import_extracts_and_normalizes_phone_numbers(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        // CSV with various header synonyms: "Phone No.", "Mobile", "Contact"
+        $csvContent = "Name,Phone No.,Location,Commission Rate\n";
+        $csvContent .= "Phone Test 1,'0712345678,Kisii,10\n";
+        $csvContent .= "Phone Test 2,0722334455,Nyamira,15\n";
+        $csvContent .= "Phone Test 3,254700112233,Ogembo,20\n";
+
+        $file = UploadedFile::fake()->createWithContent('agents_phone.csv', $csvContent);
+
+        Livewire::actingAs($admin)
+            ->test(\App\Livewire\AdminAgents::class)
+            ->call('openImport')
+            ->set('importFile', $file)
+            ->call('importAgents')
+            ->assertHasNoErrors();
+
+        $agent1 = Agent::where('name', 'Phone Test 1')->first();
+        $this->assertNotNull($agent1);
+        $this->assertEquals('+254712345678', $agent1->phone);
+
+        $agent2 = Agent::where('name', 'Phone Test 2')->first();
+        $this->assertNotNull($agent2);
+        $this->assertEquals('+254722334455', $agent2->phone);
+
+        $agent3 = Agent::where('name', 'Phone Test 3')->first();
+        $this->assertNotNull($agent3);
+        $this->assertEquals('+254700112233', $agent3->phone);
+    }
 }
+

@@ -49,8 +49,8 @@ class Mpesa
     public static function stkPush(string $phone, float $amount, string $reference = 'GetembeNews'): array
     {
         $env = Setting::get('mpesa_env', 'sandbox');
-        $shortcode = trim((string) Setting::get('mpesa_shortcode', '174379'));
-        $passkey = trim((string) Setting::get('mpesa_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'));
+        $shortcode = trim((string) Setting::get('mpesa_shortcode', '4346209'));
+        $passkey = trim((string) Setting::get('mpesa_passkey', 'cc2b215ee738ab18e254db64058cfa06236f72cce95a8cf5a03f48fb14b2c9fe'));
         $txType = Setting::get('mpesa_transaction_type', 'CustomerPayBillOnline');
 
         // Clean phone number: Safaricom requires format 2547XXXXXXXX
@@ -110,17 +110,30 @@ class Mpesa
                         'message' => 'STK Push prompt successfully sent to ' . $phone
                     ];
                 }
-                return [
-                    'success' => false,
-                    'message' => $data['ResponseDescription'] ?? 'Failed to trigger payment prompt.'
-                ];
+            }
+
+            // Retry with alternative transaction type if initial transaction type failed (e.g. Paybill vs Buy Goods)
+            $altTxType = ($txType === 'CustomerPayBillOnline') ? 'CustomerBuyGoodsOnline' : 'CustomerPayBillOnline';
+            $body['TransactionType'] = $altTxType;
+
+            $retryResponse = Http::withoutVerifying()->withToken($token)->post($url, $body);
+            if ($retryResponse->successful()) {
+                $retryData = $retryResponse->json();
+                if (isset($retryData['ResponseCode']) && $retryData['ResponseCode'] === '0') {
+                    Setting::set('mpesa_transaction_type', $altTxType);
+                    return [
+                        'success' => true,
+                        'checkout_request_id' => $retryData['CheckoutRequestID'],
+                        'message' => 'STK Push prompt successfully sent to ' . $phone
+                    ];
+                }
             }
 
             Log::error("M-Pesa STK Push error. Request: " . json_encode($body) . " Response: " . $response->body());
             $errorMsg = $response->json('errorMessage') ?: ($response->json('ResponseDescription') ?: 'Error calling M-Pesa STK API. HTTP code ' . $response->status());
             
             if (str_contains(strtolower($errorMsg), 'wrong credentials') || str_contains(strtolower($errorMsg), 'invalid access token')) {
-                $errorMsg = "STK Push Authorization Failed (Wrong Credentials / Invalid Passkey or Shortcode): Your OAuth Consumer Key is valid, but Safaricom rejected the Passkey or Shortcode combination ({$shortcode}). Please verify your Lipa Na M-Pesa Passkey & Transaction Type in Admin Settings.";
+                $errorMsg = "STK Push Authorization Failed (Wrong Credentials / Invalid Passkey or Shortcode): Your OAuth Consumer Key is valid, but Safaricom rejected the Passkey or Shortcode combination ({$shortcode}). Please verify your Lipa Na M-Pesa Passkey in Admin Settings.";
             }
 
             return [
@@ -142,8 +155,8 @@ class Mpesa
     public static function queryStatus(string $checkoutRequestId): array
     {
         $env = Setting::get('mpesa_env', 'sandbox');
-        $shortcode = trim((string) Setting::get('mpesa_shortcode', '174379'));
-        $passkey = trim((string) Setting::get('mpesa_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'));
+        $shortcode = trim((string) Setting::get('mpesa_shortcode', '4346209'));
+        $passkey = trim((string) Setting::get('mpesa_passkey', 'cc2b215ee738ab18e254db64058cfa06236f72cce95a8cf5a03f48fb14b2c9fe'));
 
         $token = self::getAccessToken();
         if (!$token) {

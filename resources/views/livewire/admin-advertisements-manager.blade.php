@@ -160,8 +160,18 @@ $delete = function ($id) {
                                     </div>
                                 </td>
                                 <td class="p-3 font-semibold text-gray-700 dark:text-gray-300">
-                                    <span class="bg-blue-50 dark:bg-blue-955/40 text-blue-700 dark:text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded capitalize">
+                                    <span class="bg-blue-50 dark:bg-blue-955/40 text-blue-700 dark:text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded capitalize block w-fit">
                                         {{ str_replace('_', ' ', $ad->location) }}
+                                    </span>
+                                    <span class="text-[9px] text-gray-400 font-mono block mt-0.5">
+                                        @switch($ad->location)
+                                            @case('top') 728 × 90 px @break
+                                            @case('sidebar') 300 × 250 px @break
+                                            @case('inline') 728 × 90 px @break
+                                            @case('footer') 728 × 90 px @break
+                                            @case('mobile_sticky') 320 × 50 px @break
+                                            @case('mobile_native') 336 × 280 px @break
+                                        @endswitch
                                     </span>
                                 </td>
                                 <td class="p-3 text-gray-550 font-medium">
@@ -195,7 +205,7 @@ $delete = function ($id) {
 
     @else
         <!-- FORM VIEW -->
-        <form wire:submit.prevent="save" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 max-w-2xl space-y-4">
+        <form wire:submit.prevent="save" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 max-w-2xl space-y-5">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="space-y-1">
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Campaign Title</label>
@@ -205,16 +215,45 @@ $delete = function ($id) {
                 </div>
                 
                 <div class="space-y-1">
-                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Placement Ad Spot</label>
-                    <select wire:model="location" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white font-semibold">
-                        <option value="top">Top Header Leaderboard (728x90)</option>
-                        <option value="sidebar">Sidebar Rectangle (300x250)</option>
-                        <option value="inline">Inline Article Body (468x60)</option>
-                        <option value="footer">Bottom Footer Banner (728x90)</option>
-                        <option value="mobile_sticky">Mobile Sticky Bottom (320x50)</option>
-                        <option value="mobile_native">Mobile App Native In-Feed Ad (Card/Banner)</option>
+                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Placement Ad Spot & Dimensions</label>
+                    <select wire:model.live="location" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-[#C8102E] focus:border-[#C8102E] dark:text-white font-semibold">
+                        <option value="top">Top Header Leaderboard — (728 × 90 px / 970 × 90 px)</option>
+                        <option value="sidebar">Sidebar Rectangle — (300 × 250 px / 300 × 600 px)</option>
+                        <option value="inline">Inline Article Body — (728 × 90 px / 468 × 60 px)</option>
+                        <option value="footer">Bottom Footer Banner — (728 × 90 px)</option>
+                        <option value="mobile_sticky">Mobile Sticky Bottom Banner — (320 × 50 px Anchor)</option>
+                        <option value="mobile_native">Mobile App Native Feed Card — (336 × 280 px)</option>
                     </select>
                     @error('location') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <!-- Dynamic Dimensions Guidance Card -->
+            <div class="p-3.5 bg-blue-50/80 dark:bg-blue-955/40 border border-blue-200 dark:border-blue-800/60 rounded-lg text-xs space-y-1.5">
+                <div class="flex items-center space-x-2 text-blue-800 dark:text-blue-300 font-bold">
+                    <svg class="w-4 h-4 text-[#C8102E] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Recommended Dimensions for <span class="uppercase font-mono text-[#C8102E] font-extrabold">{{ str_replace('_', ' ', $location) }}</span>:</span>
+                </div>
+                <div class="text-gray-700 dark:text-gray-300 text-[11px] leading-relaxed pl-6">
+                    @if($location === 'top')
+                        <span class="font-bold text-gray-900 dark:text-white">Required Resolution: 728 × 90 px</span> (Standard Leaderboard) or <span class="font-bold text-gray-900 dark:text-white">970 × 90 px</span> (Large Leaderboard).<br>
+                        <span class="text-gray-500">Displays prominently above main articles and header navigation across desktop and tablet views.</span>
+                    @elseif($location === 'sidebar')
+                        <span class="font-bold text-gray-900 dark:text-white">Required Resolution: 300 × 250 px</span> (Medium Rectangle) or <span class="font-bold text-gray-900 dark:text-white">300 × 600 px</span> (Half Page Banner).<br>
+                        <span class="text-gray-500">Displays in the right-side sidebar column alongside news stories and widgets.</span>
+                    @elseif($location === 'inline')
+                        <span class="font-bold text-gray-900 dark:text-white">Required Resolution: 728 × 90 px</span> or <span class="font-bold text-gray-900 dark:text-white">468 × 60 px</span> / <span class="font-bold text-gray-900 dark:text-white">336 × 280 px</span>.<br>
+                        <span class="text-gray-500">Displays inside article reader pages between news paragraphs.</span>
+                    @elseif($location === 'footer')
+                        <span class="font-bold text-gray-900 dark:text-white">Required Resolution: 728 × 90 px</span> (Footer Leaderboard).<br>
+                        <span class="text-gray-500">Displays at the bottom of pages above the main website footer.</span>
+                    @elseif($location === 'mobile_sticky')
+                        <span class="font-bold text-gray-900 dark:text-white">Required Resolution: 320 × 50 px</span> (Mobile Anchor Banner).<br>
+                        <span class="text-gray-500">Displays as a fixed bottom overlay bar on mobile browser screens.</span>
+                    @elseif($location === 'mobile_native')
+                        <span class="font-bold text-gray-900 dark:text-white">Required Resolution: 336 × 280 px</span> or <span class="font-bold text-gray-900 dark:text-white">300 × 250 px</span>.<br>
+                        <span class="text-gray-500">Delivered via API into native Android/iOS mobile application newsfeeds.</span>
+                    @endif
                 </div>
             </div>
 

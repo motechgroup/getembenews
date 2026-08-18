@@ -2944,7 +2944,10 @@ $sendTestEmail = function () {
                         
                         <!-- Top Leaderboard Ad -->
                         <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
-                            <span class="text-[10px] font-black text-[#C8102E] uppercase tracking-wider block">Top Header Leaderboard (728x90)</span>
+                            <div>
+                                <span class="text-[11px] font-black text-[#C8102E] uppercase tracking-wider block">Top Header Leaderboard — 728 × 90 px</span>
+                                <span class="text-[10px] text-gray-500 font-medium block mt-0.5">Recommended Banner Size: 728 × 90 px (Leaderboard) or 970 × 90 px (Large Leaderboard). Aspect Ratio ~ 8:1</span>
+                            </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Upload Banner Image</label>
@@ -2965,7 +2968,10 @@ $sendTestEmail = function () {
 
                         <!-- Sidebar Rectangle Ad -->
                         <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
-                            <span class="text-[10px] font-black text-[#C8102E] uppercase tracking-wider block">Sidebar Rectangle (300x250)</span>
+                            <div>
+                                <span class="text-[11px] font-black text-[#C8102E] uppercase tracking-wider block">Sidebar Rectangle — 300 × 250 px</span>
+                                <span class="text-[10px] text-gray-500 font-medium block mt-0.5">Recommended Banner Size: 300 × 250 px (Medium Rectangle) or 300 × 600 px (Half Page). Aspect Ratio ~ 6:5</span>
+                            </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Upload Banner Image</label>
@@ -2986,7 +2992,10 @@ $sendTestEmail = function () {
 
                         <!-- Inline Body Ad -->
                         <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
-                            <span class="text-[10px] font-black text-[#C8102E] uppercase tracking-wider block">Inline Article Body (468x60)</span>
+                            <div>
+                                <span class="text-[11px] font-black text-[#C8102E] uppercase tracking-wider block">Inline Article Body — 728 × 90 px / 468 × 60 px</span>
+                                <span class="text-[10px] text-gray-500 font-medium block mt-0.5">Recommended Banner Size: 728 × 90 px or 468 × 60 px / 336 × 280 px</span>
+                            </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Upload Banner Image</label>
@@ -3007,7 +3016,10 @@ $sendTestEmail = function () {
 
                         <!-- Footer Banner Ad -->
                         <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
-                            <span class="text-[10px] font-black text-[#C8102E] uppercase tracking-wider block">Bottom Footer Banner (728x90)</span>
+                            <div>
+                                <span class="text-[11px] font-black text-[#C8102E] uppercase tracking-wider block">Bottom Footer Banner — 728 × 90 px</span>
+                                <span class="text-[10px] text-gray-500 font-medium block mt-0.5">Recommended Banner Size: 728 × 90 px (Footer Leaderboard)</span>
+                            </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Upload Banner Image</label>
@@ -3028,7 +3040,10 @@ $sendTestEmail = function () {
 
                         <!-- Mobile Sticky Bottom Ad -->
                         <div class="bg-gray-50 dark:bg-gray-850 p-4 rounded-lg border border-gray-150 dark:border-gray-800 space-y-4">
-                            <span class="text-[10px] font-black text-[#C8102E] uppercase tracking-wider block">Mobile Sticky Bottom Banner (320x50)</span>
+                            <div>
+                                <span class="text-[11px] font-black text-[#C8102E] uppercase tracking-wider block">Mobile Sticky Bottom Banner — 320 × 50 px</span>
+                                <span class="text-[10px] text-gray-500 font-medium block mt-0.5">Recommended Banner Size: 320 × 50 px (Mobile Sticky Bottom Overlay)</span>
+                            </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Upload Banner Image</label>

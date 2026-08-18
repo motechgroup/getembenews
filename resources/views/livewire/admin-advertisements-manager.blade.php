@@ -27,7 +27,9 @@ state([
 
 $create = function () {
     $this->resetErrorBag();
-    $this->reset(['adId', 'title', 'image_url', 'script_code', 'destination_url', 'location', 'is_active', 'starts_at', 'expires_at', 'uploadedImage']);
+    $this->reset(['adId', 'title', 'image_url', 'script_code', 'destination_url', 'starts_at', 'expires_at', 'uploadedImage']);
+    $this->location = 'top';
+    $this->is_active = true;
     $this->isEditing = true;
 };
 
@@ -91,14 +93,14 @@ $save = function () {
 $toggleActive = function ($id) {
     $ad = Advertisement::findOrFail($id);
     $ad->update(['is_active' => !$ad->is_active]);
-    Cache::forget('homepage_data_v1');
+    Cache::flush();
     $this->advertisements = Advertisement::orderBy('created_at', 'desc')->get();
 };
 
 $delete = function ($id) {
     $ad = Advertisement::findOrFail($id);
     $ad->delete();
-    Cache::forget('homepage_data_v1');
+    Cache::flush();
     $this->advertisements = Advertisement::orderBy('created_at', 'desc')->get();
 };
 

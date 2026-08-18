@@ -31,7 +31,22 @@
     }
 @endphp
 
-@if($adsenseEnabled && (!empty($adsenseCode) || !empty($adsenseClientId)))
+@if($dbAd)
+    <!-- Active Database Campaign Placement -->
+    @if($dbScript)
+        <div class="w-full text-center my-4 overflow-hidden">
+            <span class="text-[9px] text-gray-400 dark:text-gray-500 block mb-1 font-bold tracking-wider uppercase">ADVERTISEMENT</span>
+            {!! $dbScript !!}
+        </div>
+    @elseif($bannerImage)
+        <div class="w-full text-center my-4">
+            <a href="{{ $bannerLink ?: '/contact' }}" target="_blank" class="inline-block relative group">
+                <img src="{{ $bannerImage }}" alt="{{ $dbAd->title }}" class="mx-auto rounded max-h-36 object-cover shadow-sm hover:opacity-95 transition" loading="lazy">
+                <span class="absolute top-1 left-1 bg-black/60 text-white text-[8px] px-1 rounded uppercase tracking-wider font-semibold">ADVERTISEMENT</span>
+            </a>
+        </div>
+    @endif
+@elseif($adsenseEnabled && (!empty($adsenseCode) || !empty($adsenseClientId)))
     <!-- Google AdSense Ad Block -->
     <div class="w-full text-center my-4 overflow-hidden min-h-[90px] flex flex-col items-center justify-center">
         <span class="text-[9px] text-gray-400 dark:text-gray-500 block mb-1 font-bold tracking-wider uppercase">ADVERTISEMENT</span>
@@ -55,15 +70,9 @@
         <span class="text-[9px] text-gray-700 dark:text-gray-300 block mb-1 font-bold tracking-wider">ADVERTISEMENT (FACEBOOK)</span>
         {!! \App\Models\Setting::get('facebook_ads_code') !!}
     </div>
-@elseif($customAdsEnabled)
-    <!-- Custom Ads / Campaign Placements -->
-    @if($dbScript)
-        <div class="w-full text-center my-4">
-            <span class="text-[9px] text-gray-400 dark:text-gray-500 block mb-1 font-bold tracking-wider uppercase">ADVERTISEMENT</span>
-            {!! $dbScript !!}
-        </div>
-    @elseif($bannerImage)
-        <!-- Custom Advertisement Banner -->
+@elseif($customAdsEnabled || $bannerImage)
+    <!-- Custom Ads / Setting Fallback Placements -->
+    @if($bannerImage)
         <div class="w-full text-center my-4">
             <a href="{{ $bannerLink ?: '/contact' }}" target="_blank" class="inline-block relative group">
                 <img src="{{ $bannerImage }}" alt="Advertisement" class="mx-auto rounded max-h-36 object-cover shadow-sm hover:opacity-95 transition" loading="lazy">

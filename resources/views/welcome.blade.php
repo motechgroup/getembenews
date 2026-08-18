@@ -432,19 +432,8 @@
                 <!-- RIGHT 1/3 COLUMN: Sidebar with widgets -->
                 <div class="lg:col-span-1 space-y-8">
                     
-                    <!-- Sidebar Banner Ad (Custom blue box ad matching screenshot 2) -->
-                    <div class="relative bg-gradient-to-br from-[#1E3A8A] to-[#1D4ED8] text-white rounded-lg p-6 flex flex-col justify-between border border-blue-900 shadow-md h-[220px]">
-                        <span class="absolute top-2 left-2 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase tracking-wider font-semibold z-10">ADVERTISEMENT</span>
-                        <div class="space-y-1 pt-4">
-                            <h3 class="text-lg font-black tracking-tight uppercase leading-none">VARIENT</h3>
-                            <span class="text-[10px] text-blue-200 block font-bold">Best News & Magazine Script</span>
-                        </div>
-                        <div class="pt-6">
-                            <a href="/contact" class="inline-block bg-white text-[#1D4ED8] hover:bg-gray-100 transition px-5 py-2 rounded text-xs font-black uppercase tracking-wider shadow">
-                                BUY NOW
-                            </a>
-                        </div>
-                    </div>
+                    <!-- Sidebar Banner Ad Placement -->
+                    @include('partials.render-ad', ['location' => 'sidebar'])
 
                     <!-- Popular Posts Widget -->
                     <div class="space-y-4">

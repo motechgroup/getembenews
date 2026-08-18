@@ -13,7 +13,7 @@
                 <div class="lg:col-span-2 space-y-6">
                     <h2 class="text-sm font-black border-b-2 border-gray-900 dark:border-white pb-2 text-gray-900 dark:text-white uppercase tracking-wider">Top Stories</h2>
                     <div class="space-y-6 divide-y divide-gray-150 dark:divide-gray-850">
-                        @if($featuredArticle)
+                        @if($featuredArticle && $featuredArticle instanceof \App\Models\Article)
                             <article class="pt-0 group flex flex-col sm:flex-row gap-6">
                                 <div class="w-full sm:w-1/3 aspect-[16/10] overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800">
                                     <img src="{{ $featuredArticle->optimizedImage(800, 450) }}" alt="{{ $featuredArticle->title }}" class="w-full h-full object-cover group-hover:scale-101 transition duration-500" fetchpriority="high" decoding="async">
@@ -119,7 +119,7 @@
                     <div class="lg:col-span-2 space-y-6">
                         <h2 class="text-sm font-black border-b-2 border-gray-900 dark:border-white pb-2 text-gray-900 dark:text-white uppercase tracking-wider">Visual Spotlight</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            @if($featuredArticle)
+                            @if($featuredArticle && $featuredArticle instanceof \App\Models\Article)
                                 <article class="md:col-span-2 relative aspect-[16/10] overflow-hidden rounded-lg group shadow-md border border-gray-200 dark:border-gray-800 bg-gray-950">
                                     <img src="{{ $featuredArticle->optimizedImage(800, 450) }}" alt="{{ $featuredArticle->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-101 opacity-85 group-hover:opacity-75 transition duration-500" fetchpriority="high" decoding="async">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent flex flex-col justify-end p-6 space-y-1">
@@ -209,7 +209,7 @@
             <!-- Hero Spotlight Grid (Matching Screenshot 1) -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 <!-- Left: Large Featured Article Card (Spans 2 columns) -->
-                @if($featuredArticle)
+                @if($featuredArticle && $featuredArticle instanceof \App\Models\Article)
                     <div class="lg:col-span-2 relative block aspect-[16/10] lg:aspect-auto lg:h-[450px] overflow-hidden rounded group bg-gray-950 shadow-md">
                         <a href="/articles/{{ $featuredArticle->slug }}" class="absolute inset-0 z-0">
                             <img src="{{ $featuredArticle->optimizedImage(800, 450) }}" alt="{{ $featuredArticle->title }}" class="w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85" fetchpriority="high" decoding="async">
@@ -583,7 +583,7 @@
                         <h3 class="bg-gray-900 text-white font-black text-xs uppercase px-4 py-2.5 tracking-wider">
                             Recommended Posts
                         </h3>
-                        @if($featuredArticle)
+                        @if($featuredArticle && $featuredArticle instanceof \App\Models\Article)
                             @php
                                 $recItem = $latestArticles->first();
                             @endphp

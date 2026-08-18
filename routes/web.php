@@ -144,12 +144,18 @@ Route::get('/', function () {
             }
         });
 
+        if (!empty($homepageData['featuredArticle']) && ($homepageData['featuredArticle'] instanceof \__PHP_Incomplete_Class || !($homepageData['featuredArticle'] instanceof Article))) {
+            Cache::forget($cacheKey);
+            Cache::flush();
+            $homepageData = $fallbackData;
+        }
+
         try {
             return view('welcome', array_merge($fallbackData, $homepageData));
         } catch (\Throwable $e2) {
             \Illuminate\Support\Facades\Log::error('Homepage view render error: ' . $e2->getMessage());
             Cache::forget($cacheKey);
-            // Re-render directly with fresh DB queries on cache corruption
+            Cache::flush();
             return view('welcome', $fallbackData);
         }
     } catch (\Throwable $e) {

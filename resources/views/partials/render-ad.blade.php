@@ -46,6 +46,14 @@
             </a>
         </div>
     @endif
+@elseif($bannerImage && ($customAdsEnabled || !empty(\App\Models\Setting::get("ad_{$location}_image"))))
+    <!-- Custom Setting Banner Upload -->
+    <div class="w-full text-center my-4">
+        <a href="{{ $bannerLink ?: '/contact' }}" target="_blank" class="inline-block relative group">
+            <img src="{{ $bannerImage }}" alt="Advertisement" class="mx-auto rounded max-h-36 object-cover shadow-sm hover:opacity-95 transition" loading="lazy">
+            <span class="absolute top-1 left-1 bg-black/60 text-white text-[8px] px-1 rounded uppercase tracking-wider font-semibold">ADVERTISEMENT</span>
+        </a>
+    </div>
 @elseif($adsenseEnabled && (!empty($adsenseCode) || !empty($adsenseClientId)))
     <!-- Google AdSense Ad Block -->
     <div class="w-full text-center my-4 overflow-hidden min-h-[90px] flex flex-col items-center justify-center">
@@ -70,37 +78,27 @@
         <span class="text-[9px] text-gray-700 dark:text-gray-300 block mb-1 font-bold tracking-wider">ADVERTISEMENT (FACEBOOK)</span>
         {!! \App\Models\Setting::get('facebook_ads_code') !!}
     </div>
-@elseif($customAdsEnabled || $bannerImage)
-    <!-- Custom Ads / Setting Fallback Placements -->
-    @if($bannerImage)
-        <div class="w-full text-center my-4">
-            <a href="{{ $bannerLink ?: '/contact' }}" target="_blank" class="inline-block relative group">
-                <img src="{{ $bannerImage }}" alt="Advertisement" class="mx-auto rounded max-h-36 object-cover shadow-sm hover:opacity-95 transition" loading="lazy">
-                <span class="absolute top-1 left-1 bg-black/60 text-white text-[8px] px-1 rounded uppercase tracking-wider font-semibold">ADVERTISEMENT</span>
-            </a>
+@else
+    <!-- Premium placeholder ad fallback -->
+    @if($location === 'top')
+        <div class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-150 dark:border-gray-850 text-center py-8 rounded text-xs text-gray-450 font-medium tracking-wide">
+            ADVERTISEMENT BANNER (728x90)
         </div>
-    @else
-        <!-- Premium placeholder ad fallback -->
-        @if($location === 'top')
-            <div class="w-full bg-gray-50 dark:bg-gray-950 border border-gray-150 dark:border-gray-850 text-center py-8 rounded text-xs text-gray-450 font-medium tracking-wide">
-                ADVERTISEMENT BANNER (728x90)
-            </div>
-        @elseif($location === 'sidebar')
-            <a href="/contact" class="block w-full relative group">
-                <div class="relative bg-gradient-to-br from-gray-900 to-black border border-gray-855 rounded-lg overflow-hidden min-h-[180px] flex flex-col justify-between p-5 text-left">
-                    <div class="flex justify-center">
-                        <span class="bg-yellow-500 text-black font-extrabold text-[8px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">Sponsor Getembe</span>
-                    </div>
-                    <div class="space-y-1">
-                        <h4 class="text-xs font-black text-white leading-tight">Your Banner Here</h4>
-                        <p class="text-[9px] text-gray-400 leading-snug">Place your ad here and reach Kisii's largest local digital news audience. Click to learn more.</p>
-                    </div>
+    @elseif($location === 'sidebar')
+        <a href="/contact" class="block w-full relative group">
+            <div class="relative bg-gradient-to-br from-gray-900 to-black border border-gray-855 rounded-lg overflow-hidden min-h-[180px] flex flex-col justify-between p-5 text-left">
+                <div class="flex justify-center">
+                    <span class="bg-yellow-500 text-black font-extrabold text-[8px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">Sponsor Getembe</span>
                 </div>
-            </a>
-        @else
-            <div class="w-full bg-gray-50 dark:bg-gray-955 border border-gray-150 dark:border-gray-850 text-center py-6 rounded text-[10px] text-gray-700 dark:text-gray-300 uppercase tracking-widest font-bold">
-                ADVERTISEMENT
+                <div class="space-y-1">
+                    <h4 class="text-xs font-black text-white leading-tight">Your Banner Here</h4>
+                    <p class="text-[9px] text-gray-400 leading-snug">Place your ad here and reach Kisii's largest local digital news audience. Click to learn more.</p>
+                </div>
             </div>
-        @endif
+        </a>
+    @else
+        <div class="w-full bg-gray-50 dark:bg-gray-955 border border-gray-150 dark:border-gray-850 text-center py-6 rounded text-[10px] text-gray-700 dark:text-gray-300 uppercase tracking-widest font-bold">
+            ADVERTISEMENT
+        </div>
     @endif
 @endif

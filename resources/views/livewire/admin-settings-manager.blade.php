@@ -1270,10 +1270,7 @@ $save = function () use ($logAction) {
         Setting::set($field, $this->{$field});
     }
 
-    \Illuminate\Support\Facades\Cache::forget('homepage_data_v1');
-    \Illuminate\Support\Facades\Cache::forget('homepage_data_v3');
-    \Illuminate\Support\Facades\Cache::forget('setting_v1_newsletter_popup_enabled');
-    \Illuminate\Support\Facades\Cache::forget('setting_v1_app_download_popup_enabled');
+    \Illuminate\Support\Facades\Cache::flush();
 
     $logAction("Saved general website settings configurations");
     $this->dispatch('settings-saved');

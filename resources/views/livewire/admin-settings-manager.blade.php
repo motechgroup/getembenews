@@ -1324,7 +1324,7 @@ $testMpesaStkPush = function () {
         return;
     }
 
-    $res = \App\Support\Mpesa::stkPush($this->testMpesaPhone, 1, 'TEST-PROMPT');
+    $res = \App\Support\Mpesa::stkPush($this->testMpesaPhone, 1, 'TESTPROMPT');
     if ($res['success']) {
         $this->mpesaTestStatus = 'success';
         $this->mpesaTestMessage = "✅ STK Push Prompt Sent Successfully to " . $this->testMpesaPhone . "! Check phone for KSh 1 prompt. (Checkout ID: " . $res['checkout_request_id'] . ")";

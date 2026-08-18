@@ -94,8 +94,8 @@ class Mpesa
             'PartyB' => $shortcode,
             'PhoneNumber' => $phone,
             'CallBackURL' => $callbackUrl,
-            'AccountReference' => substr($reference, 0, 12),
-            'TransactionDesc' => 'Announcement Purchase'
+            'AccountReference' => substr(preg_replace('/[^A-Za-z0-9]/', '', $reference), 0, 12) ?: 'Getembe',
+            'TransactionDesc' => 'Announcement Payment'
         ];
 
         try {

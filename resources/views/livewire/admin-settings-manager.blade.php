@@ -1320,17 +1320,41 @@ $testMpesaConnection = function () {
 $testMpesaStkPush = function () {
     if (empty(trim($this->testMpesaPhone))) {
         $this->mpesaTestStatus = 'failed';
-        $this->mpesaTestMessage = '❌ Please enter a test phone number (e.g. 2547XXXXXXXX) to test the live STK Push prompt.';
+        $this->mpesaTestMessage = '❌ Please enter a test phone number (e.g. 0712345678) to test the live STK Push prompt.';
         return;
     }
 
     $res = \App\Support\Mpesa::stkPush($this->testMpesaPhone, 1, 'TESTPROMPT');
-    if ($res['success']) {
-        $this->mpesaTestStatus = 'success';
-        $this->mpesaTestMessage = "✅ STK Push Prompt Sent Successfully to " . $this->testMpesaPhone . "! Check phone for KSh 1 prompt. (Checkout ID: " . $res['checkout_request_id'] . ")";
-    } else {
+    if (!$res['success']) {
         $this->mpesaTestStatus = 'failed';
-        $this->mpesaTestMessage = "❌ STK Push Error: " . $res['message'];
+        $this->mpesaTestMessage = "❌ STK Push Dispatch Error: " . $res['message'];
+        return;
+    }
+
+    $checkoutId = $res['checkout_request_id'];
+    sleep(2);
+    $query = \App\Support\Mpesa::queryStatus($checkoutId);
+
+    $code = $query['result_code'] ?? null;
+    $desc = $query['message'] ?? 'Pending processing';
+
+    if ($query['status'] === 'success') {
+        $this->mpesaTestStatus = 'success';
+        $this->mpesaTestMessage = "✅ STK Push Completed! Payment confirmed on phone {$this->testMpesaPhone}. (Checkout ID: {$checkoutId})";
+    } elseif ($query['status'] === 'failed') {
+        $this->mpesaTestStatus = 'failed';
+        $explanation = match($code) {
+            1032 => "User cancelled the payment prompt on phone screen.",
+            1037 => "Handset Timeout: Safaricom dispatched the STK Push, but your phone did not respond or prompt expired. Please check if Transaction Type in Admin Settings is set correctly (Paybill vs Buy Goods Till Number), or check if phone is on Airplane/DND mode.",
+            1 => "Insufficient M-Pesa balance on subscriber phone.",
+            1001 => "Subscriber phone has another active M-Pesa session.",
+            2001 => "Invalid Passkey or Shortcode combination.",
+            default => "Safaricom Status Code {$code}: {$desc}"
+        };
+        $this->mpesaTestMessage = "⚠️ STK Dispatch Succeeded (ID: {$checkoutId}), but Handset Delivery Failed: {$explanation}";
+    } else {
+        $this->mpesaTestStatus = 'success';
+        $this->mpesaTestMessage = "📱 STK Push Dispatched by Safaricom! (Checkout ID: {$checkoutId}). Status: {$desc}. Please check your phone handset screen now.";
     }
 };
 

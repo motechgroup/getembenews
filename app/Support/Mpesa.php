@@ -194,12 +194,14 @@ class Mpesa
                         return [
                             'success' => true,
                             'status' => 'success',
+                            'result_code' => $code,
                             'message' => $data['ResultDesc'] ?? 'Payment completed successfully.'
                         ];
                     }
                     return [
                         'success' => false,
                         'status' => 'failed',
+                        'result_code' => $code,
                         'message' => $data['ResultDesc'] ?? 'Payment failed.'
                     ];
                 }

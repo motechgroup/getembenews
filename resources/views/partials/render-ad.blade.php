@@ -6,13 +6,29 @@
     
     $adsenseCode = \App\Models\Setting::get('adsense_code');
     $adsenseClientId = \App\Models\Setting::get('adsense_client_id');
-    if (!empty($adsenseClientId) && !\Illuminate\Support\Str::startsWith($adsenseClientId, 'ca-pub-') && \Illuminate\Support\Str::startsWith($adsenseClientId, 'pub-')) {
+    if (!empty($adsenseClientId) && !\Illuminate\Support\Str::startsWith($adsenseClientId, 'ca-pub-') && !\Illuminate\Support\Str::startsWith($adsenseClientId, 'pub-')) {
         $adsenseClientId = 'ca-' . $adsenseClientId;
     }
 
-    // Retrieve custom banner image & destination
-    $bannerImage = \App\Models\Setting::get("ad_{$location}_image");
-    $bannerLink = \App\Models\Setting::get("ad_{$location}_link");
+    // Retrieve active database advertisement placement first
+    $dbAd = null;
+    try {
+        $dbAd = \App\Models\Advertisement::active()->location($location)->inRandomOrder()->first();
+        if ($dbAd) {
+            $dbAd->increment('impressions');
+        }
+    } catch (\Throwable $e) {
+        $dbAd = null;
+    }
+
+    // Retrieve custom banner image & destination (from DB campaign or Setting fallback)
+    $bannerImage = ($dbAd && $dbAd->image_url) ? $dbAd->image_url : \App\Models\Setting::get("ad_{$location}_image");
+    $bannerLink = ($dbAd && $dbAd->destination_url) ? $dbAd->destination_url : \App\Models\Setting::get("ad_{$location}_link");
+    $dbScript = $dbAd ? $dbAd->script_code : null;
+
+    if ($dbAd) {
+        $customAdsEnabled = true;
+    }
 @endphp
 
 @if($adsenseEnabled && (!empty($adsenseCode) || !empty($adsenseClientId)))
@@ -40,8 +56,13 @@
         {!! \App\Models\Setting::get('facebook_ads_code') !!}
     </div>
 @elseif($customAdsEnabled)
-    <!-- Custom Ads are enabled, show banner if exists or show placeholder fallback -->
-    @if($bannerImage)
+    <!-- Custom Ads / Campaign Placements -->
+    @if($dbScript)
+        <div class="w-full text-center my-4">
+            <span class="text-[9px] text-gray-400 dark:text-gray-500 block mb-1 font-bold tracking-wider uppercase">ADVERTISEMENT</span>
+            {!! $dbScript !!}
+        </div>
+    @elseif($bannerImage)
         <!-- Custom Advertisement Banner -->
         <div class="w-full text-center my-4">
             <a href="{{ $bannerLink ?: '/contact' }}" target="_blank" class="inline-block relative group">

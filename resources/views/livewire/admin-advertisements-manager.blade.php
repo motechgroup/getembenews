@@ -4,6 +4,7 @@ use function Livewire\Volt\{state, rules, uses};
 use Livewire\WithFileUploads;
 use App\Models\Advertisement;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Carbon;
 
 uses(WithFileUploads::class);
 
@@ -52,7 +53,7 @@ $save = function () {
     $this->validate([
         'title' => 'required|string|max:255',
         'location' => 'required|string|in:top,sidebar,inline,footer,mobile_sticky,mobile_native',
-        'destination_url' => 'nullable|url',
+        'destination_url' => 'nullable|string|max:500',
         'starts_at' => 'nullable|date',
         'expires_at' => 'nullable|date|after_or_equal:starts_at',
         'uploadedImage' => 'nullable|image|max:2048',
@@ -60,7 +61,7 @@ $save = function () {
 
     if ($this->uploadedImage) {
         $path = $this->uploadedImage->store('ads', 'public');
-        $this->image_url = asset('storage/' . $path);
+        $this->image_url = '/storage/' . $path;
         $this->uploadedImage = null;
     }
 
@@ -71,8 +72,8 @@ $save = function () {
         'destination_url' => $this->destination_url ?: null,
         'location' => $this->location,
         'is_active' => (bool)$this->is_active,
-        'starts_at' => $this->starts_at ? Carbon\Carbon::parse($this->starts_at) : null,
-        'expires_at' => $this->expires_at ? Carbon\Carbon::parse($this->expires_at) : null,
+        'starts_at' => !empty($this->starts_at) ? Carbon::parse($this->starts_at) : null,
+        'expires_at' => !empty($this->expires_at) ? Carbon::parse($this->expires_at) : null,
     ];
 
     if ($this->adId) {
@@ -82,7 +83,7 @@ $save = function () {
         Advertisement::create($data);
     }
 
-    Cache::forget('homepage_data_v1');
+    Cache::flush();
     $this->advertisements = Advertisement::orderBy('created_at', 'desc')->get();
     $this->isEditing = false;
 };

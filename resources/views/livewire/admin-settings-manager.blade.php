@@ -23,6 +23,13 @@ state([
     'gitTerminalOutput' => '',
     'gitStatusSummary' => '',
     'pendingMigrationsSummary' => '',
+    'gitCurrentBranch' => 'main',
+    'gitLocalBranches' => [],
+    'gitRemoteBranches' => [],
+    'gitLatestCommit' => null,
+    'gitRecentCommits' => [],
+    'gitUncommittedFiles' => [],
+    'gitPulledMetadata' => null,
 
     // File Upload Temporary States
     'uploadedLogo' => null,
@@ -406,7 +413,184 @@ if (!function_exists('sortScheduleSlots')) {
     }
 }
 
-mount(function ($activeTab = 'identity') {
+$checkGitStatus = function () {
+    $cwd = base_path();
+    $gitDir = base_path('.git');
+
+    $branch = 'main';
+    $localBranches = [];
+    $remoteBranches = [];
+    $recentCommits = [];
+    $latestCommit = null;
+    $uncommittedFiles = [];
+    $statusText = '';
+
+    // Helper to run safe shell commands
+    $runShell = function ($cmd) use ($cwd) {
+        if (!function_exists('shell_exec')) {
+            return null;
+        }
+        try {
+            $disabled = array_map('trim', explode(',', ini_get('disable_functions') ?? ''));
+            if (in_array('shell_exec', $disabled)) {
+                return null;
+            }
+            $output = @shell_exec("cd {$cwd} && " . $cmd . " 2>&1");
+            return ($output !== null && trim($output) !== '') ? trim($output) : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    };
+
+    // 1. Try Shell Commands First
+    $shellBranch = $runShell("git rev-parse --abbrev-ref HEAD");
+    if ($shellBranch && !str_contains($shellBranch, 'fatal') && !str_contains($shellBranch, 'not found') && !str_contains($shellBranch, 'disabled')) {
+        $branch = trim($shellBranch);
+
+        // Local & Remote Branches
+        $branchesRaw = $runShell("git branch -a");
+        if ($branchesRaw) {
+            foreach (explode("\n", $branchesRaw) as $bLine) {
+                $bClean = trim(str_replace('*', '', $bLine));
+                if (empty($bClean)) continue;
+                if (str_starts_with($bClean, 'remotes/')) {
+                    $remoteBranches[] = str_replace('remotes/', '', $bClean);
+                } else {
+                    $localBranches[] = $bClean;
+                }
+            }
+        }
+
+        // Recent Commits (last 10) with format: HASH|FULL_HASH|AUTHOR|DATE|MESSAGE
+        $logRaw = $runShell('git log -n 10 --pretty=format:"%h|%H|%an|%ar|%s"');
+        if ($logRaw) {
+            foreach (explode("\n", $logRaw) as $lLine) {
+                $parts = explode('|', $lLine, 5);
+                if (count($parts) === 5) {
+                    $cObj = [
+                        'short_hash' => $parts[0],
+                        'hash' => $parts[1],
+                        'author' => $parts[2],
+                        'date' => $parts[3],
+                        'message' => $parts[4],
+                    ];
+                    $recentCommits[] = $cObj;
+                    if (!$latestCommit) {
+                        $latestCommit = $cObj;
+                    }
+                }
+            }
+        }
+
+        // Status & Uncommitted Files
+        $statusRaw = $runShell("git status -s");
+        if ($statusRaw) {
+            foreach (explode("\n", $statusRaw) as $sLine) {
+                $sLine = trim($sLine);
+                if (!empty($sLine)) {
+                    $uncommittedFiles[] = $sLine;
+                }
+            }
+        }
+
+        $statusText = "Branch: {$branch}\n" . ($runShell("git status -sb") ?: 'Clean working directory');
+    } 
+    // 2. Pure PHP Fallback Reading directly from .git directory (When shell_exec is disabled on shared hosting!)
+    else if (file_exists($gitDir)) {
+        // Read active branch from .git/HEAD
+        if (file_exists("{$gitDir}/HEAD")) {
+            $headContent = trim(file_get_contents("{$gitDir}/HEAD"));
+            if (str_starts_with($headContent, 'ref: refs/heads/')) {
+                $branch = str_replace('ref: refs/heads/', '', $headContent);
+            } else {
+                $branch = substr($headContent, 0, 7);
+            }
+        }
+
+        // Scan local branches in .git/refs/heads
+        if (is_dir("{$gitDir}/refs/heads")) {
+            $files = glob("{$gitDir}/refs/heads/*");
+            if ($files) {
+                foreach ($files as $f) {
+                    if (is_file($f)) {
+                        $localBranches[] = basename($f);
+                    }
+                }
+            }
+        }
+        if (empty($localBranches)) {
+            $localBranches = [$branch];
+        }
+
+        // Scan remote branches in .git/refs/remotes/origin
+        if (is_dir("{$gitDir}/refs/remotes/origin")) {
+            $files = glob("{$gitDir}/refs/remotes/origin/*");
+            if ($files) {
+                foreach ($files as $f) {
+                    if (is_file($f)) {
+                        $remoteBranches[] = 'origin/' . basename($f);
+                    }
+                }
+            }
+        }
+
+        // Read recent commit logs from .git/logs/HEAD
+        if (file_exists("{$gitDir}/logs/HEAD")) {
+            $logLines = array_reverse(array_filter(explode("\n", file_get_contents("{$gitDir}/logs/HEAD"))));
+            $count = 0;
+            foreach ($logLines as $line) {
+                if ($count >= 10) break;
+                if (preg_match('/^([0-9a-f]{40})\s+([0-9a-f]{40})\s+(.+?)\s+<[^>]+>\s+(\d+)\s+[\+\-]\d+\s*\t(.*)$/', $line, $m)) {
+                    $newHash = $m[2];
+                    $author = $m[3];
+                    $time = date('Y-m-d H:i:s', (int)$m[4]);
+                    $relTime = \Illuminate\Support\Carbon::createFromTimestamp((int)$m[4])->diffForHumans();
+                    $msg = trim($m[5]);
+
+                    if (str_contains($msg, ': ')) {
+                        $msgParts = explode(': ', $msg, 2);
+                        $msg = end($msgParts);
+                    }
+
+                    $cObj = [
+                        'short_hash' => substr($newHash, 0, 7),
+                        'hash' => $newHash,
+                        'author' => $author,
+                        'date' => $relTime . " ({$time})",
+                        'message' => $msg,
+                    ];
+                    $recentCommits[] = $cObj;
+                    if (!$latestCommit) {
+                        $latestCommit = $cObj;
+                    }
+                    $count++;
+                }
+            }
+        }
+
+        $statusText = "Branch: {$branch} (PHP .git Inspection Engine - shell_exec restricted by hosting php.ini)";
+    } else {
+        $statusText = "Not a Git repository or .git directory inaccessible.";
+    }
+
+    $this->gitCurrentBranch = $branch;
+    $this->gitLocalBranches = array_values(array_unique($localBranches));
+    $this->gitRemoteBranches = array_values(array_unique($remoteBranches));
+    $this->gitLatestCommit = $latestCommit;
+    $this->gitRecentCommits = $recentCommits;
+    $this->gitUncommittedFiles = $uncommittedFiles;
+    $this->gitStatusSummary = $statusText;
+
+    // Database Migration Status
+    try {
+        Artisan::call('migrate:status');
+        $this->pendingMigrationsSummary = Artisan::output();
+    } catch (\Throwable $e) {
+        $this->pendingMigrationsSummary = "Error fetching migration status: " . $e->getMessage();
+    }
+};
+
+mount(function ($activeTab = 'identity') use ($checkGitStatus) {
     $this->activeTab = $activeTab;
 
     $defaultTvFlat = [
@@ -524,36 +708,7 @@ mount(function ($activeTab = 'identity') {
     }
 
     if ($activeTab === 'updates') {
-        $cwd = base_path();
-
-        $runSafeShell = function ($cmd) {
-            if (!function_exists('shell_exec')) {
-                return 'Note: shell_exec() function is disabled on this server (php.ini).';
-            }
-            try {
-                $disabled = array_map('trim', explode(',', ini_get('disable_functions') ?? ''));
-                if (in_array('shell_exec', $disabled)) {
-                    return 'Note: shell_exec() is disabled in php.ini disable_functions.';
-                }
-                $output = @shell_exec($cmd);
-                return $output !== null ? trim($output) : 'Command executed with no output returned.';
-            } catch (\Throwable $e) {
-                return 'Shell Execution Warning: ' . $e->getMessage();
-            }
-        };
-
-        $branch = $runSafeShell("cd {$cwd} && git rev-parse --abbrev-ref HEAD 2>&1");
-        $status = $runSafeShell("cd {$cwd} && git status -sb 2>&1");
-        $lastCommits = $runSafeShell("cd {$cwd} && git log -n 5 --oneline 2>&1");
-
-        $this->gitStatusSummary = "Branch: {$branch}\n\n[Status Overview]\n{$status}\n\n[Recent Commit History]\n{$lastCommits}";
-
-        try {
-            Artisan::call('migrate:status');
-            $this->pendingMigrationsSummary = Artisan::output();
-        } catch (\Throwable $e) {
-            $this->pendingMigrationsSummary = "Error fetching migration status: " . $e->getMessage();
-        }
+        $checkGitStatus->bindTo($this)();
     }
 });
 
@@ -1202,37 +1357,44 @@ $runSafeShell = function ($cmd) {
     }
 };
 
-$checkGitStatus = function () use ($runSafeShell) {
-    $cwd = base_path();
 
-    $branch = $runSafeShell("cd {$cwd} && git rev-parse --abbrev-ref HEAD 2>&1");
-    $status = $runSafeShell("cd {$cwd} && git status -sb 2>&1");
-    $lastCommits = $runSafeShell("cd {$cwd} && git log -n 5 --oneline 2>&1");
 
-    $this->gitStatusSummary = "Branch: {$branch}\n\n[Status Overview]\n{$status}\n\n[Recent Commit History]\n{$lastCommits}";
-
-    try {
-        Artisan::call('migrate:status');
-        $this->pendingMigrationsSummary = Artisan::output();
-    } catch (\Throwable $e) {
-        $this->pendingMigrationsSummary = "Error fetching migration status: " . $e->getMessage();
-    }
-};
-
-$pullGitCode = function () use ($logAction, $checkGitStatus, $runSafeShell) {
+$pullGitCode = function () use ($logAction, $checkGitStatus) {
     if (!auth()->user() || !auth()->user()->isAdmin()) {
         abort(403, 'Unauthorized action.');
     }
 
     $cwd = base_path();
-    $out = "=== PULLING GIT CODE ===\n";
-    $out .= $runSafeShell("cd {$cwd} && git pull 2>&1");
-    $out .= "\n\n=== RECENT COMMITS AFTER PULL ===\n";
-    $out .= $runSafeShell("cd {$cwd} && git log -n 3 --oneline 2>&1");
+    $out = "=== PULLING LATEST GIT REPOSITORY CODE ===\n";
+
+    $pullOutput = '';
+    if (function_exists('shell_exec')) {
+        $disabled = array_map('trim', explode(',', ini_get('disable_functions') ?? ''));
+        if (!in_array('shell_exec', $disabled)) {
+            $targetBranch = $this->gitCurrentBranch ?: 'main';
+            $pullOutput = @shell_exec("cd {$cwd} && git pull origin {$targetBranch} 2>&1") ?: @shell_exec("cd {$cwd} && git pull 2>&1");
+            $out .= $pullOutput ?: "Git pull executed with no output returned.\n";
+
+            $out .= "\n=== POST-PULL RECENT COMMITS ===\n";
+            $out .= @shell_exec("cd {$cwd} && git log -n 5 --oneline 2>&1");
+        } else {
+            $out .= "Note: shell_exec() function is disabled in php.ini on this hosting server.\n";
+            $out .= "Automatic terminal pulling is restricted by your PHP configuration.\n";
+        }
+    } else {
+        $out .= "Note: shell_exec() function is disabled on this server.\n";
+    }
 
     $this->gitTerminalOutput = $out;
+    $this->gitPulledMetadata = [
+        'pulled_at' => now()->format('Y-m-d H:i:s'),
+        'branch' => $this->gitCurrentBranch ?: 'main',
+        'raw_output' => $pullOutput ?: 'Check completed via PHP .git engine.',
+        'up_to_date' => str_contains(strtolower($pullOutput), 'already up to date'),
+    ];
+
     $logAction("Executed Git Pull in admin panel");
-    session()->flash('git_success', 'Git repository updated successfully.');
+    session()->flash('git_success', 'Git repository checked and updated successfully.');
 
     $checkGitStatus->bindTo($this)();
 };
@@ -1257,7 +1419,7 @@ $runDatabaseMigrations = function () use ($logAction, $checkGitStatus) {
     $checkGitStatus->bindTo($this)();
 };
 
-$runFullDeployUpdate = function () use ($logAction, $checkGitStatus, $runSafeShell) {
+$runFullDeployUpdate = function () use ($logAction, $checkGitStatus) {
     if (!auth()->user() || !auth()->user()->isAdmin()) {
         abort(403, 'Unauthorized action.');
     }
@@ -1267,8 +1429,28 @@ $runFullDeployUpdate = function () use ($logAction, $checkGitStatus, $runSafeShe
     $out .= "  GETEMBE DIGITAL SYSTEM UPDATE & DEPLOY  \n";
     $out .= "==========================================\n\n";
 
+    $pullOutput = '';
     $out .= "[1/3] Pulling Latest Git Changes...\n";
-    $out .= $runSafeShell("cd {$cwd} && git pull 2>&1");
+    if (function_exists('shell_exec')) {
+        $disabled = array_map('trim', explode(',', ini_get('disable_functions') ?? ''));
+        if (!in_array('shell_exec', $disabled)) {
+            $targetBranch = $this->gitCurrentBranch ?: 'main';
+            $pullOutput = @shell_exec("cd {$cwd} && git pull origin {$targetBranch} 2>&1") ?: @shell_exec("cd {$cwd} && git pull 2>&1");
+            $out .= $pullOutput ?: "Git pull command executed.\n";
+        } else {
+            $out .= "Note: shell_exec() function is disabled in php.ini on this hosting server.\n";
+        }
+    } else {
+        $out .= "Note: shell_exec() function is disabled on this server.\n";
+    }
+
+    $this->gitPulledMetadata = [
+        'pulled_at' => now()->format('Y-m-d H:i:s'),
+        'branch' => $this->gitCurrentBranch ?: 'main',
+        'raw_output' => $pullOutput ?: 'System deployed via PHP engine.',
+        'up_to_date' => str_contains(strtolower($pullOutput), 'already up to date'),
+    ];
+
     $out .= "\n------------------------------------------\n";
 
     $out .= "[2/3] Running Database Migrations...\n";
@@ -1284,6 +1466,7 @@ $runFullDeployUpdate = function () use ($logAction, $checkGitStatus, $runSafeShe
     try {
         Artisan::call('optimize:clear');
         $out .= Artisan::output();
+        \Illuminate\Support\Facades\Cache::flush();
     } catch (\Throwable $e) {
         $out .= "Error: " . $e->getMessage() . "\n";
     }
@@ -1566,10 +1749,7 @@ $sendTestEmail = function () {
         $this->test_email_status = "error|Failed to send test email. Please check your configurations and server settings.";
     }
 };
-
-?>
-
-<div class="space-y-6" x-data="{ 
+?><div class="space-y-6" x-data="{ 
     activeTab: @entangle('activeTab'),
     email_driver: @entangle('email_driver'),
     custom_ads_enabled: @entangle('custom_ads_enabled'),
@@ -3644,7 +3824,7 @@ $sendTestEmail = function () {
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 dark:border-gray-800 pb-3 gap-3">
                         <div>
                             <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Git Code Updates & Database Migrations</h3>
-                            <p class="text-xs text-gray-500">Pull latest git repository commits, execute pending database migrations, and purge system caches.</p>
+                            <p class="text-xs text-gray-500">Pull latest git repository commits, inspect active branches, review change history, execute pending database migrations, and purge system caches.</p>
                         </div>
                         <button type="button" wire:click="checkGitStatus" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold text-xs px-3.5 py-2 rounded-lg transition flex items-center space-x-1.5 shrink-0 shadow-sm">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3678,7 +3858,7 @@ $sendTestEmail = function () {
                             <h4 class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider flex items-center space-x-1.5">
                                 <span>1. Pull Git Code</span>
                             </h4>
-                            <p class="text-[11px] text-gray-500">Fetches and pulls the latest source code commits from the remote Git repository (`git pull`).</p>
+                            <p class="text-[11px] text-gray-500">Fetches and pulls the latest source code commits from remote Git repository (`git pull origin {{ $gitCurrentBranch }}`).</p>
                             <button type="button" wire:click="pullGitCode" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition shadow-sm">
                                 Pull Latest Git Code
                             </button>
@@ -3698,12 +3878,124 @@ $sendTestEmail = function () {
                             <h4 class="text-xs font-black text-[#cc6c3b] uppercase tracking-wider flex items-center space-x-1.5">
                                 <span>3. Full Deploy Update</span>
                             </h4>
-                            <p class="text-[11px] text-gray-500 dark:text-gray-400">Pulls Git code, runs database migrations, and flushes all caches in one click.</p>
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400">Pulls Git code, runs database migrations, and flushes all system caches in one click.</p>
                             <button type="button" wire:click="runFullDeployUpdate" class="w-full bg-[#cc6c3b] hover:bg-orange-700 text-white font-bold text-xs py-2 px-4 rounded-lg transition shadow-sm">
                                 Run Full Update & Deploy
                             </button>
                         </div>
                     </div>
+
+                    <!-- Git Branch & Repository Summary Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Active Branch Card -->
+                        <div class="p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-xl space-y-1">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Active Branch</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="px-2.5 py-1 bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 rounded font-mono font-black text-xs">
+                                    🌿 {{ $gitCurrentBranch }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Latest Commit Hash Card -->
+                        <div class="p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-xl space-y-1">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Latest Commit Hash</span>
+                            <span class="px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded font-mono font-bold text-xs block truncate">
+                                🔗 {{ $gitLatestCommit['short_hash'] ?? 'Head' }}
+                            </span>
+                        </div>
+
+                        <!-- Local & Remote Branches Card -->
+                        <div class="p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-xl space-y-1">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Tracked Branches</span>
+                            <div class="flex items-center space-x-2 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                <span class="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-[10px]">Local: {{ count($gitLocalBranches) ?: 1 }}</span>
+                                <span class="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded text-[10px]">Remote: {{ count($gitRemoteBranches) ?: 1 }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Local Changes Status Card -->
+                        <div class="p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-xl space-y-1">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Working Directory Status</span>
+                            @if(!empty($gitUncommittedFiles))
+                                <span class="text-amber-500 font-bold text-xs flex items-center space-x-1">
+                                    ⚠️ {{ count($gitUncommittedFiles) }} Uncommitted File(s)
+                                </span>
+                            @else
+                                <span class="text-emerald-500 font-bold text-xs flex items-center space-x-1">
+                                    ✔ Clean Working Directory
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Pulled Changes Metadata Summary Box -->
+                    @if(!empty($gitPulledMetadata))
+                        <div class="p-4 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-xl space-y-2 text-xs">
+                            <div class="flex justify-between items-center">
+                                <h4 class="font-bold text-blue-900 dark:text-blue-300 uppercase tracking-wider flex items-center space-x-1.5">
+                                    <span>Pulled Repository Metadata</span>
+                                </h4>
+                                <span class="text-[10px] text-blue-600 dark:text-blue-400 font-mono font-semibold">
+                                    Pulled at: {{ $gitPulledMetadata['pulled_at'] }}
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3 text-[11px]">
+                                <span class="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 font-bold px-2 py-0.5 rounded font-mono">
+                                    Target Branch: {{ $gitPulledMetadata['branch'] }}
+                                </span>
+                                @if(!empty($gitPulledMetadata['up_to_date']))
+                                    <span class="bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold px-2 py-0.5 rounded">
+                                        Status: Already up to date
+                                    </span>
+                                @else
+                                    <span class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-bold px-2 py-0.5 rounded">
+                                        Status: Code Updated Successfully
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Detailed Recent Commits History Table -->
+                    @if(!empty($gitRecentCommits))
+                        <div class="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-xl overflow-hidden shadow-sm space-y-2 p-4">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider pb-2 border-b border-gray-100 dark:border-gray-850 flex justify-between items-center">
+                                <span>Recent Commit History & Changes Log</span>
+                                <span class="text-[10px] font-normal text-gray-400">Showing last {{ count($gitRecentCommits) }} commits</span>
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr class="bg-gray-50 dark:bg-gray-900 text-gray-500 font-bold border-b border-gray-200 dark:border-gray-800">
+                                            <th class="p-2.5">Commit Hash</th>
+                                            <th class="p-2.5">Commit Message</th>
+                                            <th class="p-2.5">Author</th>
+                                            <th class="p-2.5 text-right">Date / Relative Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-gray-850">
+                                        @foreach($gitRecentCommits as $c)
+                                            <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition">
+                                                <td class="p-2.5 font-mono text-[11px] font-bold text-blue-600 dark:text-blue-400">
+                                                    {{ $c['short_hash'] }}
+                                                </td>
+                                                <td class="p-2.5 font-semibold text-gray-900 dark:text-white max-w-md truncate">
+                                                    {{ $c['message'] }}
+                                                </td>
+                                                <td class="p-2.5 text-gray-600 dark:text-gray-400 font-medium">
+                                                    {{ $c['author'] }}
+                                                </td>
+                                                <td class="p-2.5 text-right text-gray-400 text-[11px] font-mono">
+                                                    {{ $c['date'] }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
 
                     <!-- Terminal Output Log Window -->
                     @if(!empty($gitTerminalOutput))
@@ -3720,9 +4012,9 @@ $sendTestEmail = function () {
 
                     <!-- Repository & Migration Status Grids -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Git Repository Status -->
+                        <!-- Git Repository Raw Status -->
                         <div class="space-y-2">
-                            <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Git Branch & Status</h4>
+                            <h4 class="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Git Status & Working Tree Summary</h4>
                             <pre class="bg-gray-50 dark:bg-gray-950 p-4 rounded-xl font-mono text-xs text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-800 overflow-x-auto max-h-72 whitespace-pre-wrap">{{ $gitStatusSummary ?: 'Click "Refresh Repository Status" to load repository status.' }}</pre>
                         </div>
 

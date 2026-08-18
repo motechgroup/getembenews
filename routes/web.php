@@ -148,6 +148,8 @@ Route::get('/', function () {
             return view('welcome', array_merge($fallbackData, $homepageData));
         } catch (\Throwable $e2) {
             \Illuminate\Support\Facades\Log::error('Homepage view render error: ' . $e2->getMessage());
+            Cache::forget($cacheKey);
+            // Re-render directly with fresh DB queries on cache corruption
             return view('welcome', $fallbackData);
         }
     } catch (\Throwable $e) {

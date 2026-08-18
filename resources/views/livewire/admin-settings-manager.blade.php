@@ -254,6 +254,8 @@ state([
     'uploadedInlineAd' => null,
     'uploadedFooterAd' => null,
     'uploadedMobileStickyAd' => null,
+    'mpesaTestStatus' => null,
+    'mpesaTestMessage' => '',
 
     // Dynamic Lists inputs / States
     'newRoleName' => '',
@@ -1296,9 +1298,21 @@ $save = function () use ($logAction) {
     }
 
     \Illuminate\Support\Facades\Cache::flush();
-
     $logAction("Saved general website settings configurations");
     $this->dispatch('settings-saved');
+};
+
+$testMpesaConnection = function () {
+    $env = Setting::get('mpesa_env', 'sandbox');
+    $token = \App\Support\Mpesa::getAccessToken();
+
+    if ($token) {
+        $this->mpesaTestStatus = 'success';
+        $this->mpesaTestMessage = "✅ Safaricom API Connection Successful! Generated OAuth access token for [{$env}] mode.";
+    } else {
+        $this->mpesaTestStatus = 'failed';
+        $this->mpesaTestMessage = "❌ Safaricom API Connection Failed (Wrong Credentials): Unable to authenticate with Safaricom Daraja API in [{$env}] mode. Please ensure Consumer Key & Secret match your LIVE APP on developer.safaricom.co.ke.";
+    }
 };
 
 $toggleNewsletterPopup = function () use ($logAction) {
@@ -2736,7 +2750,31 @@ $sendTestEmail = function () {
 
                     <!-- M-Pesa API Gateway Settings -->
                     <div class="border-t border-gray-150 dark:border-gray-800 pt-4 space-y-4">
-                        <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">M-Pesa API Credentials</h4>
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">M-Pesa API Credentials</h4>
+                            <button type="button" wire:click="testMpesaConnection" class="bg-gray-900 hover:bg-black text-white dark:bg-gray-800 dark:hover:bg-gray-700 font-bold text-[11px] px-3 py-1.5 rounded transition flex items-center space-x-1 shadow-sm">
+                                <span>⚡ Test Safaricom API Connection</span>
+                            </button>
+                        </div>
+
+                        @if(!empty($mpesaTestMessage))
+                            <div class="p-3 rounded-lg text-xs font-medium border {{ $mpesaTestStatus === 'success' ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950/40 dark:border-green-800 dark:text-green-300' : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300' }}">
+                                {{ $mpesaTestMessage }}
+                            </div>
+                        @endif
+
+                        @if($mpesa_env === 'production')
+                            <div class="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs space-y-1.5">
+                                <div class="font-bold flex items-center space-x-1">
+                                    <span>⚠️ Live Production Setup Guide (Fixing "Wrong Credentials")</span>
+                                </div>
+                                <ul class="list-disc pl-4 space-y-1 text-[11px]">
+                                    <li><strong>Consumer Key & Secret:</strong> Must come from <em>MY APPS &rarr; LIVE APPS</em> on Safaricom Daraja Portal (Sandbox keys return "Wrong credentials" in production).</li>
+                                    <li><strong>Business Shortcode:</strong> Enter your active Live Production Paybill/Till number.</li>
+                                    <li><strong>Lipa Na M-Pesa Passkey:</strong> Enter the Live Passkey provided by Safaricom for your Paybill (do not use the test sandbox <code>bfb279f9...</code> passkey).</li>
+                                </ul>
+                            </div>
+                        @endif
                         
                         <div class="p-4 bg-gray-50 dark:bg-gray-955 rounded-lg border border-gray-250 dark:border-gray-850 space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

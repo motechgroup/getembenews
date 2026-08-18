@@ -14,8 +14,8 @@ class Mpesa
     public static function getAccessToken(): ?string
     {
         $env = Setting::get('mpesa_env', 'sandbox');
-        $consumerKey = Setting::get('mpesa_consumer_key', '');
-        $consumerSecret = Setting::get('mpesa_consumer_secret', '');
+        $consumerKey = trim((string) Setting::get('mpesa_consumer_key', ''));
+        $consumerSecret = trim((string) Setting::get('mpesa_consumer_secret', ''));
 
         if (empty($consumerKey) || empty($consumerSecret)) {
             Log::error("M-Pesa API Consumer Key or Consumer Secret is missing.");
@@ -33,7 +33,8 @@ class Mpesa
                 return $response->json('access_token');
             }
 
-            Log::error("Failed to generate M-Pesa token. Response: " . $response->body());
+            $errorMsg = $response->json('errorMessage') ?: $response->body();
+            Log::error("Failed to generate M-Pesa token [Env: {$env}]. Response: " . $errorMsg);
         } catch (\Exception $e) {
             Log::error("M-Pesa Token Exception: " . $e->getMessage());
         }
@@ -48,8 +49,8 @@ class Mpesa
     public static function stkPush(string $phone, float $amount, string $reference = 'GetembeNews'): array
     {
         $env = Setting::get('mpesa_env', 'sandbox');
-        $shortcode = Setting::get('mpesa_shortcode', '174379');
-        $passkey = Setting::get('mpesa_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919');
+        $shortcode = trim((string) Setting::get('mpesa_shortcode', '174379'));
+        $passkey = trim((string) Setting::get('mpesa_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'));
 
         // Clean phone number: Safaricom requires format 2547XXXXXXXX
         $phone = preg_replace('/\D/', '', $phone);
@@ -66,7 +67,7 @@ class Mpesa
         if (!$token) {
             return [
                 'success' => false,
-                'message' => 'Authentication failed. Please verify Consumer Key & Consumer Secret settings.'
+                'message' => "Authentication Failed (Wrong Credentials): Please verify your Live Consumer Key & Secret in Admin Settings."
             ];
         }
 
@@ -115,9 +116,15 @@ class Mpesa
             }
 
             Log::error("M-Pesa STK Push error. Request: " . json_encode($body) . " Response: " . $response->body());
+            $errorMsg = $response->json('errorMessage') ?: ($response->json('ResponseDescription') ?: 'Error calling M-Pesa STK API. HTTP code ' . $response->status());
+            
+            if (str_contains(strtolower($errorMsg), 'wrong credentials') || str_contains(strtolower($errorMsg), 'invalid access token')) {
+                $errorMsg = "Authentication Failed (Wrong Credentials): Please ensure your Live Consumer Key, Secret, Shortcode, and Passkey match your Safaricom Live Production App.";
+            }
+
             return [
                 'success' => false,
-                'message' => $response->json('errorMessage') ?: 'Error calling M-Pesa STK API. HTTP code ' . $response->status()
+                'message' => $errorMsg
             ];
         } catch (\Exception $e) {
             Log::error("M-Pesa STK Push exception: " . $e->getMessage());
@@ -134,15 +141,15 @@ class Mpesa
     public static function queryStatus(string $checkoutRequestId): array
     {
         $env = Setting::get('mpesa_env', 'sandbox');
-        $shortcode = Setting::get('mpesa_shortcode', '174379');
-        $passkey = Setting::get('mpesa_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919');
+        $shortcode = trim((string) Setting::get('mpesa_shortcode', '174379'));
+        $passkey = trim((string) Setting::get('mpesa_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'));
 
         $token = self::getAccessToken();
         if (!$token) {
             return [
                 'success' => false,
                 'status' => 'error',
-                'message' => 'Authentication failed.'
+                'message' => 'Authentication failed. Wrong M-Pesa credentials.'
             ];
         }
 
@@ -194,10 +201,16 @@ class Mpesa
             }
 
             Log::error("M-Pesa STK Query error. Response: " . $response->body());
+            $errorMsg = $response->json('errorMessage') ?: ($response->json('ResultDesc') ?: 'Awaiting payment confirmation.');
+            
+            if (str_contains(strtolower($errorMsg), 'wrong credentials')) {
+                $errorMsg = "Authentication Failed: Wrong credentials for {$env} mode.";
+            }
+
             return [
                 'success' => false,
                 'status' => 'pending',
-                'message' => $response->json('errorMessage') ?: 'Awaiting payment confirmation.'
+                'message' => $errorMsg
             ];
         } catch (\Exception $e) {
             Log::error("M-Pesa STK Query exception: " . $e->getMessage());

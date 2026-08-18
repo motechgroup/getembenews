@@ -247,6 +247,16 @@
                             $bodyContent = str_replace('[audio]', $audioHtml, $bodyContent);
                             $hasAudioPlaceholder = true;
                         }
+
+                        // Inject inline ad after 2nd paragraph break inside article body
+                        $inlineAdHtml = view('partials.render-ad', ['location' => 'inline'])->render();
+                        $paragraphs = explode('</p>', $bodyContent);
+                        if (count($paragraphs) >= 2) {
+                            $paragraphs[1] .= '</p>' . $inlineAdHtml;
+                            $bodyContent = implode('</p>', $paragraphs);
+                        } else {
+                            $bodyContent .= $inlineAdHtml;
+                        }
                     @endphp
 
                     @if(!empty($videoHtml) && !$hasVideoPlaceholder)
@@ -472,9 +482,6 @@
                         </div>
                     </div>
                 @endif
-
-                <!-- Inline Article Body Advertisement -->
-                @include('partials.render-ad', ['location' => 'inline'])
 
                 <!-- Author Profile Card -->
                 @if($article->author)

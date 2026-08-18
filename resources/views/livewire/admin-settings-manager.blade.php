@@ -1157,6 +1157,11 @@ $save = function () use ($logAction) {
 
     if ($this->uploadedTopAd) {
         $this->validate(['uploadedTopAd' => 'image|max:2048']);
+        $info = @getimagesize($this->uploadedTopAd->getRealPath());
+        if ($info && ($info[0] / max(1, $info[1])) < 2.2) {
+            $this->addError('uploadedTopAd', "The uploaded top banner dimensions ({$info[0]} × {$info[1]} px) do not match the horizontal header leaderboard requirement (Recommended: 728 × 90 px or 970 × 90 px).");
+            return;
+        }
         $path = $this->uploadedTopAd->store('ads', 'public');
         \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($path), false);
         $this->ad_top_image = asset('storage/' . $path);
@@ -1165,6 +1170,11 @@ $save = function () use ($logAction) {
 
     if ($this->uploadedSidebarAd) {
         $this->validate(['uploadedSidebarAd' => 'image|max:2048']);
+        $info = @getimagesize($this->uploadedSidebarAd->getRealPath());
+        if ($info && ($info[0] / max(1, $info[1])) > 2.5) {
+            $this->addError('uploadedSidebarAd', "The uploaded sidebar banner dimensions ({$info[0]} × {$info[1]} px) do not match the sidebar placement (Recommended: 300 × 250 px or 300 × 600 px).");
+            return;
+        }
         $path = $this->uploadedSidebarAd->store('ads', 'public');
         \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($path), false);
         $this->ad_sidebar_image = asset('storage/' . $path);
@@ -1173,6 +1183,11 @@ $save = function () use ($logAction) {
 
     if ($this->uploadedInlineAd) {
         $this->validate(['uploadedInlineAd' => 'image|max:2048']);
+        $info = @getimagesize($this->uploadedInlineAd->getRealPath());
+        if ($info && ($info[0] / max(1, $info[1])) < 2.2) {
+            $this->addError('uploadedInlineAd', "The uploaded inline banner dimensions ({$info[0]} × {$info[1]} px) do not match the horizontal inline requirement (Recommended: 728 × 90 px or 468 × 60 px).");
+            return;
+        }
         $path = $this->uploadedInlineAd->store('ads', 'public');
         \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($path), false);
         $this->ad_inline_image = asset('storage/' . $path);
@@ -1181,6 +1196,11 @@ $save = function () use ($logAction) {
 
     if ($this->uploadedFooterAd) {
         $this->validate(['uploadedFooterAd' => 'image|max:2048']);
+        $info = @getimagesize($this->uploadedFooterAd->getRealPath());
+        if ($info && ($info[0] / max(1, $info[1])) < 2.2) {
+            $this->addError('uploadedFooterAd', "The uploaded footer banner dimensions ({$info[0]} × {$info[1]} px) do not match the horizontal footer leaderboard requirement (Recommended: 728 × 90 px).");
+            return;
+        }
         $path = $this->uploadedFooterAd->store('ads', 'public');
         \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($path), false);
         $this->ad_footer_image = asset('storage/' . $path);
@@ -1189,6 +1209,11 @@ $save = function () use ($logAction) {
 
     if ($this->uploadedMobileStickyAd) {
         $this->validate(['uploadedMobileStickyAd' => 'image|max:2048']);
+        $info = @getimagesize($this->uploadedMobileStickyAd->getRealPath());
+        if ($info && (($info[0] / max(1, $info[1])) < 3.0 || $info[1] > 150)) {
+            $this->addError('uploadedMobileStickyAd', "The uploaded mobile sticky banner dimensions ({$info[0]} × {$info[1]} px) do not match the mobile sticky bottom requirement (Recommended: 320 × 50 px).");
+            return;
+        }
         $path = $this->uploadedMobileStickyAd->store('ads', 'public');
         \App\Support\ImageProcessor::process(\Illuminate\Support\Facades\Storage::disk('public')->path($path), false);
         $this->ad_mobile_sticky_image = asset('storage/' . $path);

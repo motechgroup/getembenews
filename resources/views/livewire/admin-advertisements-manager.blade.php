@@ -62,6 +62,26 @@ $save = function () {
     ]);
 
     if ($this->uploadedImage) {
+        $info = @getimagesize($this->uploadedImage->getRealPath());
+        if ($info) {
+            $w = $info[0];
+            $h = $info[1];
+            $ratio = $h > 0 ? ($w / $h) : 0;
+
+            if (in_array($this->location, ['top', 'footer', 'inline']) && $ratio < 2.2) {
+                $this->addError('uploadedImage', "The uploaded image dimensions ({$w} × {$h} px) do not match the horizontal banner requirement for {$this->location} placement (Recommended: 728 × 90 px or 970 × 90 px).");
+                return;
+            }
+            if ($this->location === 'sidebar' && $ratio > 2.5) {
+                $this->addError('uploadedImage', "The uploaded image dimensions ({$w} × {$h} px) do not match the sidebar placement. Sidebar banners must be square or vertical (Recommended: 300 × 250 px or 300 × 600 px).");
+                return;
+            }
+            if ($this->location === 'mobile_sticky' && ($ratio < 3.0 || $h > 150)) {
+                $this->addError('uploadedImage', "The uploaded image dimensions ({$w} × {$h} px) do not match the mobile sticky bottom placement (Recommended: 320 × 50 px).");
+                return;
+            }
+        }
+
         $path = $this->uploadedImage->store('ads', 'public');
         $this->image_url = '/storage/' . $path;
         $this->uploadedImage = null;

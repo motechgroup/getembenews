@@ -187,7 +187,7 @@ class Mpesa
             if ($response->successful()) {
                 $data = $response->json();
                 
-                // ResultCode 0 means Success
+                // ResultCode 0 means Success, 4999 means still processing/awaiting PIN
                 if (isset($data['ResultCode'])) {
                     $code = (int) $data['ResultCode'];
                     if ($code === 0) {
@@ -196,6 +196,13 @@ class Mpesa
                             'status' => 'success',
                             'result_code' => $code,
                             'message' => $data['ResultDesc'] ?? 'Payment completed successfully.'
+                        ];
+                    } elseif ($code === 4999) {
+                        return [
+                            'success' => false,
+                            'status' => 'pending',
+                            'result_code' => $code,
+                            'message' => $data['ResultDesc'] ?? 'Prompt active on phone, awaiting M-Pesa PIN input.'
                         ];
                     }
                     return [

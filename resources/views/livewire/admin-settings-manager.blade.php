@@ -2847,13 +2847,8 @@ $sendTestEmail = function () {
                                 </div>
                                 
                                 <div class="space-y-1">
-                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Business Shortcode / Store Number</label>
-                                    <input type="text" wire:model="mpesa_shortcode" placeholder="e.g. 4346209 or Store Number" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
-                                </div>
-
-                                <div class="space-y-1">
-                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Till Number (Optional for Buy Goods)</label>
-                                    <input type="text" wire:model="mpesa_till_number" placeholder="e.g. 4346209 (leave blank if same as Shortcode)" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Business Shortcode / Till Number</label>
+                                    <input type="text" wire:model="mpesa_shortcode" placeholder="e.g. 4346209" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
                                 </div>
 
                                 <div class="space-y-1">

@@ -50,12 +50,8 @@ class Mpesa
     {
         $env = Setting::get('mpesa_env', 'sandbox');
         $shortcode = trim((string) Setting::get('mpesa_shortcode', '4346209'));
-        $tillNumber = trim((string) Setting::get('mpesa_till_number', ''));
         $passkey = trim((string) Setting::get('mpesa_passkey', 'cc2b215ee738ab18e254db64058cfa06236f72cce95a8cf5a03f48fb14b2c9fe'));
-        $txType = Setting::get('mpesa_transaction_type', 'CustomerBuyGoodsOnline');
-
-        // PartyB for Buy Goods: If tillNumber is configured, use tillNumber, otherwise use shortcode
-        $partyB = (!empty($tillNumber) && $txType === 'CustomerBuyGoodsOnline') ? $tillNumber : $shortcode;
+        $txType = Setting::get('mpesa_transaction_type', 'CustomerPayBillOnline');
 
         // Clean phone number: Safaricom requires format 2547XXXXXXXX
         $phone = preg_replace('/\D/', '', $phone);
@@ -95,7 +91,7 @@ class Mpesa
             'TransactionType' => $txType,
             'Amount' => $amount,
             'PartyA' => $phone,
-            'PartyB' => $partyB,
+            'PartyB' => $shortcode,
             'PhoneNumber' => $phone,
             'CallBackURL' => $callbackUrl,
             'AccountReference' => substr(preg_replace('/[^A-Za-z0-9]/', '', $reference), 0, 12) ?: 'Getembe',
@@ -111,23 +107,6 @@ class Mpesa
                     return [
                         'success' => true,
                         'checkout_request_id' => $data['CheckoutRequestID'],
-                        'message' => 'STK Push prompt successfully sent to ' . $phone
-                    ];
-                }
-            }
-
-            // Retry with alternative transaction type if initial transaction type failed (e.g. Paybill vs Buy Goods)
-            $altTxType = ($txType === 'CustomerPayBillOnline') ? 'CustomerBuyGoodsOnline' : 'CustomerPayBillOnline';
-            $body['TransactionType'] = $altTxType;
-
-            $retryResponse = Http::withoutVerifying()->withToken($token)->post($url, $body);
-            if ($retryResponse->successful()) {
-                $retryData = $retryResponse->json();
-                if (isset($retryData['ResponseCode']) && $retryData['ResponseCode'] === '0') {
-                    Setting::set('mpesa_transaction_type', $altTxType);
-                    return [
-                        'success' => true,
-                        'checkout_request_id' => $retryData['CheckoutRequestID'],
                         'message' => 'STK Push prompt successfully sent to ' . $phone
                     ];
                 }

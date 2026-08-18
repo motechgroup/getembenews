@@ -134,8 +134,8 @@ state([
     'mpesa_consumer_key' => fn() => Setting::get('mpesa_consumer_key', ''),
     'mpesa_consumer_secret' => fn() => Setting::get('mpesa_consumer_secret', ''),
     'mpesa_shortcode' => fn() => Setting::get('mpesa_shortcode', '4346209'),
-    'mpesa_till_number' => fn() => Setting::get('mpesa_till_number', ''),
-    'mpesa_passkey' => fn() => Setting::get('mpesa_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'),
+    'mpesa_till_number' => fn() => Setting::get('mpesa_till_number', '4368451'),
+    'mpesa_passkey' => fn() => Setting::get('mpesa_passkey', 'cc2b215ee738ab18e254db64058cfa06236f72cce95a8cf5a03f48fb14b2c9fe'),
     'mpesa_initiator_name' => fn() => Setting::get('mpesa_initiator_name', ''),
     'mpesa_initiator_password' => fn() => Setting::get('mpesa_initiator_password', ''),
     'mpesa_callback_url' => fn() => Setting::get('mpesa_callback_url', ''),
@@ -2821,9 +2821,10 @@ $sendTestEmail = function () {
                                 </div>
                                 <ul class="list-disc pl-4 space-y-1 text-[11px]">
                                     <li><strong>Consumer Key & Secret:</strong> Must come from <em>MY APPS &rarr; LIVE APPS</em> on Safaricom Daraja Portal.</li>
-                                    <li><strong>Business Shortcode:</strong> Enter your active Live Production Paybill/Till number (e.g. <code>{{ $mpesa_shortcode }}</code>).</li>
-                                    <li><strong>Transaction Type:</strong> Select <code>Paybill</code> for Paybill shortcodes, or <code>Buy Goods / Till Number</code> for Till numbers.</li>
-                                    <li><strong>Lipa Na M-Pesa Passkey:</strong> Enter the Live Passkey provided by Safaricom for your Paybill/Till (do not use the test sandbox <code>bfb279f9...</code> passkey).</li>
+                                    <li><strong>Business Shortcode (HO):</strong> Enter your Head Office Shortcode (e.g. <code>{{ $mpesa_shortcode }}</code>) used with your Passkey to generate the API Password.</li>
+                                    <li><strong>Party B / Till Number:</strong> Enter your Buy Goods Till Number (e.g. <code>{{ $mpesa_till_number }}</code>) for receiving payment.</li>
+                                    <li><strong>Transaction Type:</strong> Select <code>Buy Goods / Till Number</code> for Till numbers, or <code>Paybill</code> for Paybill shortcodes.</li>
+                                    <li><strong>Lipa Na M-Pesa Passkey:</strong> Enter the Live Passkey provided by Safaricom for your Shortcode.</li>
                                 </ul>
                             </div>
                         @endif
@@ -2841,14 +2842,21 @@ $sendTestEmail = function () {
                                 <div class="space-y-1">
                                     <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Transaction Type</label>
                                     <select wire:model="mpesa_transaction_type" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
-                                        <option value="CustomerPayBillOnline">Paybill (CustomerPayBillOnline)</option>
                                         <option value="CustomerBuyGoodsOnline">Buy Goods / Till Number (CustomerBuyGoodsOnline)</option>
+                                        <option value="CustomerPayBillOnline">Paybill (CustomerPayBillOnline)</option>
                                     </select>
                                 </div>
                                 
                                 <div class="space-y-1">
-                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Business Shortcode / Till Number</label>
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Business Shortcode (Head Office / Paybill)</label>
                                     <input type="text" wire:model="mpesa_shortcode" placeholder="e.g. 4346209" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                    <span class="text-[10px] text-gray-500 font-medium">Head Office Shortcode used for security password generation</span>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Party B / Till Number (Buy Goods)</label>
+                                    <input type="text" wire:model="mpesa_till_number" placeholder="e.g. 4368451" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                    <span class="text-[10px] text-gray-500 font-medium">Till Number where payment is received (for Buy Goods)</span>
                                 </div>
 
                                 <div class="space-y-1">

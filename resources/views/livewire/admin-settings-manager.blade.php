@@ -133,7 +133,8 @@ state([
     'mpesa_transaction_type' => fn() => Setting::get('mpesa_transaction_type', 'CustomerBuyGoodsOnline'),
     'mpesa_consumer_key' => fn() => Setting::get('mpesa_consumer_key', ''),
     'mpesa_consumer_secret' => fn() => Setting::get('mpesa_consumer_secret', ''),
-    'mpesa_shortcode' => fn() => Setting::get('mpesa_shortcode', '174379'),
+    'mpesa_shortcode' => fn() => Setting::get('mpesa_shortcode', '4346209'),
+    'mpesa_till_number' => fn() => Setting::get('mpesa_till_number', ''),
     'mpesa_passkey' => fn() => Setting::get('mpesa_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'),
     'mpesa_initiator_name' => fn() => Setting::get('mpesa_initiator_name', ''),
     'mpesa_initiator_password' => fn() => Setting::get('mpesa_initiator_password', ''),
@@ -1273,7 +1274,7 @@ $save = function () use ($logAction) {
         'sms_textsms_api_key', 'sms_textsms_partner_id', 'sms_textsms_shortcode',
         'sms_template_draft', 'sms_template_payment',
         'mpesa_env', 'mpesa_transaction_type', 'mpesa_consumer_key', 'mpesa_consumer_secret',
-        'mpesa_shortcode', 'mpesa_passkey', 'mpesa_initiator_name', 'mpesa_initiator_password', 'mpesa_callback_url'
+        'mpesa_shortcode', 'mpesa_till_number', 'mpesa_passkey', 'mpesa_initiator_name', 'mpesa_initiator_password', 'mpesa_callback_url'
     ];
 
     foreach (['tv_schedule', 'radio_schedule'] as $schedKey) {
@@ -2845,9 +2846,14 @@ $sendTestEmail = function () {
                                     </select>
                                 </div>
                                 
-                                <div class="space-y-1 md:col-span-2">
-                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Business Shortcode / Paybill / Till Number</label>
-                                    <input type="text" wire:model="mpesa_shortcode" placeholder="e.g. 174379 or Till Number" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Business Shortcode / Store Number</label>
+                                    <input type="text" wire:model="mpesa_shortcode" placeholder="e.g. 4346209 or Store Number" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Till Number (Optional for Buy Goods)</label>
+                                    <input type="text" wire:model="mpesa_till_number" placeholder="e.g. 4346209 (leave blank if same as Shortcode)" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
                                 </div>
 
                                 <div class="space-y-1">

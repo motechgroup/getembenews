@@ -130,6 +130,7 @@ state([
     'payment_methods' => fn() => Setting::get('payment_methods', 'M-Pesa'),
     'payment_gateways' => fn() => Setting::get('payment_gateways', 'M-Pesa'),
     'mpesa_env' => fn() => Setting::get('mpesa_env', 'sandbox'),
+    'mpesa_transaction_type' => fn() => Setting::get('mpesa_transaction_type', 'CustomerPayBillOnline'),
     'mpesa_consumer_key' => fn() => Setting::get('mpesa_consumer_key', ''),
     'mpesa_consumer_secret' => fn() => Setting::get('mpesa_consumer_secret', ''),
     'mpesa_shortcode' => fn() => Setting::get('mpesa_shortcode', '174379'),
@@ -256,6 +257,7 @@ state([
     'uploadedMobileStickyAd' => null,
     'mpesaTestStatus' => null,
     'mpesaTestMessage' => '',
+    'testMpesaPhone' => '',
 
     // Dynamic Lists inputs / States
     'newRoleName' => '',
@@ -1270,7 +1272,7 @@ $save = function () use ($logAction) {
         'sms_at_username', 'sms_at_api_key', 'sms_at_from',
         'sms_textsms_api_key', 'sms_textsms_partner_id', 'sms_textsms_shortcode',
         'sms_template_draft', 'sms_template_payment',
-        'mpesa_env', 'mpesa_consumer_key', 'mpesa_consumer_secret',
+        'mpesa_env', 'mpesa_transaction_type', 'mpesa_consumer_key', 'mpesa_consumer_secret',
         'mpesa_shortcode', 'mpesa_passkey', 'mpesa_initiator_name', 'mpesa_initiator_password', 'mpesa_callback_url'
     ];
 
@@ -1312,6 +1314,23 @@ $testMpesaConnection = function () {
     } else {
         $this->mpesaTestStatus = 'failed';
         $this->mpesaTestMessage = "❌ Safaricom API Connection Failed (Wrong Credentials): Unable to authenticate with Safaricom Daraja API in [{$env}] mode. Please ensure Consumer Key & Secret match your LIVE APP on developer.safaricom.co.ke.";
+    }
+};
+
+$testMpesaStkPush = function () {
+    if (empty(trim($this->testMpesaPhone))) {
+        $this->mpesaTestStatus = 'failed';
+        $this->mpesaTestMessage = '❌ Please enter a test phone number (e.g. 2547XXXXXXXX) to test the live STK Push prompt.';
+        return;
+    }
+
+    $res = \App\Support\Mpesa::stkPush($this->testMpesaPhone, 1, 'TEST-PROMPT');
+    if ($res['success']) {
+        $this->mpesaTestStatus = 'success';
+        $this->mpesaTestMessage = "✅ STK Push Prompt Sent Successfully to " . $this->testMpesaPhone . "! Check phone for KSh 1 prompt. (Checkout ID: " . $res['checkout_request_id'] . ")";
+    } else {
+        $this->mpesaTestStatus = 'failed';
+        $this->mpesaTestMessage = "❌ STK Push Error: " . $res['message'];
     }
 };
 
@@ -2750,11 +2769,17 @@ $sendTestEmail = function () {
 
                     <!-- M-Pesa API Gateway Settings -->
                     <div class="border-t border-gray-150 dark:border-gray-800 pt-4 space-y-4">
-                        <div class="flex items-center justify-between">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800 pb-3">
                             <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">M-Pesa API Credentials</h4>
-                            <button type="button" wire:click="testMpesaConnection" class="bg-gray-900 hover:bg-black text-white dark:bg-gray-800 dark:hover:bg-gray-700 font-bold text-[11px] px-3 py-1.5 rounded transition flex items-center space-x-1 shadow-sm">
-                                <span>⚡ Test Safaricom API Connection</span>
-                            </button>
+                            <div class="flex items-center space-x-2 w-full sm:w-auto">
+                                <input type="text" wire:model="testMpesaPhone" placeholder="Test Phone e.g. 0712345678" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded px-2.5 py-1 text-xs text-gray-900 dark:text-white font-mono w-44">
+                                <button type="button" wire:click="testMpesaConnection" class="bg-gray-900 hover:bg-black text-white dark:bg-gray-800 dark:hover:bg-gray-700 font-bold text-[11px] px-3 py-1.5 rounded transition flex items-center space-x-1 shadow-sm shrink-0">
+                                    <span>⚡ Test OAuth Token</span>
+                                </button>
+                                <button type="button" wire:click="testMpesaStkPush" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-[11px] px-3 py-1.5 rounded transition flex items-center space-x-1 shadow-sm shrink-0">
+                                    <span>📱 Test Live STK Push</span>
+                                </button>
+                            </div>
                         </div>
 
                         @if(!empty($mpesaTestMessage))
@@ -2769,9 +2794,10 @@ $sendTestEmail = function () {
                                     <span>⚠️ Live Production Setup Guide (Fixing "Wrong Credentials")</span>
                                 </div>
                                 <ul class="list-disc pl-4 space-y-1 text-[11px]">
-                                    <li><strong>Consumer Key & Secret:</strong> Must come from <em>MY APPS &rarr; LIVE APPS</em> on Safaricom Daraja Portal (Sandbox keys return "Wrong credentials" in production).</li>
-                                    <li><strong>Business Shortcode:</strong> Enter your active Live Production Paybill/Till number.</li>
-                                    <li><strong>Lipa Na M-Pesa Passkey:</strong> Enter the Live Passkey provided by Safaricom for your Paybill (do not use the test sandbox <code>bfb279f9...</code> passkey).</li>
+                                    <li><strong>Consumer Key & Secret:</strong> Must come from <em>MY APPS &rarr; LIVE APPS</em> on Safaricom Daraja Portal.</li>
+                                    <li><strong>Business Shortcode:</strong> Enter your active Live Production Paybill/Till number (e.g. <code>{{ $mpesa_shortcode }}</code>).</li>
+                                    <li><strong>Transaction Type:</strong> Select <code>Paybill</code> for Paybill shortcodes, or <code>Buy Goods / Till Number</code> for Till numbers.</li>
+                                    <li><strong>Lipa Na M-Pesa Passkey:</strong> Enter the Live Passkey provided by Safaricom for your Paybill/Till (do not use the test sandbox <code>bfb279f9...</code> passkey).</li>
                                 </ul>
                             </div>
                         @endif
@@ -2785,10 +2811,18 @@ $sendTestEmail = function () {
                                         <option value="production">Production (Live Payments)</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="space-y-1">
-                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Business Shortcode / Paybill</label>
-                                    <input type="text" wire:model="mpesa_shortcode" placeholder="e.g. 174379" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Transaction Type</label>
+                                    <select wire:model="mpesa_transaction_type" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                        <option value="CustomerPayBillOnline">Paybill (CustomerPayBillOnline)</option>
+                                        <option value="CustomerBuyGoodsOnline">Buy Goods / Till Number (CustomerBuyGoodsOnline)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="space-y-1 md:col-span-2">
+                                    <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Business Shortcode / Paybill / Till Number</label>
+                                    <input type="text" wire:model="mpesa_shortcode" placeholder="e.g. 174379 or Till Number" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
                                 </div>
 
                                 <div class="space-y-1">

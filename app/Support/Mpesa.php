@@ -51,6 +51,7 @@ class Mpesa
         $env = Setting::get('mpesa_env', 'sandbox');
         $shortcode = trim((string) Setting::get('mpesa_shortcode', '174379'));
         $passkey = trim((string) Setting::get('mpesa_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'));
+        $txType = Setting::get('mpesa_transaction_type', 'CustomerPayBillOnline');
 
         // Clean phone number: Safaricom requires format 2547XXXXXXXX
         $phone = preg_replace('/\D/', '', $phone);
@@ -87,7 +88,7 @@ class Mpesa
             'BusinessShortCode' => $shortcode,
             'Password' => $password,
             'Timestamp' => $timestamp,
-            'TransactionType' => 'CustomerPayBillOnline',
+            'TransactionType' => $txType,
             'Amount' => $amount,
             'PartyA' => $phone,
             'PartyB' => $shortcode,
@@ -119,7 +120,7 @@ class Mpesa
             $errorMsg = $response->json('errorMessage') ?: ($response->json('ResponseDescription') ?: 'Error calling M-Pesa STK API. HTTP code ' . $response->status());
             
             if (str_contains(strtolower($errorMsg), 'wrong credentials') || str_contains(strtolower($errorMsg), 'invalid access token')) {
-                $errorMsg = "Authentication Failed (Wrong Credentials): Please ensure your Live Consumer Key, Secret, Shortcode, and Passkey match your Safaricom Live Production App.";
+                $errorMsg = "STK Push Authorization Failed (Wrong Credentials / Invalid Passkey or Shortcode): Your OAuth Consumer Key is valid, but Safaricom rejected the Passkey or Shortcode combination ({$shortcode}). Please verify your Lipa Na M-Pesa Passkey & Transaction Type in Admin Settings.";
             }
 
             return [

@@ -130,7 +130,7 @@ state([
     'payment_methods' => fn() => Setting::get('payment_methods', 'M-Pesa'),
     'payment_gateways' => fn() => Setting::get('payment_gateways', 'M-Pesa'),
     'mpesa_env' => fn() => Setting::get('mpesa_env', 'sandbox'),
-    'mpesa_transaction_type' => fn() => Setting::get('mpesa_transaction_type', 'CustomerPayBillOnline'),
+    'mpesa_transaction_type' => fn() => Setting::get('mpesa_transaction_type', 'CustomerBuyGoodsOnline'),
     'mpesa_consumer_key' => fn() => Setting::get('mpesa_consumer_key', ''),
     'mpesa_consumer_secret' => fn() => Setting::get('mpesa_consumer_secret', ''),
     'mpesa_shortcode' => fn() => Setting::get('mpesa_shortcode', '174379'),
@@ -1345,7 +1345,8 @@ $testMpesaStkPush = function () {
         $this->mpesaTestStatus = 'failed';
         $explanation = match($code) {
             1032 => "User cancelled the payment prompt on phone screen.",
-            1037 => "Handset Timeout: Safaricom dispatched the STK Push, but your phone did not respond or prompt expired. Please check if Transaction Type in Admin Settings is set correctly (Paybill vs Buy Goods Till Number), or check if phone is on Airplane/DND mode.",
+            1037 => "Handset Timeout: Safaricom dispatched the STK Push, but your phone did not respond in 30s.",
+            2029 => "Safaricom Error 2029 (Transaction Type Mismatch): Shortcode {$this->mpesa_shortcode} is registered as a Buy Goods / Till Number. In the Transaction Type dropdown below, select 'Buy Goods / Till Number (CustomerBuyGoodsOnline)' and click Save Settings!",
             1 => "Insufficient M-Pesa balance on subscriber phone.",
             1001 => "Subscriber phone has another active M-Pesa session.",
             2001 => "Invalid Passkey or Shortcode combination.",

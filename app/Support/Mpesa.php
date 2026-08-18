@@ -51,7 +51,7 @@ class Mpesa
         $env = Setting::get('mpesa_env', 'sandbox');
         $shortcode = trim((string) Setting::get('mpesa_shortcode', '4346209'));
         $passkey = trim((string) Setting::get('mpesa_passkey', 'cc2b215ee738ab18e254db64058cfa06236f72cce95a8cf5a03f48fb14b2c9fe'));
-        $txType = Setting::get('mpesa_transaction_type', 'CustomerPayBillOnline');
+        $txType = Setting::get('mpesa_transaction_type', 'CustomerBuyGoodsOnline');
 
         // Clean phone number: Safaricom requires format 2547XXXXXXXX
         $phone = preg_replace('/\D/', '', $phone);

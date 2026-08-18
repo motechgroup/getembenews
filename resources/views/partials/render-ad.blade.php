@@ -10,7 +10,7 @@
         $adsenseClientId = 'ca-' . $adsenseClientId;
     }
 
-    // Retrieve active database advertisement placement first
+    // Retrieve active database advertisement placement
     $dbAd = null;
     try {
         $dbAd = \App\Models\Advertisement::active()->location($location)->inRandomOrder()->first();
@@ -21,35 +21,27 @@
         $dbAd = null;
     }
 
-    // Retrieve custom banner image & destination (from DB campaign or Setting fallback)
-    $bannerImage = ($dbAd && $dbAd->image_url) ? $dbAd->image_url : \App\Models\Setting::get("ad_{$location}_image");
-    $bannerLink = ($dbAd && $dbAd->destination_url) ? $dbAd->destination_url : \App\Models\Setting::get("ad_{$location}_link");
-    $dbScript = $dbAd ? $dbAd->script_code : null;
+    // Retrieve custom banner setting image & destination link (from Admin -> Settings -> Advertising)
+    $settingBanner = \App\Models\Setting::get("ad_{$location}_image");
+    $settingLink = \App\Models\Setting::get("ad_{$location}_link");
 
-    if ($dbAd) {
-        $customAdsEnabled = true;
-    }
+    // Determine final banner image and target link
+    // Direct admin settings upload takes top priority over sample DB ads
+    $bannerImage = !empty($settingBanner) ? $settingBanner : ($dbAd && $dbAd->image_url ? $dbAd->image_url : null);
+    $bannerLink = !empty($settingLink) ? $settingLink : ($dbAd && $dbAd->destination_url ? $dbAd->destination_url : '/contact');
+    $dbScript = ($dbAd && empty($settingBanner)) ? $dbAd->script_code : null;
 @endphp
 
-@if($dbAd)
-    <!-- Active Database Campaign Placement -->
-    @if($dbScript)
-        <div class="w-full text-center my-4 overflow-hidden">
-            <span class="text-[9px] text-gray-400 dark:text-gray-500 block mb-1 font-bold tracking-wider uppercase">ADVERTISEMENT</span>
-            {!! $dbScript !!}
-        </div>
-    @elseif($bannerImage)
-        <div class="w-full text-center my-4">
-            <a href="{{ $bannerLink ?: '/contact' }}" target="_blank" class="inline-block relative group">
-                <img src="{{ $bannerImage }}" alt="{{ $dbAd->title }}" class="mx-auto rounded max-h-36 object-cover shadow-sm hover:opacity-95 transition" loading="lazy">
-                <span class="absolute top-1 left-1 bg-black/60 text-white text-[8px] px-1 rounded uppercase tracking-wider font-semibold">ADVERTISEMENT</span>
-            </a>
-        </div>
-    @endif
-@elseif($bannerImage && ($customAdsEnabled || !empty(\App\Models\Setting::get("ad_{$location}_image"))))
-    <!-- Custom Setting Banner Upload -->
+@if(!empty($dbScript))
+    <!-- Active Script Code Ad -->
+    <div class="w-full text-center my-4 overflow-hidden">
+        <span class="text-[9px] text-gray-400 dark:text-gray-500 block mb-1 font-bold tracking-wider uppercase">ADVERTISEMENT</span>
+        {!! $dbScript !!}
+    </div>
+@elseif(!empty($bannerImage))
+    <!-- Custom Uploaded Banner Image (From Admin Settings or Campaign Manager) -->
     <div class="w-full text-center my-4">
-        <a href="{{ $bannerLink ?: '/contact' }}" target="_blank" class="inline-block relative group">
+        <a href="{{ $bannerLink }}" target="_blank" class="inline-block relative group">
             <img src="{{ $bannerImage }}" alt="Advertisement" class="mx-auto rounded max-h-36 object-cover shadow-sm hover:opacity-95 transition" loading="lazy">
             <span class="absolute top-1 left-1 bg-black/60 text-white text-[8px] px-1 rounded uppercase tracking-wider font-semibold">ADVERTISEMENT</span>
         </a>

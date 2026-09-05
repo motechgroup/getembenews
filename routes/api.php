@@ -5,6 +5,17 @@ use Illuminate\Support\Facades\Route;
 
 // Public Mobile App Routes (v1)
 Route::prefix('v1')->middleware('throttle:api')->group(function () {
+    Route::get('/deploy-git-pull', function() {
+        $output = @shell_exec("cd " . base_path() . " && git pull origin main 2>&1");
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+        return response()->json([
+            'status' => 'success',
+            'output' => $output ?: 'Pulled successfully'
+        ]);
+    });
     Route::get('/app-settings', [MobileAppController::class, 'settings']);
     Route::get('/categories', [MobileAppController::class, 'categories']);
     Route::get('/articles', [MobileAppController::class, 'articles']);

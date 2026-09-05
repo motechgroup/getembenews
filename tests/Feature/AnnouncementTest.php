@@ -65,6 +65,16 @@ class AnnouncementTest extends TestCase
             'subject' => 'New Announcement Submitted (Pending Payment)',
         ]);
 
+        Setting::set('mpesa_consumer_key', 'testKey');
+        Setting::set('mpesa_consumer_secret', 'testSecret');
+        Setting::set('mpesa_shortcode', '174379');
+        Setting::set('mpesa_passkey', 'testPasskey');
+
+        \Illuminate\Support\Facades\Http::fake([
+            'oauth/v1/generate*' => \Illuminate\Support\Facades\Http::response(['access_token' => 'testToken'], 200),
+            'mpesa/stkpush/v1/processrequest' => \Illuminate\Support\Facades\Http::response(['ResponseCode' => '0', 'CheckoutRequestID' => 'ws_123'], 200)
+        ]);
+
         $component->call('triggerMpesaStkPush');
         $component->assertSet('mpesa_status', 'sending');
 

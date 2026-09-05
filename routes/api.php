@@ -20,6 +20,7 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/announcements', [MobileAppController::class, 'announcements']);
     Route::post('/announcements', [MobileAppController::class, 'submitAnnouncement'])->middleware('throttle:submissions');
     Route::post('/announcements/{id}/pay', [MobileAppController::class, 'payAnnouncement'])->middleware('throttle:submissions');
+    Route::get('/announcements/{id}/status', [MobileAppController::class, 'checkAnnouncementPaymentStatus']);
     Route::post('/payments/mpesa/callback', [\App\Http\Controllers\Api\MpesaCallbackController::class, 'handleCallback']);
     
     // Auth endpoints

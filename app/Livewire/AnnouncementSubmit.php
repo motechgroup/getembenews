@@ -206,15 +206,6 @@ class AnnouncementSubmit extends Component
         $this->mpesa_status = 'sending';
         $this->mpesa_error_message = '';
 
-        // Fallback to simulation if consumer credentials are not set
-        $key = \App\Models\Setting::get('mpesa_consumer_key', '');
-        $secret = \App\Models\Setting::get('mpesa_consumer_secret', '');
-
-        if (empty($key) || empty($secret)) {
-            $this->dispatch('start-stk-timer');
-            return;
-        }
-
         // 0. Check database first to see if it is already paid
         if ($this->currentAnnouncementId) {
             $ann = Announcement::find($this->currentAnnouncementId);

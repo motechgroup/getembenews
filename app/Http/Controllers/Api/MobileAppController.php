@@ -754,7 +754,7 @@ class MobileAppController extends Controller
     }
 
     /**
-     * Process simulated payment.
+     * Process live M-Pesa STK Push payment.
      */
     public function payAnnouncement(Request $request, $id)
     {
@@ -762,37 +762,95 @@ class MobileAppController extends Controller
 
         $announcement = Announcement::findOrFail($id);
 
-        $ref = 'MPESA-MOB-' . strtoupper(Str::random(10));
+        // Allow overriding phone number for M-Pesa push
+        $phone = $request->input('phone', $announcement->visitor_phone);
+        $amount = $announcement->total_amount;
+        $reference = 'ANN-' . $announcement->id;
 
-        $commissionAmount = 0;
-        if ($announcement->agent_id) {
-            $agent = \App\Models\Agent::find($announcement->agent_id);
-            if ($agent) {
-                $commissionAmount = (int) round(($announcement->total_amount * $agent->commission_percentage) / 100);
+        // Execute live Safaricom M-Pesa STK Push
+        $stkResult = \App\Support\Mpesa::stkPush($phone, $amount, $reference);
+
+        if ($stkResult['success']) {
+            $checkoutRequestId = $stkResult['checkout_request_id'];
+            \Illuminate\Support\Facades\Cache::put('mpesa_ann_' . $checkoutRequestId, $announcement->id, 3600);
+            \Illuminate\Support\Facades\Cache::put('mpesa_last_checkout_' . $announcement->id, $checkoutRequestId, 3600);
+
+            return response()->json([
+                'status' => 'success',
+                'mode' => 'stk_push',
+                'checkout_request_id' => $checkoutRequestId,
+                'message' => "M-Pesa STK Push prompt sent to {$phone}. Please enter your M-Pesa PIN on your phone handset screen.",
+                'data' => $announcement
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $stkResult['message'] ?? 'Failed to trigger live M-Pesa STK Push prompt.'
+        ], 400);
+    }
+
+    /**
+     * Check current status of announcement payment.
+     */
+    public function checkAnnouncementPaymentStatus(Request $request, $id)
+    {
+        $this->checkMaintenance();
+
+        $announcement = Announcement::findOrFail($id);
+
+        if ($announcement->payment_status === 'paid') {
+            return response()->json([
+                'status' => 'success',
+                'payment_status' => 'paid',
+                'message' => 'Payment confirmed successfully.',
+                'data' => $announcement
+            ]);
+        }
+
+        $checkoutRequestId = $request->input('checkout_request_id');
+        if (empty($checkoutRequestId)) {
+            $checkoutRequestId = \Illuminate\Support\Facades\Cache::get('mpesa_last_checkout_' . $announcement->id);
+        }
+
+        if (!empty($checkoutRequestId)) {
+            // Check cache first (webhook update)
+            $cached = \Illuminate\Support\Facades\Cache::get('mpesa_status_' . $checkoutRequestId);
+            if ($cached) {
+                if (((int) ($cached['code'] ?? -1)) === 0) {
+                    return response()->json([
+                        'status' => 'success',
+                        'payment_status' => 'paid',
+                        'message' => 'Payment confirmed via webhook callback.',
+                        'data' => $announcement->fresh()
+                    ]);
+                }
+            }
+
+            // Query Safaricom status
+            $queryResult = \App\Support\Mpesa::queryStatus($checkoutRequestId);
+            if ($queryResult['success'] && $queryResult['status'] === 'success') {
+                $announcement->update([
+                    'payment_status' => 'paid',
+                    'payment_reference' => 'MPESA-STK-' . strtoupper(Str::random(8)),
+                    'is_approved' => true
+                ]);
+
+                return response()->json([
+                    'status' => 'success',
+                    'payment_status' => 'paid',
+                    'message' => 'Payment confirmed.',
+                    'data' => $announcement->fresh()
+                ]);
             }
         }
 
-        $announcement->update([
-            'payment_status' => 'paid',
-            'payment_reference' => $ref,
-            'commission_amount' => $commissionAmount,
-            'is_approved' => true, // Auto approve mobile app submissions for instant feedback testing!
-        ]);
-
-        // Create log notification
-        ContactMessage::create([
-            'name' => 'System Alert',
-            'email' => 'announcements@getembenews.com',
-            'subject' => 'Mobile Announcement Paid (Ref: ' . $ref . ')',
-            'message' => "Mobile Announcement ID: {$announcement->id} has been paid successfully. Visitor: {$announcement->visitor_name} ({$announcement->visitor_phone}). Amount: KSh {$announcement->total_amount}."
-        ]);
-
-        \App\Support\Sms::sendAdminPaymentNotification($announcement, $ref);
-
         return response()->json([
             'status' => 'success',
-            'message' => 'Simulated M-Pesa payment processed successfully.',
+            'payment_status' => $announcement->payment_status,
+            'message' => 'Payment still pending M-Pesa PIN entry.',
             'data' => $announcement
         ]);
     }
 }
+

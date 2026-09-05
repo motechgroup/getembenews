@@ -129,13 +129,13 @@ state([
     // 4. Payment Settings
     'payment_methods' => fn() => Setting::get('payment_methods', 'M-Pesa'),
     'payment_gateways' => fn() => Setting::get('payment_gateways', 'M-Pesa'),
-    'mpesa_env' => fn() => Setting::get('mpesa_env', 'sandbox'),
+    'mpesa_env' => fn() => Setting::get('mpesa_env', 'production'),
     'mpesa_transaction_type' => fn() => Setting::get('mpesa_transaction_type', 'CustomerBuyGoodsOnline'),
     'mpesa_consumer_key' => fn() => Setting::get('mpesa_consumer_key', ''),
     'mpesa_consumer_secret' => fn() => Setting::get('mpesa_consumer_secret', ''),
-    'mpesa_shortcode' => fn() => Setting::get('mpesa_shortcode', '4346209'),
-    'mpesa_till_number' => fn() => Setting::get('mpesa_till_number', '4368451'),
-    'mpesa_passkey' => fn() => Setting::get('mpesa_passkey', 'cc2b215ee738ab18e254db64058cfa06236f72cce95a8cf5a03f48fb14b2c9fe'),
+    'mpesa_shortcode' => fn() => Setting::get('mpesa_shortcode', ''),
+    'mpesa_till_number' => fn() => Setting::get('mpesa_till_number', ''),
+    'mpesa_passkey' => fn() => Setting::get('mpesa_passkey', ''),
     'mpesa_initiator_name' => fn() => Setting::get('mpesa_initiator_name', ''),
     'mpesa_initiator_password' => fn() => Setting::get('mpesa_initiator_password', ''),
     'mpesa_callback_url' => fn() => Setting::get('mpesa_callback_url', ''),
@@ -1306,7 +1306,7 @@ $save = function () use ($logAction) {
 };
 
 $testMpesaConnection = function () {
-    $env = Setting::get('mpesa_env', 'sandbox');
+    $env = Setting::get('mpesa_env', 'production');
     $token = \App\Support\Mpesa::getAccessToken();
 
     if ($token) {

@@ -597,6 +597,7 @@ class DatabaseSeeder extends Seeder
         Setting::set('app_app_store_url', 'https://www.apple.com/app-store');
         Setting::set('app_banner_title', 'Download Getembe Digital App Today');
         Setting::set('app_banner_desc', 'Download Getembe Digital App today for live news updates, breaking notifications, and seamless live streaming.');
+        Setting::set('mpesa_env', 'production');
 
         // 9. Seed Stream Schedules
         $defaultTvSchedule = [

@@ -13,7 +13,7 @@ class Mpesa
      */
     public static function getAccessToken(): ?string
     {
-        $env = Setting::get('mpesa_env', 'sandbox');
+        $env = Setting::get('mpesa_env', 'production');
         $consumerKey = trim((string) Setting::get('mpesa_consumer_key', ''));
         $consumerSecret = trim((string) Setting::get('mpesa_consumer_secret', ''));
 
@@ -48,12 +48,19 @@ class Mpesa
      */
     public static function stkPush(string $phone, float $amount, string $reference = 'GetembeNews'): array
     {
-        $env = Setting::get('mpesa_env', 'sandbox');
-        $shortcode = trim((string) Setting::get('mpesa_shortcode', '4346209'));
-        $tillNumber = trim((string) Setting::get('mpesa_till_number', '4368451'));
-        $passkey = trim((string) Setting::get('mpesa_passkey', 'cc2b215ee738ab18e254db64058cfa06236f72cce95a8cf5a03f48fb14b2c9fe'));
+        $env = Setting::get('mpesa_env', 'production');
+        $shortcode = trim((string) Setting::get('mpesa_shortcode', ''));
+        $tillNumber = trim((string) Setting::get('mpesa_till_number', ''));
+        $passkey = trim((string) Setting::get('mpesa_passkey', ''));
         $partyB = !empty($tillNumber) ? $tillNumber : $shortcode;
         $txType = Setting::get('mpesa_transaction_type', (strlen($partyB) === 7 ? 'CustomerBuyGoodsOnline' : 'CustomerPayBillOnline'));
+
+        if (empty($shortcode) || empty($passkey)) {
+            return [
+                'success' => false,
+                'message' => "STK Push Configuration Error: Shortcode or Lipa Na M-Pesa Passkey is missing. Please enter your live Safaricom M-Pesa credentials in Admin Settings."
+            ];
+        }
 
         // Clean phone number: Safaricom requires format 2547XXXXXXXX
         $phone = preg_replace('/\D/', '', $phone);
@@ -139,9 +146,9 @@ class Mpesa
      */
     public static function queryStatus(string $checkoutRequestId): array
     {
-        $env = Setting::get('mpesa_env', 'sandbox');
-        $shortcode = trim((string) Setting::get('mpesa_shortcode', '4346209'));
-        $passkey = trim((string) Setting::get('mpesa_passkey', 'cc2b215ee738ab18e254db64058cfa06236f72cce95a8cf5a03f48fb14b2c9fe'));
+        $env = Setting::get('mpesa_env', 'production');
+        $shortcode = trim((string) Setting::get('mpesa_shortcode', ''));
+        $passkey = trim((string) Setting::get('mpesa_passkey', ''));
 
         $token = self::getAccessToken();
         if (!$token) {

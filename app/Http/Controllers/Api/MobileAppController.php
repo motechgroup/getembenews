@@ -48,7 +48,7 @@ class MobileAppController extends Controller
             'data' => [
                 'site_name' => Setting::get('site_name', 'Getembe News'),
                 'site_logo' => Setting::get('site_logo', ''),
-                'brand_color' => Setting::get('brand_color', '#C8102E'),
+                'brand_color' => Setting::get('brand_color', '#FF7900'),
                 'theme_color_secondary' => Setting::get('theme_color_secondary', '#222222'),
                 'theme_color_success' => Setting::get('theme_color_success', '#10B981'),
                 'theme_color_warning' => Setting::get('theme_color_warning', '#F59E0B'),

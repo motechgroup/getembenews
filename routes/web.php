@@ -352,6 +352,20 @@ Route::get('/run-storage-link', function () {
     }
 });
 
+Route::get('/run-git-pull', function () {
+    try {
+        $cwd = base_path();
+        $output = @shell_exec("cd {$cwd} && git pull origin main 2>&1");
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+        return '<h3>Git Pull Executed Successfully:</h3><pre>' . e($output ?: 'Done') . '</pre>';
+    } catch (\Exception $e) {
+        return '<h3>Error running git pull:</h3><pre>' . e($e->getMessage()) . '</pre>';
+    }
+});
+
 Route::get('/run-migrations', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);

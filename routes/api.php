@@ -36,6 +36,8 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::post('/payments/mpesa/callback', [\App\Http\Controllers\Api\MpesaCallbackController::class, 'handleCallback']);
     
     // Auth endpoints
+    Route::get('/auth/google', [MobileAppController::class, 'googleRedirect']);
+    Route::post('/auth/google', [MobileAppController::class, 'googleTokenLogin']);
     Route::post('/auth/register', [MobileAppController::class, 'register'])->middleware('throttle:auth');
     Route::post('/auth/login', [MobileAppController::class, 'login'])->middleware('throttle:auth');
 

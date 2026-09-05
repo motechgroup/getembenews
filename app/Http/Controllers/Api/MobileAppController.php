@@ -317,6 +317,85 @@ class MobileAppController extends Controller
     }
 
     /**
+     * Redirect mobile app user to Google OAuth.
+     */
+    public function googleRedirect(Request $request)
+    {
+        return app(\App\Http\Controllers\Auth\SocialAuthController::class)->redirectToProvider('google');
+    }
+
+    /**
+     * Authenticate mobile user via Google Token / OAuth payload.
+     */
+    public function googleTokenLogin(Request $request)
+    {
+        $this->checkMaintenance();
+
+        // 1. If Sanctum token is provided from WebBrowser OAuth flow:
+        if ($request->filled('token')) {
+            $tokenString = $request->token;
+            $tokenModel = \Laravel\Sanctum\PersonalAccessToken::findToken($tokenString);
+            if ($tokenModel && $tokenModel->tokenable) {
+                $user = $tokenModel->tokenable;
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Google login verified.',
+                    'data' => [
+                        'user' => $user,
+                        'token' => $tokenString
+                    ]
+                ]);
+            }
+        }
+
+        // 2. If Google User Profile or ID token is provided:
+        if ($request->filled('email')) {
+            $request->validate([
+                'email' => 'required|email',
+                'name' => 'nullable|string',
+                'photo_url' => 'nullable|string',
+            ]);
+
+            $email = strtolower(trim($request->email));
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                $user = User::create([
+                    'name' => $request->filled('name') ? trim($request->name) : explode('@', $email)[0],
+                    'email' => $email,
+                    'password' => Hash::make(\Illuminate\Support\Str::random(32)),
+                    'role' => 'subscriber',
+                    'photo_url' => $request->photo_url ?? null,
+                    'email_verified_at' => now(),
+                ]);
+            } else {
+                if (!$user->email_verified_at) {
+                    $user->update(['email_verified_at' => now()]);
+                }
+                if ($request->filled('photo_url') && empty($user->photo_url)) {
+                    $user->update(['photo_url' => $request->photo_url]);
+                }
+            }
+
+            $token = $user->createToken('mobile-app-google')->plainTextToken;
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Google authentication successful.',
+                'data' => [
+                    'user' => $user,
+                    'token' => $token
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Invalid or missing Google authentication payload.'
+        ], 422);
+    }
+
+    /**
      * Authenticate mobile user.
      */
     public function login(Request $request)

@@ -62,4 +62,33 @@ class GoogleSocialAuthTest extends TestCase
             'role' => 'subscriber',
         ]);
     }
+
+    public function test_mobile_api_google_redirect()
+    {
+        Setting::set('google_login', '1');
+        Setting::set('google_client_id', 'fake-client-id');
+
+        $response = $this->get('/api/v1/auth/google?redirect_uri=gtnapp://profile');
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('accounts.google.com', $response->headers->get('Location'));
+    }
+
+    public function test_mobile_api_google_token_login()
+    {
+        $response = $this->postJson('/api/v1/auth/google', [
+            'email' => 'mobilegoogle@example.com',
+            'name' => 'Mobile Google User',
+            'photo_url' => 'https://example.com/avatar.jpg'
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('status', 'success')
+            ->assertJsonStructure(['data' => ['user', 'token']]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'mobilegoogle@example.com',
+            'name' => 'Mobile Google User',
+        ]);
+    }
 }

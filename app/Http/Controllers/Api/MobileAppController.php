@@ -852,5 +852,71 @@ class MobileAppController extends Controller
             'data' => $announcement
         ]);
     }
+
+    /**
+     * OCR Scanner Endpoint for Announcement Document Images.
+     * Accepts image uploads or base64 data and returns extracted text & word count.
+     */
+    public function ocrAnnouncement(Request $request)
+    {
+        $this->checkMaintenance();
+
+        $extractedTexts = [];
+        
+        // Handle direct text payload or fallback
+        if ($request->filled('text')) {
+            $extractedTexts[] = $request->input('text');
+        }
+
+        // Handle uploaded images array or single file
+        $files = [];
+        if ($request->hasFile('images')) {
+            $files = $request->file('images');
+        } elseif ($request->hasFile('image')) {
+            $files = [$request->file('image')];
+        }
+
+        foreach ($files as $file) {
+            if (!$file || !$file->isValid()) continue;
+            
+            $text = $this->performOcrExtraction($file->getPathname());
+            if ($text) {
+                $extractedTexts[] = $text;
+            }
+        }
+
+        // Combine text across pages
+        $combinedText = trim(implode("\n\n", array_filter($extractedTexts)));
+        $wordCount = count(array_filter(explode(' ', preg_replace('/\s+/', ' ', trim(strip_tags($combinedText))))));
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'text' => $combinedText,
+                'word_count' => $wordCount,
+                'pages_count' => count($extractedTexts) > 0 ? count($extractedTexts) : 1,
+            ]
+        ]);
+    }
+
+    /**
+     * Internal helper to extract text from an image file.
+     */
+    protected function performOcrExtraction(string $filePath): string
+    {
+        if (function_exists('exec')) {
+            $tesseract = trim((string) shell_exec('which tesseract 2>/dev/null'));
+            if ($tesseract && file_exists($tesseract)) {
+                $outputFile = sys_get_temp_dir() . '/ocr_' . uniqid();
+                exec(escapeshellcmd("{$tesseract} " . escapeshellarg($filePath) . " {$outputFile} --oem 1 -l eng 2>/dev/null"));
+                if (file_exists($outputFile . '.txt')) {
+                    $text = file_get_contents($outputFile . '.txt');
+                    @unlink($outputFile . '.txt');
+                    return trim((string) $text);
+                }
+            }
+        }
+        return '';
+    }
 }
 

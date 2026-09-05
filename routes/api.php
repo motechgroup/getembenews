@@ -29,6 +29,7 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/native-ads', [MobileAppController::class, 'nativeAds']);
     Route::get('/breaking-news', [MobileAppController::class, 'breakingNews']);
     Route::get('/announcements', [MobileAppController::class, 'announcements']);
+    Route::post('/announcements/ocr', [MobileAppController::class, 'ocrAnnouncement']);
     Route::post('/announcements', [MobileAppController::class, 'submitAnnouncement'])->middleware('throttle:submissions');
     Route::post('/announcements/{id}/pay', [MobileAppController::class, 'payAnnouncement'])->middleware('throttle:submissions');
     Route::get('/announcements/{id}/status', [MobileAppController::class, 'checkAnnouncementPaymentStatus']);

@@ -9,10 +9,22 @@ use Illuminate\Support\Str;
 class AnnouncementController extends Controller
 {
     /**
+     * Authorize access to announcement document actions.
+     */
+    protected function authorizeAccess()
+    {
+        if (!auth()->check() && !session()->has('agent_logged_in')) {
+            abort(403, 'Unauthorized access to announcement records.');
+        }
+    }
+
+    /**
      * Download announcement as plain text (.txt) document.
      */
     public function downloadTxt($id)
     {
+        $this->authorizeAccess();
+
         $announcement = Announcement::findOrFail($id);
 
         $airingDate = $announcement->airing_date ? $announcement->airing_date->format('F d, Y') : 'N/A';
@@ -52,6 +64,8 @@ class AnnouncementController extends Controller
      */
     public function downloadDoc($id)
     {
+        $this->authorizeAccess();
+
         $announcement = Announcement::findOrFail($id);
 
         $airingDate = $announcement->airing_date ? $announcement->airing_date->format('F d, Y') : 'N/A';
@@ -123,8 +137,10 @@ class AnnouncementController extends Controller
      */
     public function downloadPdf($id)
     {
-        $announcement = Announcement::findOrFail($id);
+        $this->authorizeAccess();
 
+        $announcement = Announcement::findOrFail($id);
+        
         $processedImages = [];
         if (!empty($announcement->images) && is_array($announcement->images)) {
             foreach ($announcement->images as $imgUrl) {
@@ -165,6 +181,8 @@ class AnnouncementController extends Controller
      */
     public function print($id)
     {
+        $this->authorizeAccess();
+
         $announcement = Announcement::findOrFail($id);
 
         return view('announcements.print', compact('announcement'));

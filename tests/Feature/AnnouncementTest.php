@@ -845,12 +845,18 @@ class AnnouncementTest extends TestCase
             'is_approved' => true,
         ]);
 
-        $response = $this->get(route('announcements.download.txt', $announcement->id));
+        $admin = User::factory()->create(['role' => 'admin']);
+        $response = $this->actingAs($admin)->get(route('announcements.download.txt', $announcement->id));
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
         $response->assertSee('GETEMBE DIGITAL - ANNOUNCEMENT DESK');
         $response->assertSee('Paul Nyanchoka');
         $response->assertSee('Text content for plain file test.');
+
+        // Unauthenticated access should be forbidden
+        $this->post('/logout');
+        $unauthRes = $this->get(route('announcements.download.txt', $announcement->id));
+        $unauthRes->assertStatus(403);
     }
 
     public function test_announcement_word_doc_download(): void
@@ -869,7 +875,8 @@ class AnnouncementTest extends TestCase
             'is_approved' => true,
         ]);
 
-        $response = $this->get(route('announcements.download.doc', $announcement->id));
+        $admin = User::factory()->create(['role' => 'admin']);
+        $response = $this->actingAs($admin)->get(route('announcements.download.doc', $announcement->id));
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/msword; charset=UTF-8');
         $response->assertSee('Getembe Digital News');
@@ -892,7 +899,8 @@ class AnnouncementTest extends TestCase
             'is_approved' => true,
         ]);
 
-        $response = $this->get(route('announcements.print', $announcement->id));
+        $admin = User::factory()->create(['role' => 'admin']);
+        $response = $this->actingAs($admin)->get(route('announcements.print', $announcement->id));
         $response->assertOk();
         $response->assertSee('Print Sheet');
         $response->assertSee('Print sheet text body test.');
@@ -914,7 +922,8 @@ class AnnouncementTest extends TestCase
             'is_approved' => true,
         ]);
 
-        $response = $this->get(route('announcements.download.pdf', $announcement->id));
+        $admin = User::factory()->create(['role' => 'admin']);
+        $response = $this->actingAs($admin)->get(route('announcements.download.pdf', $announcement->id));
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/pdf');
     }

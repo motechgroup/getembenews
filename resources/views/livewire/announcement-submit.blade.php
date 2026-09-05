@@ -261,82 +261,53 @@
             </div>
         </div>
 
-        <!-- Right Column: Announcements board -->
+        <!-- Right Column: Submission Information & Broadcasting Guidelines -->
         <div class="space-y-6">
-            <div class="bg-gray-50 dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-xl p-5 space-y-4">
-                <h3 class="text-xs font-black uppercase text-[#cc6c3b] tracking-wider flex items-center border-b border-gray-100 dark:border-gray-800 pb-2">
-                    <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    <span>Active Announcements Board</span>
-                </h3>
-
-                <div class="space-y-4 max-h-[600px] overflow-y-auto pr-1">
-                    @forelse($announcements as $ann)
-                        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-850 rounded-lg p-4 space-y-2 shadow-sm text-xs">
-                            <div class="flex justify-between items-center">
-                                <span class="bg-orange-50 dark:bg-orange-950/20 text-[#cc6c3b] text-[9px] font-black uppercase px-2 py-0.5 rounded tracking-wide">
-                                    {{ $ann->type }} announcement
-                                </span>
-                                <span class="text-[9px] text-gray-400 font-medium">
-                                    Airing on: <span class="font-bold text-gray-700 dark:text-gray-300 uppercase">{{ $ann->media }}</span>
-                                </span>
-                            </div>
-                            <p class="text-gray-800 dark:text-gray-250 leading-relaxed italic">
-                                "{{ $ann->content }}"
-                            </p>
-                            @if(!empty($ann->images) && is_array($ann->images))
-                                <div class="grid grid-cols-3 gap-1.5 pt-1">
-                                    @foreach($ann->images as $imgUrl)
-                                        <a href="{{ asset($imgUrl) }}" target="_blank" class="block aspect-square overflow-hidden rounded border border-gray-100 dark:border-gray-800">
-                                            <img src="{{ asset($imgUrl) }}" alt="Announcement image" class="w-full h-full object-cover hover:scale-105 transition">
-                                        </a>
-                                    @endforeach
-                                </div>
-                            @endif
-                            <div class="flex justify-between items-center text-[9px] text-gray-400 font-semibold pt-1.5 border-t border-gray-50 dark:border-gray-850">
-                                <span>By: {{ $ann->visitor_name }}</span>
-                                <span>
-                                    @if($ann->airing_date)
-                                        Airing: {{ $ann->airing_date->format('M d, Y') }} ({{ $ann->days_count }} {{ Str::plural('day', $ann->days_count) }})
-                                    @else
-                                        Runs: {{ $ann->days_count }} {{ Str::plural('day', $ann->days_count) }}
-                                    @endif
-                                </span>
-                            </div>
-                            <div class="flex items-center justify-between pt-1.5 border-t border-gray-100 dark:border-gray-800/60 text-[9px] font-bold">
-                                <div class="flex items-center space-x-1.5 text-gray-500 dark:text-gray-400">
-                                    <span>Download:</span>
-                                    <a href="{{ route('announcements.download.txt', $ann->id) }}" target="_blank" wire:navigate.skip class="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded font-mono transition" title="Download Text File">
-                                        .TXT
-                                    </a>
-                                    <a href="{{ route('announcements.download.doc', $ann->id) }}" target="_blank" wire:navigate.skip class="px-1.5 py-0.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 rounded font-mono transition" title="Download Word Document">
-                                        .DOC
-                                    </a>
-                                    <a href="{{ route('announcements.download.pdf', $ann->id) }}" target="_blank" wire:navigate.skip class="px-1.5 py-0.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 rounded font-mono transition" title="Download PDF Document">
-                                        .PDF
-                                    </a>
-                                </div>
-                                <a href="{{ route('announcements.print', $ann->id) }}" target="_blank" class="inline-flex items-center space-x-1 text-[#cc6c3b] hover:text-orange-700 font-black hover:underline" title="Print Announcement Sheet">
-                                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                    </svg>
-                                    <span>Print</span>
-                                </a>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center py-12 text-gray-400 text-xs font-semibold">
-                            No announcements active on board today.
-                        </div>
-                    @endforelse
+            <div class="bg-[#cc6c3b]/5 dark:bg-gray-900 border border-[#cc6c3b]/20 dark:border-gray-800 rounded-xl p-6 space-y-5">
+                <div class="flex items-center space-x-3 text-[#cc6c3b]">
+                    <div class="p-2.5 bg-[#cc6c3b]/10 rounded-lg">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">Confidential & Secure</h3>
+                        <p class="text-[10px] text-gray-500 font-semibold">Broadcast-Only Announcement Desk</p>
+                    </div>
                 </div>
 
-                @if($announcements->hasPages())
-                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
-                        {{ $announcements->links() }}
+                <div class="space-y-4 text-xs leading-relaxed text-gray-600 dark:text-gray-300">
+                    <p class="bg-white dark:bg-gray-950 p-3.5 rounded-lg border border-gray-200 dark:border-gray-800 text-[11px] font-medium text-gray-700 dark:text-gray-300">
+                        <span class="font-bold text-[#cc6c3b]">Privacy Protection:</span> All submitted announcements and client contact details are kept strictly confidential for official Getembe TV & Radio producers' moderation. Announcements are not displayed on the public website.
+                    </p>
+
+                    <div class="border-t border-b border-[#cc6c3b]/15 dark:border-gray-800 py-3.5 space-y-2.5">
+                        <h4 class="font-bold uppercase text-[10px] text-gray-500 tracking-wider">Airing Rates Schedule</h4>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-bold text-gray-800 dark:text-gray-200">TV Announcement:</span>
+                            <span class="font-black text-[#cc6c3b]">KSh {{ \App\Models\Setting::get('announcement_rate_tv', 5) }} / word</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-bold text-gray-800 dark:text-gray-200">Radio Announcement:</span>
+                            <span class="font-black text-[#cc6c3b]">KSh {{ \App\Models\Setting::get('announcement_rate_radio', 3) }} / word</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-bold text-gray-800 dark:text-gray-200">Both TV & Radio:</span>
+                            <span class="font-black text-[#cc6c3b]">KSh {{ \App\Models\Setting::get('announcement_rate_both', 7) }} / word</span>
+                        </div>
                     </div>
-                @endif
+
+                    <div class="space-y-2 text-xs">
+                        <h4 class="font-bold uppercase text-[10px] text-gray-500 tracking-wider">Need Immediate Help?</h4>
+                        <p class="text-[11px]">For custom broadcast arrangements, contact Getembe Desk:</p>
+                        <a href="tel:+25443567165" class="inline-flex items-center space-x-2 text-[#cc6c3b] font-black text-sm hover:underline">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <span>+254 435 671 65</span>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

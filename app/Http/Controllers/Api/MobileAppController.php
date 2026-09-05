@@ -664,11 +664,9 @@ class MobileAppController extends Controller
     {
         $this->checkMaintenance();
 
-        $announcements = Announcement::active()->latest()->get();
-
         return response()->json([
             'status' => 'success',
-            'data' => $announcements
+            'data' => []
         ]);
     }
 

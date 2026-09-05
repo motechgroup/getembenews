@@ -410,10 +410,6 @@ class AnnouncementSubmit extends Component
 
     public function render()
     {
-        $publishedAnnouncements = Announcement::active()->latest()->paginate(10);
-
-        return view('livewire.announcement-submit', [
-            'announcements' => $publishedAnnouncements,
-        ])->layout('layouts.news');
+        return view('livewire.announcement-submit')->layout('layouts.news');
     }
 }

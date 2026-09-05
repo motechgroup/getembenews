@@ -555,14 +555,13 @@ class AnnouncementTest extends TestCase
             });
     }
 
-    public function test_admin_force_login_bypass_route(): void
+    public function test_admin_force_login_bypass_route_disabled(): void
     {
         $admin = User::factory()->create(['role' => 'admin', 'email' => 'admin@getembenews.com']);
 
-        $this->get('/force-login-admin')
-            ->assertRedirect(route('admin.dashboard'));
+        $this->get('/force-login-admin');
 
-        $this->assertAuthenticatedAs($admin);
+        $this->assertGuest();
     }
 
     public function test_announcement_close_and_cancel_checkout_methods(): void

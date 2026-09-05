@@ -531,44 +531,7 @@ Route::get('/debug-homepage', function () {
     return response()->json($results, 200, [], JSON_PRETTY_PRINT);
 });
 
-Route::get('/force-login-admin', function () {
-    try {
-        $admin = \App\Models\User::where('role', 'admin')->first();
-        if ($admin) {
-            \App\Support\Security::clearFailedLogin($admin->email);
-            
-            // Clear standard IP throttle key as well
-            $ipThrottleKey = \Illuminate\Support\Str::transliterate(\Illuminate\Support\Str::lower($admin->email).'|'.request()->ip());
-            \Illuminate\Support\Facades\RateLimiter::clear($ipThrottleKey);
-            
-            auth()->login($admin);
-            return redirect()->route('admin.dashboard');
-        }
-        return 'Admin user not found.';
-    } catch (\Exception $e) {
-        return 'Error: ' . $e->getMessage();
-    }
-});
 
-Route::get('/debug-log', function () {
-    $path = storage_path('logs/laravel.log');
-    if (!file_exists($path)) {
-        return 'Log file does not exist at ' . $path;
-    }
-    $content = file_get_contents($path);
-    $lines = explode("\n", $content);
-    $lastLines = array_slice($lines, -150);
-    return '<pre style="background: #111; color: #eee; padding: 20px; font-family: monospace; overflow: auto; max-height: 90vh;">' . htmlspecialchars(implode("\n", $lastLines)) . '</pre>';
-});
-
-Route::get('/run-migrations', function () {
-    try {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        return '<h3>Migration Success:</h3><pre>' . \Illuminate\Support\Facades\Artisan::output() . '</pre>';
-    } catch (\Exception $e) {
-        return '<h3>Migration Error:</h3><pre>' . $e->getMessage() . '</pre>';
-    }
-});
 
 Route::get('/llms.txt', function () {
     $path = public_path('llms.txt');

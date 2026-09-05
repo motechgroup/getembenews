@@ -56,11 +56,5 @@ new #[Layout('layouts.guest')] class extends Component
         @endif
     </div>
 
-    <!-- Staff Access Link -->
-    <div class="mt-8 text-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-150 dark:border-gray-800/80 pt-4">
-        {{ __('Staff, Author, Manager or Admin?') }}
-        <a href="{{ route('access') }}" class="font-bold text-[#cc6c3b] hover:underline ml-1" wire:navigate>
-            {{ __('Sign in via /access') }}
-        </a>
-    </div>
+
 </div>

@@ -687,10 +687,22 @@ class MobileAppController extends Controller
             'media' => 'required|in:tv,radio,both',
             'content' => 'required|string|min:5',
             'days_count' => 'required|integer|min:1|max:30',
-            'airing_date' => 'nullable|date|after_or_equal:today',
+            'airing_date' => 'required|date',
             'submitter_type' => 'nullable|in:self,agent',
             'agent_pin' => 'required_if:submitter_type,agent|nullable|string|size:4',
         ]);
+
+        // Require On-Air Visual image if broadcasting on TV or Both
+        if (($request->media === 'tv' || $request->media === 'both') &&
+            !$request->hasFile('visual_image') &&
+            !$request->hasFile('image') &&
+            !$request->filled('image_url') &&
+            !$request->filled('visual_image')) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'On-Air Visual Image Required: Announcements broadcasting on TV or Both TV & Radio require an image/photo to be displayed on screen during broadcast.'
+            ], 422);
+        }
 
         $selectedAgentId = null;
         if ($request->submitter_type === 'agent') {
@@ -702,6 +714,20 @@ class MobileAppController extends Controller
                 ], 422);
             }
             $selectedAgentId = $agent->id;
+        }
+
+        // Process visual image upload if provided
+        $imagesList = [];
+        if ($request->hasFile('visual_image')) {
+            $path = $request->file('visual_image')->store('announcements', 'public');
+            $imagesList[] = asset('storage/' . $path);
+        } elseif ($request->hasFile('image')) {
+            $path = $request->file('image')->store('announcements', 'public');
+            $imagesList[] = asset('storage/' . $path);
+        } elseif ($request->filled('image_url')) {
+            $imagesList[] = $request->input('image_url');
+        } elseif ($request->filled('visual_image')) {
+            $imagesList[] = $request->input('visual_image');
         }
 
         // Calculate rate based on media channel settings
@@ -727,7 +753,8 @@ class MobileAppController extends Controller
             'type' => $request->type,
             'media' => $request->media,
             'content' => $content,
-            'airing_date' => $request->input('airing_date', now()->toDateString()),
+            'airing_date' => $request->airing_date,
+            'images' => !empty($imagesList) ? $imagesList : null,
             'word_count' => $wordCount,
             'days_count' => (int) $request->days_count,
             'rate_per_word' => $rate,

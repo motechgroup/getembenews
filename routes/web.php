@@ -6,6 +6,20 @@ use App\Models\Advertisement;
 use App\Models\Category;
 use Illuminate\Support\Facades\Cache;
 
+Route::get('/run-git-pull', function () {
+    try {
+        $cwd = base_path();
+        $output = @shell_exec("cd {$cwd} && git pull origin main 2>&1");
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+        return '<h3>Git Pull Executed Successfully:</h3><pre>' . e($output ?: 'Done') . '</pre>';
+    } catch (\Exception $e) {
+        return '<h3>Error running git pull:</h3><pre>' . e($e->getMessage()) . '</pre>';
+    }
+});
+
 Route::get('/', function () {
     $fallbackData = [
         'featuredArticle' => null,
@@ -349,20 +363,6 @@ Route::get('/run-storage-link', function () {
         return 'Storage symlink created successfully! Deployed uploaded images will now load correctly.';
     } catch (\Exception $e) {
         return 'Error creating storage link fallback: ' . $e->getMessage();
-    }
-});
-
-Route::get('/run-git-pull', function () {
-    try {
-        $cwd = base_path();
-        $output = @shell_exec("cd {$cwd} && git pull origin main 2>&1");
-        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-        if (function_exists('opcache_reset')) {
-            @opcache_reset();
-        }
-        return '<h3>Git Pull Executed Successfully:</h3><pre>' . e($output ?: 'Done') . '</pre>';
-    } catch (\Exception $e) {
-        return '<h3>Error running git pull:</h3><pre>' . e($e->getMessage()) . '</pre>';
     }
 });
 

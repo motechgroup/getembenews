@@ -863,7 +863,7 @@ class MobileAppController extends Controller
 
         $extractedTexts = [];
         
-        // Handle direct text payload or fallback
+        // Handle direct text payload if provided
         if ($request->filled('text')) {
             $extractedTexts[] = $request->input('text');
         }
@@ -880,13 +880,21 @@ class MobileAppController extends Controller
             if (!$file || !$file->isValid()) continue;
             
             $text = $this->performOcrExtraction($file->getPathname());
-            if ($text) {
+            if (!empty($text)) {
                 $extractedTexts[] = $text;
             }
         }
 
         // Combine text across pages
         $combinedText = trim(implode("\n\n", array_filter($extractedTexts)));
+
+        if (empty($combinedText)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No readable text could be extracted from the selected image(s). Please try taking a clearer, well-lit photo of the document.',
+            ], 422);
+        }
+
         $wordCount = count(array_filter(explode(' ', preg_replace('/\s+/', ' ', trim(strip_tags($combinedText))))));
 
         return response()->json([
@@ -900,10 +908,11 @@ class MobileAppController extends Controller
     }
 
     /**
-     * Internal helper to extract text from an image file.
+     * Internal helper to extract exact text from an image file using Tesseract or Cloud OCR.
      */
     protected function performOcrExtraction(string $filePath): string
     {
+        // 1. Try native Tesseract CLI if available
         if (function_exists('exec')) {
             $tesseract = trim((string) shell_exec('which tesseract 2>/dev/null'));
             if ($tesseract && file_exists($tesseract)) {
@@ -920,11 +929,42 @@ class MobileAppController extends Controller
             }
         }
 
-        // Contextual fallback text for scanned announcement documents
-        return "PUBLIC ANNOUNCEMENT NOTICE\n"
-             . "Notice is hereby given to all family members, relatives, friends, and the general public.\n"
-             . "The announcement reading and digital broadcast schedule for Getembe Digital is set for upcoming broadcasts.\n"
-             . "For more details and inquiries, please contact the undersigned event organizing committee.";
+        // 2. Fallback to Cloud OCR API (ocr.space) for real image text extraction
+        try {
+            if (file_exists($filePath) && filesize($filePath) > 0) {
+                $imageData = file_get_contents($filePath);
+                $mimeType = mime_content_type($filePath) ?: 'image/jpeg';
+                $base64 = 'data:' . $mimeType . ';base64,' . base64_encode($imageData);
+
+                $ch = curl_init('https://api.ocr.space/parse/image');
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_POST => true,
+                    CURLOPT_POSTFIELDS => http_build_query([
+                        'apikey' => 'helloworld',
+                        'base64Image' => $base64,
+                        'language' => 'eng',
+                        'isOverlayRequired' => 'false',
+                    ]),
+                    CURLOPT_TIMEOUT => 25,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                ]);
+
+                $response = curl_exec($ch);
+                curl_close($ch);
+
+                if ($response) {
+                    $json = json_decode($response, true);
+                    if (!empty($json['ParsedResults'][0]['ParsedText'])) {
+                        return trim($json['ParsedResults'][0]['ParsedText']);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Ignore API exceptions
+        }
+
+        return "";
     }
 }
 

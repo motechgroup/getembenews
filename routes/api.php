@@ -35,6 +35,19 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/announcements/{id}/status', [MobileAppController::class, 'checkAnnouncementPaymentStatus']);
     Route::post('/payments/mpesa/callback', [\App\Http\Controllers\Api\MpesaCallbackController::class, 'handleCallback']);
     
+    // Agent Portal API endpoints (v1)
+    Route::prefix('agent')->group(function () {
+        Route::post('/login', [\App\Http\Controllers\Api\AgentApiController::class, 'login'])->middleware('throttle:auth');
+        Route::get('/profile', [\App\Http\Controllers\Api\AgentApiController::class, 'profile']);
+        Route::post('/pin/regenerate', [\App\Http\Controllers\Api\AgentApiController::class, 'regeneratePin']);
+        Route::get('/announcements', [\App\Http\Controllers\Api\AgentApiController::class, 'announcements']);
+        Route::post('/announcements', [\App\Http\Controllers\Api\AgentApiController::class, 'submitAnnouncement'])->middleware('throttle:submissions');
+        Route::post('/announcements/{id}/pay', [\App\Http\Controllers\Api\AgentApiController::class, 'payAnnouncement'])->middleware('throttle:submissions');
+        Route::get('/earnings', [\App\Http\Controllers\Api\AgentApiController::class, 'earnings']);
+        Route::get('/disputes', [\App\Http\Controllers\Api\AgentApiController::class, 'disputes']);
+        Route::post('/disputes', [\App\Http\Controllers\Api\AgentApiController::class, 'disputes']);
+    });
+
     // Auth endpoints
     Route::get('/auth/google', [MobileAppController::class, 'googleRedirect']);
     Route::post('/auth/google', [MobileAppController::class, 'googleTokenLogin']);

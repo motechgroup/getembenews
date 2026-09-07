@@ -972,6 +972,22 @@ class MobileAppController extends Controller
             $extractedTexts[] = $request->input('text');
         }
 
+        // Handle base64 encoded image string if provided
+        if ($request->filled('base64') || $request->filled('image_base64')) {
+            $rawBase64 = $request->input('base64', $request->input('image_base64'));
+            $cleanBase64 = preg_replace('/^data:image\/\w+;base64,/', '', $rawBase64);
+            $imageData = base64_decode($cleanBase64);
+            if ($imageData) {
+                $tempPath = sys_get_temp_dir() . '/ocr_input_' . uniqid() . '.jpg';
+                file_put_contents($tempPath, $imageData);
+                $text = $this->performOcrExtraction($tempPath);
+                @unlink($tempPath);
+                if (!empty($text)) {
+                    $extractedTexts[] = $text;
+                }
+            }
+        }
+
         // Handle uploaded images array or single file
         $files = [];
         if ($request->hasFile('images')) {

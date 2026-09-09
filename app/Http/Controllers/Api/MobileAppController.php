@@ -85,6 +85,12 @@ class MobileAppController extends Controller
                 'mobile_app_native_ad_frequency' => (int) Setting::get('mobile_app_native_ad_frequency', 5),
                 'mobile_app_maintenance_mode' => (bool) Setting::get('mobile_app_maintenance_mode', false),
                 'show_views_count' => (bool) Setting::get('show_views_count', true),
+                'live_tv_url' => trim(Setting::get('live_tv_url', '')),
+                'live_tv_embed_code' => trim(Setting::get('live_tv_embed_code', '')),
+                'live_tv_type' => trim(Setting::get('live_tv_type', 'auto')),
+                'live_tv_active' => (bool) filter_var(Setting::get('live_tv_active', '1'), FILTER_VALIDATE_BOOLEAN),
+                'live_radio_url' => Setting::get('live_radio_url', ''),
+                'live_radio_active' => (bool) filter_var(Setting::get('live_radio_active', '1'), FILTER_VALIDATE_BOOLEAN),
                 'announcement_rate_tv' => (int) Setting::get('announcement_rate_tv', 5),
                 'announcement_rate_radio' => (int) Setting::get('announcement_rate_radio', 3),
                 'announcement_rate_both' => (int) Setting::get('announcement_rate_both', 7),
@@ -602,15 +608,39 @@ class MobileAppController extends Controller
     {
         $this->checkMaintenance();
 
+        $tvUrl = trim(Setting::get('live_tv_url', ''));
+        $tvEmbedCode = trim(Setting::get('live_tv_embed_code', ''));
+        $tvType = trim(Setting::get('live_tv_type', 'auto'));
+
+        $isTvActive = (bool) filter_var(Setting::get('live_tv_active', '1'), FILTER_VALIDATE_BOOLEAN);
+
+        // Fallback: If live_tv_url is empty but live_tv_embed_code contains iframe/video src, extract it for mobile app players
+        if (empty($tvUrl) && !empty($tvEmbedCode)) {
+            if (preg_match('/src=["\']([^"\']+)["\']/i', $tvEmbedCode, $matches)) {
+                $tvUrl = $matches[1];
+            }
+        }
+
+        // Format Twitch URLs into mobile webview player embed links with parent domain
+        if (!empty($tvUrl) && preg_match('/twitch\.tv\/([a-zA-Z0-9_]+)/i', $tvUrl, $matches)) {
+            $currentHost = request()->getHost();
+            $pathOrChannel = $matches[1];
+            if (strtolower($pathOrChannel) === 'videos' && preg_match('/twitch\.tv\/videos\/([0-9]+)/i', $tvUrl, $vMatches)) {
+                $tvUrl = "https://player.twitch.tv/?video={$vMatches[1]}&parent={$currentHost}&autoplay=true";
+            } else {
+                $tvUrl = "https://player.twitch.tv/?channel={$pathOrChannel}&parent={$currentHost}&autoplay=true";
+            }
+        }
+
         return response()->json([
             'status' => 'success',
             'data' => [
-                'live_tv_url' => Setting::get('live_tv_url', ''),
-                'live_tv_embed_code' => Setting::get('live_tv_embed_code', ''),
-                'live_tv_type' => Setting::get('live_tv_type', 'auto'),
-                'live_tv_active' => (bool) Setting::get('live_tv_active', false),
+                'live_tv_url' => $tvUrl,
+                'live_tv_embed_code' => $tvEmbedCode,
+                'live_tv_type' => $tvType,
+                'live_tv_active' => $isTvActive,
                 'live_radio_url' => Setting::get('live_radio_url', ''),
-                'live_radio_active' => (bool) Setting::get('live_radio_active', false),
+                'live_radio_active' => (bool) filter_var(Setting::get('live_radio_active', '1'), FILTER_VALIDATE_BOOLEAN),
                 'tv_schedule' => Setting::get('tv_schedule', []),
                 'radio_schedule' => Setting::get('radio_schedule', []),
             ]

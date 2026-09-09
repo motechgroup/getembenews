@@ -143,16 +143,7 @@
                 
                 <!-- Main Player (Left) -->
                 <div class="lg:col-span-2 space-y-4">
-                    <div class="aspect-video rounded-lg overflow-hidden bg-black relative border border-gray-800 shadow-2xl">
-                        @if(Str::contains($tvUrl, 'youtube.com') || Str::contains($tvUrl, 'embed'))
-                            <iframe src="{{ $tvUrl }}" title="Getembe Live TV" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                        @else
-                            <video controls autoplay class="w-full h-full">
-                                <source src="{{ $tvUrl }}" type="application/x-mpegURL">
-                                Your browser does not support HLS streaming.
-                            </video>
-                        @endif
-                    </div>
+                    <x-tv-player :url="$tvUrl" :embed-code="$tvEmbedCode ?? \App\Models\Setting::get('live_tv_embed_code', '')" :type="$tvType ?? \App\Models\Setting::get('live_tv_type', 'auto')" />
                     <div class="bg-gray-955 p-4 border border-gray-800 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <div>
                             <h3 class="text-sm font-bold">Currently Playing: <span class="text-[#cc6c3b]">{{ $currentShow['title'] ?? 'News Hour Live' }}</span></h3>

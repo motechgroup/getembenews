@@ -609,10 +609,12 @@
                 </div>
             </div>
 
-            <!-- Section 4: Live TV & Programme Schedule (Dark Mode Design Handoff) -->
+            <!-- Section 4: Live TV & Programme Schedule -->
             @if(\App\Models\Setting::get('live_tv_active', '1') == '1')
             @php
                 $tvUrl = \App\Models\Setting::get('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE');
+                $tvEmbedCode = \App\Models\Setting::get('live_tv_embed_code', '');
+                $tvType = \App\Models\Setting::get('live_tv_type', 'auto');
                 $tvSchedule = \App\Models\Setting::get('tv_schedule', []);
                 $currentDay = strtolower(now()->format('l'));
                 $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
@@ -659,16 +661,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- TV Stream Player -->
                     <div class="lg:col-span-2 space-y-3">
-                        <div class="aspect-video rounded-lg overflow-hidden bg-black relative border border-gray-800 shadow-2xl">
-                            @if(Str::contains($tvUrl, 'youtube.com') || Str::contains($tvUrl, 'embed'))
-                                <iframe src="{{ $tvUrl }}" title="Getembe Live TV" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-                            @else
-                                <video controls autoplay class="w-full h-full">
-                                    <source src="{{ $tvUrl }}" type="application/x-mpegURL">
-                                    Your browser does not support HLS streaming.
-                                </video>
-                            @endif
-                        </div>
+                        <x-tv-player :url="$tvUrl" :embed-code="$tvEmbedCode" :type="$tvType" />          </div>
                         <div class="bg-gray-900 p-4 border border-gray-855 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div>
                                 <span class="text-[9px] font-black text-red-500 uppercase tracking-widest block mb-0.5">Live Broadcast</span>

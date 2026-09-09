@@ -61,6 +61,8 @@ state([
     'homepage_categories' => fn() => Setting::get('homepage_categories', 'politics,business,technology,sports'),
     'weather_city' => fn() => Setting::get('weather_city', 'Kisii'),
     'live_tv_url' => fn() => Setting::get('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE'),
+    'live_tv_embed_code' => fn() => Setting::get('live_tv_embed_code', ''),
+    'live_tv_type' => fn() => Setting::get('live_tv_type', 'auto'),
     'live_radio_url' => fn() => Setting::get('live_radio_url', 'http://stream.zeno.fm/f5r7x1t1zv8uv'),
     'live_tv_active' => fn() => (bool) Setting::get('live_tv_active', true),
     'live_radio_active' => fn() => (bool) Setting::get('live_radio_active', true),
@@ -1243,7 +1245,7 @@ $save = function () use ($logAction) {
         'google_login', 'facebook_login', 'twitter_login', 'github_login', 'linkedin_login', 'whatsapp_login', 'apple_login', 'pinterest_login', 'threads_login',
         'google_client_id', 'google_client_secret', 'facebook_client_id', 'facebook_client_secret', 'github_client_id', 'github_client_secret', 'twitter_client_id', 'twitter_client_secret',
         'notifications_enabled', 'notifications_push', 'notifications_in_app', 'notifications_email',
-        'live_tv_url', 'live_radio_url', 'live_tv_active', 'live_radio_active', 'weather_city', 'homepage_categories', 'show_views_count',
+        'live_tv_url', 'live_tv_embed_code', 'live_tv_type', 'live_radio_url', 'live_tv_active', 'live_radio_active', 'weather_city', 'homepage_categories', 'show_views_count',
         'app_play_store_url', 'app_app_store_url', 'app_banner_title', 'app_banner_desc',
         'tv_schedule', 'radio_schedule',
         'mobile_app_version_ios', 'mobile_app_version_android', 'mobile_app_force_update', 'mobile_app_ios_link', 'mobile_app_android_link', 'mobile_app_ads_enabled', 'mobile_app_admob_banner_id', 'mobile_app_admob_interstitial_id', 'mobile_app_facebook_ads_enabled', 'mobile_app_facebook_banner_id', 'mobile_app_facebook_interstitial_id', 'mobile_app_native_ads_enabled', 'mobile_app_admob_native_id', 'mobile_app_facebook_native_id', 'mobile_app_native_ad_code', 'mobile_app_native_ad_frequency', 'mobile_app_maintenance_mode',
@@ -2028,15 +2030,41 @@ $sendTestEmail = function () {
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Live TV stream URL</label>
-                            <input type="url" wire:model="live_tv_url" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
-                            <div class="flex items-center space-x-2 pt-1">
+                    <div class="border border-gray-200 dark:border-gray-800 rounded-lg p-4 bg-gray-50/50 dark:bg-gray-850/50 space-y-4 pt-3 mt-2">
+                        <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-2">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Live TV Video Broadcast & Player Settings</h4>
+                            <div class="flex items-center space-x-2">
                                 <input type="checkbox" wire:model="live_tv_active" id="live_tv_active" class="rounded text-[#C8102E] focus:ring-[#C8102E] h-3.5 w-3.5 border-gray-300 dark:border-gray-700 dark:bg-gray-800">
-                                <label for="live_tv_active" class="text-[10px] font-bold text-gray-600 dark:text-gray-400">Enable Live TV page & links</label>
+                                <label for="live_tv_active" class="text-[11px] font-bold text-gray-700 dark:text-gray-300">Enable Live TV Stream</label>
                             </div>
                         </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Stream Source Mode</label>
+                                <select wire:model="live_tv_type" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    <option value="auto">Auto-detect (URL or Code)</option>
+                                    <option value="url">Direct Stream URL (HLS / Twitch / YouTube / MP4)</option>
+                                    <option value="code">Custom Embed Code (Iframe / JS Script)</option>
+                                </select>
+                                <p class="text-[10px] text-gray-500">Choose how the player renders your stream source.</p>
+                            </div>
+
+                            <div class="sm:col-span-2 space-y-1">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Live TV Stream URL</label>
+                                <input type="text" wire:model="live_tv_url" placeholder="e.g. https://twitch.tv/channel, https://youtube.com/embed/..., or https://domain.com/live.m3u8" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                                <p class="text-[10px] text-gray-500">Supports Twitch URLs, YouTube links, OneStream links, HLS (.m3u8), or video files (.mp4).</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Custom Embed Code (HTML / Iframe / JS Script Code Snippet)</label>
+                            <textarea wire:model="live_tv_embed_code" rows="3" placeholder="Paste full HTML embed code here, e.g. Twitch JS script embed, OneStream iframe, Kick iframe, etc." class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono"></textarea>
+                            <p class="text-[10px] text-gray-500">Tip: For Twitch, OneStream, or providers that supply Javascript code or custom iFrames, paste the embed code here.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 pt-2">
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Live FM stream URL</label>
                             <input type="url" wire:model="live_radio_url" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">

@@ -606,6 +606,8 @@ class MobileAppController extends Controller
             'status' => 'success',
             'data' => [
                 'live_tv_url' => Setting::get('live_tv_url', ''),
+                'live_tv_embed_code' => Setting::get('live_tv_embed_code', ''),
+                'live_tv_type' => Setting::get('live_tv_type', 'auto'),
                 'live_tv_active' => (bool) Setting::get('live_tv_active', false),
                 'live_radio_url' => Setting::get('live_radio_url', ''),
                 'live_radio_active' => (bool) Setting::get('live_radio_active', false),

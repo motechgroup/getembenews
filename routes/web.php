@@ -194,7 +194,9 @@ Route::get('/tv', function () {
         return redirect('/')->with('error', 'Live TV page is currently disabled.');
     }
     $tvUrl = \App\Models\Setting::get('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE');
-    return view('live-tv', compact('tvUrl'));
+    $tvEmbedCode = \App\Models\Setting::get('live_tv_embed_code', '');
+    $tvType = \App\Models\Setting::get('live_tv_type', 'auto');
+    return view('live-tv', compact('tvUrl', 'tvEmbedCode', 'tvType'));
 })->name('live-tv');
 
 Route::redirect('/live-tv', '/tv');

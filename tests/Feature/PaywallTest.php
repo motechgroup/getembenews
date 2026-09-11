@@ -52,7 +52,7 @@ class PaywallTest extends TestCase
         $response->assertDontSee('Paywall Access Locked');
     }
 
-    public function test_premium_article_shows_paywall_lock_and_sign_in_prompt_for_guests(): void
+    public function test_premium_article_shows_paywall_lock_for_guests(): void
     {
         $article = $this->createArticle([
             'title' => 'Exclusive Premium Analysis Article',
@@ -65,12 +65,12 @@ class PaywallTest extends TestCase
         $response->assertSee('Exclusive Premium Analysis Article');
         $response->assertSee('PREMIUM ARTICLE');
         $response->assertSee('Unlock Full Article Access');
-        $response->assertSee('Sign In Required to Pay');
         $response->assertSee('First paragraph of the article body text that is publicly accessible as teaser.');
         $response->assertDontSee('Second paragraph of the article body content with details.');
+        $response->assertDontSee('Sign In Required to Pay');
     }
 
-    public function test_guest_initiate_payment_redirects_to_login(): void
+    public function test_guest_initiate_payment_redirects_to_register(): void
     {
         $article = $this->createArticle([
             'title' => 'Guest Redirect Test Article',
@@ -80,7 +80,11 @@ class PaywallTest extends TestCase
 
         Livewire::test(\App\Livewire\ArticlePaywallModal::class, ['article' => $article])
             ->call('initiatePayment')
-            ->assertRedirect(route('login'));
+            ->assertRedirect(route('register'));
+
+        Livewire::test(\App\Livewire\ArticlePaywallModal::class, ['article' => $article])
+            ->call('selectOption', 'daily')
+            ->assertRedirect(route('register'));
     }
 
     public function test_staff_users_automatically_bypass_premium_paywall(): void

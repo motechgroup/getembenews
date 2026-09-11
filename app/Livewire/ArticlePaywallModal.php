@@ -30,11 +30,15 @@ class ArticlePaywallModal extends Component
         }
     }
 
-    public function selectOption(string $option): void
+    public function selectOption(string $option)
     {
         $this->selectedOption = $option;
         $this->mpesaStatus = 'idle';
         $this->statusMessage = '';
+
+        if (!Auth::check()) {
+            return $this->redirect(route('register'), navigate: true);
+        }
     }
 
     public function getPriceForOption(string $option): float
@@ -55,7 +59,7 @@ class ArticlePaywallModal extends Component
     public function initiatePayment()
     {
         if (!Auth::check()) {
-            return $this->redirect(route('login'), navigate: true);
+            return $this->redirect(route('register'), navigate: true);
         }
 
         $this->validate([

@@ -396,17 +396,33 @@
                         {!! $bodyContent !!}
                     @else
                         @php
-                            $teaserParagraphs = array_slice($paragraphs, 0, 1);
-                            $teaserHtml = implode('</p>', $teaserParagraphs);
-                            if (!str_ends_with(trim($teaserHtml), '</p>')) {
-                                $teaserHtml .= '</p>';
+                            $rawBody = $article->body;
+                            // 1. Normalize linebreaks, BRs, and DIV boundaries to paragraph delimiters
+                            $normalizedBody = preg_replace('/(<br\s*\/?>\s*){2,}/i', '</p><p>', $rawBody);
+                            $normalizedBody = preg_replace('/<\/div>\s*<div[^>]*>/i', '</p><p>', $normalizedBody);
+                            $normalizedBody = preg_replace('/(?:\r?\n){2,}/', '</p><p>', $normalizedBody);
+
+                            // 2. Extract matches of <p>...</p> or split by linebreaks
+                            if (preg_match_all('/<p[^>]*>(.*?)<\/p>/is', $normalizedBody, $pMatches) && !empty($pMatches[0])) {
+                                $cleanParagraphsList = array_values(array_filter($pMatches[0], fn($p) => trim(strip_tags($p)) !== ''));
+                            } else {
+                                $chunks = preg_split('/<br\s*\/?>|\n/i', strip_tags($normalizedBody, '<a><strong><b><i><em>'));
+                                $cleanParagraphsList = [];
+                                foreach ($chunks as $chunk) {
+                                    $chunk = trim($chunk);
+                                    if (!empty($chunk)) {
+                                        $cleanParagraphsList[] = '<p>' . $chunk . '</p>';
+                                    }
+                                }
                             }
+
+                            $firstParagraphOnly = !empty($cleanParagraphsList) ? $cleanParagraphsList[0] : '<p>' . \Illuminate\Support\Str::limit(strip_tags($rawBody), 180) . '</p>';
                         @endphp
-                        <div class="relative overflow-hidden max-h-80 mb-6">
-                            <div class="prose max-w-none dark:prose-invert prose-sm sm:prose-base leading-relaxed text-gray-800 dark:text-gray-200 space-y-4">
-                                {!! $teaserHtml !!}
+                        <div class="relative overflow-hidden max-h-48 mb-6">
+                            <div class="prose max-w-none dark:prose-invert prose-sm sm:prose-base leading-relaxed text-gray-800 dark:text-gray-200">
+                                {!! $firstParagraphOnly !!}
                             </div>
-                            <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white dark:from-gray-900 to-transparent pointer-events-none"></div>
+                            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white dark:from-gray-900 to-transparent pointer-events-none"></div>
                         </div>
 
                         <!-- Livewire Paywall Lock Card & Modal -->

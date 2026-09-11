@@ -46,6 +46,40 @@ class AuthenticationTest extends TestCase
         $this->assertAuthenticated();
     }
 
+    public function test_users_can_authenticate_using_the_login_screen(): void
+    {
+        $user = User::factory()->create(['role' => 'subscriber']);
+
+        $component = Volt::test('pages.auth.login')
+            ->set('form.email', $user->email)
+            ->set('form.password', 'password');
+
+        $component->call('login');
+
+        $component
+            ->assertHasNoErrors()
+            ->assertRedirect(route('dashboard', absolute: false));
+
+        $this->assertAuthenticated();
+    }
+
+    public function test_staff_users_are_redirected_to_admin_dashboard_on_login(): void
+    {
+        $editor = User::factory()->create(['role' => 'editor']);
+
+        $component = Volt::test('pages.auth.login')
+            ->set('form.email', $editor->email)
+            ->set('form.password', 'password');
+
+        $component->call('login');
+
+        $component
+            ->assertHasNoErrors()
+            ->assertRedirect(route('admin.dashboard', absolute: false));
+
+        $this->assertAuthenticated();
+    }
+
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
         $user = User::factory()->create();

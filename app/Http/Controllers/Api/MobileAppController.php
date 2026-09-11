@@ -614,10 +614,13 @@ class MobileAppController extends Controller
 
         $isTvActive = (bool) filter_var(Setting::get('live_tv_active', '1'), FILTER_VALIDATE_BOOLEAN);
 
-        // Fallback: If live_tv_url is empty but live_tv_embed_code contains iframe/video src, extract it for mobile app players
+        // Fallback: If live_tv_url is empty but live_tv_embed_code contains iframe/video src or Twitch channel, extract it for mobile app players
         if (empty($tvUrl) && !empty($tvEmbedCode)) {
-            if (preg_match('/src=["\']([^"\']+)["\']/i', $tvEmbedCode, $matches)) {
+            if (preg_match('/<iframe[^>]+src=["\']([^"\']+)["\']/i', $tvEmbedCode, $matches)) {
                 $tvUrl = $matches[1];
+            } elseif (preg_match('/channel:\s*["\']([^"\']+)["\']/i', $tvEmbedCode, $matches)) {
+                $currentHost = request()->getHost();
+                $tvUrl = "https://player.twitch.tv/?channel={$matches[1]}&parent={$currentHost}&autoplay=true";
             }
         }
 
@@ -627,7 +630,7 @@ class MobileAppController extends Controller
             $pathOrChannel = $matches[1];
             if (strtolower($pathOrChannel) === 'videos' && preg_match('/twitch\.tv\/videos\/([0-9]+)/i', $tvUrl, $vMatches)) {
                 $tvUrl = "https://player.twitch.tv/?video={$vMatches[1]}&parent={$currentHost}&autoplay=true";
-            } else {
+            } elseif (strtolower($pathOrChannel) !== 'js') {
                 $tvUrl = "https://player.twitch.tv/?channel={$pathOrChannel}&parent={$currentHost}&autoplay=true";
             }
         }

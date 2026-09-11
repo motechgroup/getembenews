@@ -164,11 +164,20 @@ class Setting extends Model
     // Social stats resolver helpers to avoid autoloader issues on live pulling
     public static function getStats(string $platform, ?string $username): array
     {
-        $platform = strtolower(trim($platform));
+        $platformKey = strtolower(trim($platform));
+
+        if (empty($username)) {
+            $username = static::get($platformKey);
+        }
+
+        // Check if explicit follower count is saved in settings
+        $customCount = static::get("{$platformKey}_count") 
+                    ?? static::get("social_{$platformKey}_count") 
+                    ?? static::get("{$platformKey}_followers");
 
         if (empty($username)) {
             // Default fallback settings
-            $username = match ($platform) {
+            $username = match ($platformKey) {
                 'facebook' => 'getembenews',
                 'twitter', 'x' => 'getembenews',
                 'instagram' => 'getembenews',
@@ -193,7 +202,7 @@ class Setting extends Model
             $cleanUsername = trim($path, '/');
         } else {
             $cleanUsername = ltrim($username, '@');
-            $url = match ($platform) {
+            $url = match ($platformKey) {
                 'facebook' => "https://facebook.com/{$cleanUsername}",
                 'twitter', 'x' => "https://x.com/{$cleanUsername}",
                 'instagram' => "https://instagram.com/{$cleanUsername}",
@@ -213,18 +222,31 @@ class Setting extends Model
         }
 
         // Cache key
-        $cacheKey = "social_stats_{$platform}_" . md5($cleanUsername);
+        $cacheKey = "social_stats_{$platformKey}_" . md5($cleanUsername . '_' . ($customCount ?? ''));
 
-        return Cache::remember($cacheKey, 3600, function () use ($platform, $cleanUsername, $url) {
-            $label = match ($platform) {
+        return Cache::remember($cacheKey, 3600, function () use ($platformKey, $cleanUsername, $url, $customCount) {
+            $label = match ($platformKey) {
                 'youtube' => 'Subscribers',
                 'whatsapp', 'telegram', 'discord' => 'Members',
                 default => 'Followers'
             };
 
+            if (!empty($customCount)) {
+                $parsed = self::parseSocialCount($customCount);
+                if ($parsed) {
+                    return [
+                        'count' => $parsed['count'],
+                        'formatted' => $parsed['formatted'],
+                        'label' => $label,
+                        'url' => $url,
+                        'username' => $cleanUsername
+                    ];
+                }
+            }
+
             // Stable hash-based counts so they stay consistent for the same handle
-            $hash = abs(crc32($cleanUsername . $platform));
-            $baseCount = match ($platform) {
+            $hash = abs(crc32($cleanUsername . $platformKey));
+            $baseCount = match ($platformKey) {
                 'youtube' => 150000 + ($hash % 380000),
                 'facebook' => 200000 + ($hash % 450000),
                 'twitter', 'x' => 45000 + ($hash % 120000),
@@ -250,6 +272,28 @@ class Setting extends Model
                 'username' => $cleanUsername
             ];
         });
+    }
+
+    private static function parseSocialCount($input): ?array
+    {
+        if (empty($input)) return null;
+        $input = trim((string) $input);
+        if (preg_match('/^([\d\.]+)\s*([KMkm])?$/i', $input, $m)) {
+            $val = (float) $m[1];
+            $unit = strtoupper($m[2] ?? '');
+            if ($unit === 'K') {
+                $count = (int) ($val * 1000);
+                $formatted = (floor($val) == $val ? number_format($val, 0) : number_format($val, 1)) . 'K';
+            } elseif ($unit === 'M') {
+                $count = (int) ($val * 1000000);
+                $formatted = (floor($val) == $val ? number_format($val, 0) : number_format($val, 1)) . 'M';
+            } else {
+                $count = (int) $val;
+                $formatted = self::formatSocialNumber($count);
+            }
+            return ['count' => $count, 'formatted' => $formatted];
+        }
+        return null;
     }
 
     private static function formatSocialNumber(int $num): string

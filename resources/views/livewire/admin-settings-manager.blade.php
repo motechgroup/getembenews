@@ -96,16 +96,27 @@ state([
     // 2. Social Links
     'website' => fn() => Setting::get('website', ''),
     'facebook' => fn() => Setting::get('facebook', ''),
+    'facebook_count' => fn() => Setting::get('facebook_count', '306.1K'),
     'twitter' => fn() => Setting::get('twitter', ''),
+    'twitter_count' => fn() => Setting::get('twitter_count', '153.0K'),
     'instagram' => fn() => Setting::get('instagram', ''),
+    'instagram_count' => fn() => Setting::get('instagram_count', '105.5K'),
     'linkedin' => fn() => Setting::get('linkedin', ''),
+    'linkedin_count' => fn() => Setting::get('linkedin_count', ''),
     'whatsapp' => fn() => Setting::get('whatsapp', ''),
+    'whatsapp_count' => fn() => Setting::get('whatsapp_count', ''),
     'youtube' => fn() => Setting::get('youtube', ''),
+    'youtube_count' => fn() => Setting::get('youtube_count', '156.3K'),
     'tiktok' => fn() => Setting::get('tiktok', ''),
+    'tiktok_count' => fn() => Setting::get('tiktok_count', '279.7K'),
     'snapchat' => fn() => Setting::get('snapchat', ''),
+    'snapchat_count' => fn() => Setting::get('snapchat_count', ''),
     'telegram' => fn() => Setting::get('telegram', ''),
+    'telegram_count' => fn() => Setting::get('telegram_count', ''),
     'pinterest' => fn() => Setting::get('pinterest', ''),
+    'pinterest_count' => fn() => Setting::get('pinterest_count', ''),
     'threads' => fn() => Setting::get('threads', ''),
+    'threads_count' => fn() => Setting::get('threads_count', ''),
     'other_social_links' => fn() => Setting::get('other_social_links', ''),
 
     // Toggles for Social Widgets
@@ -1236,7 +1247,7 @@ $save = function () use ($logAction) {
 
     $fields = [
         'site_name', 'site_logo', 'brand_color', 'favicon', 'system_version',
-        'website', 'facebook', 'twitter', 'instagram', 'linkedin', 'whatsapp', 'youtube', 'tiktok', 'snapchat', 'telegram', 'pinterest', 'threads', 'other_social_links',
+        'website', 'facebook', 'facebook_count', 'twitter', 'twitter_count', 'instagram', 'instagram_count', 'linkedin', 'linkedin_count', 'whatsapp', 'whatsapp_count', 'youtube', 'youtube_count', 'tiktok', 'tiktok_count', 'snapchat', 'snapchat_count', 'telegram', 'telegram_count', 'pinterest', 'pinterest_count', 'threads', 'threads_count', 'other_social_links',
         'social_facebook_active', 'social_twitter_active', 'social_instagram_active', 'social_linkedin_active', 'social_whatsapp_active', 'social_youtube_active', 'social_tiktok_active', 'social_snapchat_active', 'social_telegram_active', 'social_pinterest_active', 'social_threads_active',
         'contact_email', 'contact_phone', 'contact_open_hours', 'contact_address',
         'payment_methods', 'payment_gateways', 'currency', 'currency_symbol',
@@ -2146,103 +2157,146 @@ $sendTestEmail = function () {
                         </div>
                         <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center">
-                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Twitter / X Username</label>
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Facebook Username & Followers Count</label>
+                                <label class="inline-flex items-center space-x-1.5 cursor-pointer">
+                                    <input type="checkbox" wire:model="social_facebook_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
+                                </label>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" wire:model="facebook" placeholder="Username e.g. getembenews" class="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <input type="text" wire:model="facebook_count" placeholder="Count e.g. 306.1K" class="col-span-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
+                        </div>
+                        <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Twitter / X Username & Followers Count</label>
                                 <label class="inline-flex items-center space-x-1.5 cursor-pointer">
                                     <input type="checkbox" wire:model="social_twitter_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
                                     <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
                                 </label>
                             </div>
-                            <input type="text" wire:model="twitter" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" wire:model="twitter" placeholder="Username e.g. getembenews" class="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <input type="text" wire:model="twitter_count" placeholder="Count e.g. 153.0K" class="col-span-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
                         </div>
                         <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center">
-                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Instagram Username</label>
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Instagram Username & Followers Count</label>
                                 <label class="inline-flex items-center space-x-1.5 cursor-pointer">
                                     <input type="checkbox" wire:model="social_instagram_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
                                     <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
                                 </label>
                             </div>
-                            <input type="text" wire:model="instagram" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" wire:model="instagram" placeholder="Username e.g. getembenews" class="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <input type="text" wire:model="instagram_count" placeholder="Count e.g. 105.5K" class="col-span-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
                         </div>
                         <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center">
-                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">LinkedIn Username</label>
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">LinkedIn Username & Followers Count</label>
                                 <label class="inline-flex items-center space-x-1.5 cursor-pointer">
                                     <input type="checkbox" wire:model="social_linkedin_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
                                     <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
                                 </label>
                             </div>
-                            <input type="text" wire:model="linkedin" placeholder="e.g. company/getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" wire:model="linkedin" placeholder="e.g. company/getembenews" class="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <input type="text" wire:model="linkedin_count" placeholder="Count e.g. 12K" class="col-span-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
                         </div>
                         <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center">
-                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">WhatsApp Phone / API Link</label>
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">WhatsApp Phone & Members Count</label>
                                 <label class="inline-flex items-center space-x-1.5 cursor-pointer">
                                     <input type="checkbox" wire:model="social_whatsapp_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
                                     <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
                                 </label>
                             </div>
-                            <input type="text" wire:model="whatsapp" placeholder="e.g. +254712345678" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" wire:model="whatsapp" placeholder="e.g. +254712345678" class="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <input type="text" wire:model="whatsapp_count" placeholder="Count e.g. 25K" class="col-span-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
                         </div>
                         <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center">
-                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">YouTube Channel Username</label>
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">YouTube Channel & Subscribers Count</label>
                                 <label class="inline-flex items-center space-x-1.5 cursor-pointer">
                                     <input type="checkbox" wire:model="social_youtube_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
                                     <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
                                 </label>
                             </div>
-                            <input type="text" wire:model="youtube" placeholder="e.g. @getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" wire:model="youtube" placeholder="Username e.g. @getembenews" class="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <input type="text" wire:model="youtube_count" placeholder="Count e.g. 156.3K" class="col-span-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
                         </div>
                         <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center">
-                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">TikTok Username</label>
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">TikTok Username & Followers Count</label>
                                 <label class="inline-flex items-center space-x-1.5 cursor-pointer">
                                     <input type="checkbox" wire:model="social_tiktok_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
                                     <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
                                 </label>
                             </div>
-                            <input type="text" wire:model="tiktok" placeholder="e.g. @getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" wire:model="tiktok" placeholder="Username e.g. @getembenews" class="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <input type="text" wire:model="tiktok_count" placeholder="Count e.g. 279.7K" class="col-span-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
                         </div>
                         <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center">
-                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Snapchat Username</label>
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Snapchat Username & Followers Count</label>
                                 <label class="inline-flex items-center space-x-1.5 cursor-pointer">
                                     <input type="checkbox" wire:model="social_snapchat_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
                                     <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
                                 </label>
                             </div>
-                            <input type="text" wire:model="snapchat" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" wire:model="snapchat" placeholder="e.g. getembenews" class="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <input type="text" wire:model="snapchat_count" placeholder="Count e.g. 15K" class="col-span-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
                         </div>
                         <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center">
-                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Telegram Channel Username</label>
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Telegram Channel & Members Count</label>
                                 <label class="inline-flex items-center space-x-1.5 cursor-pointer">
                                     <input type="checkbox" wire:model="social_telegram_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
                                     <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
                                 </label>
                             </div>
-                            <input type="text" wire:model="telegram" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" wire:model="telegram" placeholder="e.g. getembenews" class="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <input type="text" wire:model="telegram_count" placeholder="Count e.g. 50K" class="col-span-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
                         </div>
                         <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center">
-                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Pinterest Username</label>
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Pinterest Username & Followers Count</label>
                                 <label class="inline-flex items-center space-x-1.5 cursor-pointer">
                                     <input type="checkbox" wire:model="social_pinterest_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
                                     <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
                                 </label>
                             </div>
-                            <input type="text" wire:model="pinterest" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" wire:model="pinterest" placeholder="e.g. getembenews" class="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <input type="text" wire:model="pinterest_count" placeholder="Count e.g. 10K" class="col-span-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
                         </div>
                         <div class="space-y-1.5 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm">
                             <div class="flex justify-between items-center">
-                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Threads Username</label>
+                                <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Threads Username & Followers Count</label>
                                 <label class="inline-flex items-center space-x-1.5 cursor-pointer">
                                     <input type="checkbox" wire:model="social_threads_active" class="rounded border-gray-300 dark:border-gray-700 text-[#C8102E] focus:ring-[#C8102E] scale-90">
                                     <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Show widget</span>
                                 </label>
                             </div>
-                            <input type="text" wire:model="threads" placeholder="e.g. getembenews" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-normal">
+                            <div class="grid grid-cols-3 gap-2">
+                                <input type="text" wire:model="threads" placeholder="e.g. getembenews" class="col-span-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                <input type="text" wire:model="threads_count" placeholder="Count e.g. 8K" class="col-span-1 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white font-mono">
+                            </div>
                         </div>
                     </div>
                     <div class="space-y-1">

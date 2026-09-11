@@ -155,12 +155,12 @@
                             <label for="mpesa_phone_modal" class="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-1.5 uppercase tracking-wider">
                                 Safaricom M-Pesa Phone Number
                             </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-600 dark:text-emerald-400 font-black text-xs">
+                            <div class="flex rounded-xl shadow-sm">
+                                <span class="inline-flex items-center px-3.5 rounded-l-xl border border-r-0 border-gray-300 dark:border-slate-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-black text-xs shrink-0 select-none">
                                     📱 M-PESA
-                                </div>
+                                </span>
                                 <input type="text" wire:model="phone" id="mpesa_phone_modal" placeholder="e.g. 0712345678" 
-                                       class="w-full pl-24 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-700 rounded-xl text-gray-900 dark:text-white font-mono text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition shadow-sm">
+                                       class="w-full min-w-0 rounded-r-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-3 text-gray-900 dark:text-white font-mono text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
                             </div>
                             @error('phone')
                                 <span class="text-[11px] text-red-600 dark:text-red-400 font-semibold mt-1 block">{{ $message }}</span>

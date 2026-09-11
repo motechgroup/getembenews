@@ -14,6 +14,31 @@
         'title' => 'Getembe County History & Culture Trivia',
         'questions_count' => 3
     ];
+
+    $pollOptionsCount = count($activePoll['options'] ?? [1,2,3,4]);
+    $defaultOptionVotes = array_fill(0, $pollOptionsCount, 25);
+
+    $defaultQuizQuestions = [
+        [
+            'q' => 'Which facility was recently launched in Getembe County to benefit the youth?',
+            'options' => ['A modern stadium', 'A state-of-the-art tech and innovation hub', 'An agricultural training college'],
+            'correct' => 1,
+            'explanation' => 'Getembe County recently commissioned a modern technology hub focusing on software engineering and coding bootcamps.'
+        ],
+        [
+            'q' => 'What is the main cultural art attraction Kisii County is globally known for?',
+            'options' => ['Traditional Beadwork', 'Soapstone Carvings', 'Pottery & Ceramics'],
+            'correct' => 1,
+            'explanation' => 'Kisii County (specifically Tabaka region) is world-famous for its soapstone carvings.'
+        ],
+        [
+            'q' => 'What is the primary currency utilized in Getembe News settings?',
+            'options' => ['KSH (Kenyan Shilling)', 'USD (US Dollar)', 'EUR (Euro)'],
+            'correct' => 0,
+            'explanation' => 'Getembe News is based in Kisii, Kenya, and defaults to KSH (Kenyan Shilling).'
+        ]
+    ];
+    $activeQuizQuestions = !empty($activeQuiz['questions']) && is_array($activeQuiz['questions']) ? $activeQuiz['questions'] : $defaultQuizQuestions;
 @endphp
 
 <!-- Polls Widget -->
@@ -21,14 +46,18 @@
      x-data="{ 
         voted: localStorage.getItem('poll_voted_{{ $activePoll['id'] }}') === 'true',
         selectedOption: null,
-        votes: [42, 28, 18, 12],
+        votes: JSON.parse(localStorage.getItem('poll_votes_{{ $activePoll['id'] }}') || 'null') || @json($defaultOptionVotes),
         totalVotes: 100,
+        init() {
+            this.totalVotes = this.votes.reduce((a, b) => a + b, 0) || 1;
+        },
         submitVote() {
             if (this.selectedOption === null) return;
             this.votes[this.selectedOption]++;
             this.totalVotes++;
             this.voted = true;
             localStorage.setItem('poll_voted_{{ $activePoll['id'] }}', 'true');
+            localStorage.setItem('poll_votes_{{ $activePoll['id'] }}', JSON.stringify(this.votes));
         }
      }">
     <h3 class="text-xs font-black uppercase text-[#C8102E] tracking-wider flex items-center border-b border-gray-100 dark:border-gray-800 pb-2">
@@ -69,11 +98,11 @@
                     <div class="space-y-1">
                         <div class="flex justify-between font-bold text-gray-800 dark:text-gray-200">
                             <span>{{ $opt }}</span>
-                            <span x-text="Math.round((votes[{{ $idx }}] / totalVotes) * 100) + '%'"></span>
+                            <span x-text="Math.round(((votes[{{ $idx }}] || 0) / totalVotes) * 100) + '%'"></span>
                         </div>
                         <div class="w-full bg-gray-100 dark:bg-gray-800 h-2.5 rounded-full overflow-hidden">
                             <div class="bg-[#FF7900] h-full rounded-full transition-all duration-1000"
-                                 :style="'width: ' + ((votes[{{ $idx }}] / totalVotes) * 100) + '%'"></div>
+                                 :style="'width: ' + (((votes[{{ $idx }}] || 0) / totalVotes) * 100) + '%'"></div>
                         </div>
                     </div>
                 @endforeach
@@ -95,26 +124,7 @@
         selectedAnswer: null,
         isAnswerCorrect: null,
         quizTitle: '{{ $activeQuiz['title'] }}',
-        questions: [
-            {
-                q: 'Which facility was recently launched in Getembe County to benefit the youth?',
-                options: ['A modern stadium', 'A state-of-the-art tech and innovation hub', 'An agricultural training college'],
-                correct: 1,
-                explanation: 'Getembe County recently commissioned a modern technology hub focusing on software engineering and coding bootcamps.'
-            },
-            {
-                q: 'What is the main cultural art attraction Kisii County is globally known for?',
-                options: ['Traditional Beadwork', 'Soapstone Carvings', 'Pottery & Ceramics'],
-                correct: 1,
-                explanation: 'Kisii County (specifically Tabaka region) is world-famous for its soapstone carvings.'
-            },
-            {
-                q: 'What is the primary currency utilized in Getembe News settings?',
-                options: ['KSH (Kenyan Shilling)', 'USD (US Dollar)', 'EUR (Euro)'],
-                correct: 0,
-                explanation: 'Getembe News is based in Kisii, Kenya, and defaults to KSH (Kenyan Shilling).'
-            }
-        ],
+        questions: @json($activeQuizQuestions),
         startQuiz() {
             this.started = true;
             this.completed = false;

@@ -180,7 +180,7 @@ Route::get('/', function () {
             return response()->make('<!DOCTYPE html><html><head><title>Getembe News</title><meta name="description" content="Getembe News is your leading source for politics, business, technology, and global news."></head><body><h1>Getembe News</h1><p>Welcome to Getembe News. Latest stories updating.</p></body></html>', 200);
         }
     }
-});
+})->name('home');
 
 use App\Http\Controllers\ArticleController;
 

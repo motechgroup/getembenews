@@ -52,8 +52,12 @@ class ArticlePaywallModal extends Component
         }
     }
 
-    public function initiatePayment(): void
+    public function initiatePayment()
     {
+        if (!Auth::check()) {
+            return $this->redirect(route('login'), navigate: true);
+        }
+
         $this->validate([
             'phone' => ['required', 'string', 'regex:/^(?:254|\+254|0)?(7|1)\d{8}$/'],
         ], [

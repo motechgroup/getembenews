@@ -396,7 +396,7 @@
                         {!! $bodyContent !!}
                     @else
                         @php
-                            $teaserParagraphs = array_slice($paragraphs, 0, 2);
+                            $teaserParagraphs = array_slice($paragraphs, 0, 1);
                             $teaserHtml = implode('</p>', $teaserParagraphs);
                             if (!str_ends_with(trim($teaserHtml), '</p>')) {
                                 $teaserHtml .= '</p>';

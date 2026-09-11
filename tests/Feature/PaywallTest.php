@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class PaywallTest extends TestCase
@@ -29,6 +30,7 @@ class PaywallTest extends TestCase
             'category_id' => $category->id,
             'title' => $title,
             'slug' => Str::slug($title),
+            'seo_description' => 'Summary excerpt of the story for SEO metadata',
             'body' => '<p>First paragraph of the article body text that is publicly accessible as teaser.</p><p>Second paragraph of the article body content with details.</p><p>Third paragraph that contains secret premium information.</p>',
             'status' => 'published',
             'published_at' => now(),
@@ -50,7 +52,7 @@ class PaywallTest extends TestCase
         $response->assertDontSee('Paywall Access Locked');
     }
 
-    public function test_premium_article_shows_paywall_lock_for_guests(): void
+    public function test_premium_article_shows_paywall_lock_and_sign_in_prompt_for_guests(): void
     {
         $article = $this->createArticle([
             'title' => 'Exclusive Premium Analysis Article',
@@ -63,6 +65,22 @@ class PaywallTest extends TestCase
         $response->assertSee('Exclusive Premium Analysis Article');
         $response->assertSee('PREMIUM ARTICLE');
         $response->assertSee('Unlock Full Article Access');
+        $response->assertSee('Sign In Required to Pay');
+        $response->assertSee('First paragraph of the article body text that is publicly accessible as teaser.');
+        $response->assertDontSee('Second paragraph of the article body content with details.');
+    }
+
+    public function test_guest_initiate_payment_redirects_to_login(): void
+    {
+        $article = $this->createArticle([
+            'title' => 'Guest Redirect Test Article',
+            'is_premium' => true,
+            'price' => 50,
+        ]);
+
+        Livewire::test(\App\Livewire\ArticlePaywallModal::class, ['article' => $article])
+            ->call('initiatePayment')
+            ->assertRedirect(route('login'));
     }
 
     public function test_staff_users_automatically_bypass_premium_paywall(): void

@@ -71,68 +71,81 @@
         </button>
     </div>
 
-    <!-- M-Pesa STK Push Form Area -->
+    <!-- Payment & Authentication Area -->
     <div class="relative z-10 max-w-md mx-auto mt-6 bg-gray-900/90 border border-gray-800 p-5 rounded-2xl space-y-4">
-        
-        <!-- Status Message Banner -->
-        @if(!empty($statusMessage))
-            <div class="p-3.5 rounded-xl text-xs font-bold leading-relaxed flex items-start space-x-2 
-                        {{ $mpesaStatus === 'success' ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800' : '' }}
-                        {{ $mpesaStatus === 'pending' ? 'bg-amber-950/60 text-amber-300 border border-amber-800' : '' }}
-                        {{ $mpesaStatus === 'error' ? 'bg-red-950/60 text-red-300 border border-red-800' : '' }}
-                        {{ $mpesaStatus === 'sending' ? 'bg-blue-950/60 text-blue-300 border border-blue-800' : '' }}">
-                @if($mpesaStatus === 'pending' || $mpesaStatus === 'sending')
-                    <svg class="w-4 h-4 text-amber-400 animate-spin shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                @endif
-                <span>{{ $statusMessage }}</span>
-            </div>
-        @endif
-
-        <!-- M-Pesa Phone Input -->
-        @if($mpesaStatus !== 'pending' && $mpesaStatus !== 'success')
-            <form wire:submit.prevent="initiatePayment" class="space-y-4">
-                <div>
-                    <label for="mpesa_phone" class="block text-xs font-bold text-gray-300 mb-1.5 uppercase tracking-wider">
-                        Safaricom M-Pesa Number
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-500 font-black text-xs">
-                            📱 M-PESA
-                        </div>
-                        <input type="text" wire:model="phone" id="mpesa_phone" placeholder="e.g. 0712345678" 
-                               class="w-full pl-24 pr-4 py-3 bg-black border border-gray-700 rounded-xl text-white font-mono text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
-                    </div>
-                    @error('phone')
-                        <span class="text-[11px] text-red-400 font-semibold mt-1 block">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <button type="submit" wire:loading.attr="disabled" 
-                        class="w-full py-3.5 px-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl transition shadow-lg flex items-center justify-center space-x-2 group">
-                    <span wire:loading.remove>Pay KSh {{ number_format($this->getPriceForOption($selectedOption)) }} with M-Pesa STK Push</span>
-                    <span wire:loading>Processing Request...</span>
-                </button>
-            </form>
-        @elseif($mpesaStatus === 'pending')
-            <!-- Live Polling Controls -->
-            <div class="text-center space-y-3 py-2" wire:poll.3s="checkPaymentStatus">
-                <p class="text-[11px] text-gray-400">Waiting for M-Pesa PIN input. Checking status automatically...</p>
-                <button type="button" wire:click="checkPaymentStatus" class="text-xs font-bold text-emerald-400 hover:underline">
-                    Tap here to check status now
-                </button>
-            </div>
-        @endif
-
         @guest
-            <div class="border-t border-gray-800 pt-3 text-center text-xs text-gray-400">
-                Already registered or subscribed? 
-                <a href="{{ route('login') }}" class="font-bold text-[#C8102E] hover:underline ml-1">Sign In</a>
+            <!-- Guest Sign In Required Callout -->
+            <div class="text-center space-y-4 py-2">
+                <div class="w-12 h-12 rounded-full bg-red-600/20 text-[#C8102E] flex items-center justify-center mx-auto text-xl font-bold border border-red-500/30">
+                    🔐
+                </div>
+                <div class="space-y-1">
+                    <h4 class="text-sm font-extrabold text-white uppercase tracking-wider">Sign In Required to Pay</h4>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        Please sign in to your Getembe News account or create a new one to complete payment via M-Pesa and unlock premium stories.
+                    </p>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                    <a href="{{ route('login') }}" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#C8102E] to-red-700 hover:from-red-600 hover:to-red-800 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl transition shadow-lg text-center">
+                        Sign In to Unlock
+                    </a>
+                    <a href="{{ route('register') }}" class="w-full sm:w-auto px-6 py-3 bg-gray-800 hover:bg-gray-700 text-gray-200 font-extrabold text-xs uppercase tracking-widest rounded-xl transition border border-gray-700 text-center">
+                        Create Account
+                    </a>
+                </div>
             </div>
-        @endguest
+        @else
+            <!-- Authenticated User M-Pesa STK Push Form -->
+            @if(!empty($statusMessage))
+                <div class="p-3.5 rounded-xl text-xs font-bold leading-relaxed flex items-start space-x-2 
+                            {{ $mpesaStatus === 'success' ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800' : '' }}
+                            {{ $mpesaStatus === 'pending' ? 'bg-amber-950/60 text-amber-300 border border-amber-800' : '' }}
+                            {{ $mpesaStatus === 'error' ? 'bg-red-950/60 text-red-300 border border-red-800' : '' }}
+                            {{ $mpesaStatus === 'sending' ? 'bg-blue-950/60 text-blue-300 border border-blue-800' : '' }}">
+                    @if($mpesaStatus === 'pending' || $mpesaStatus === 'sending')
+                        <svg class="w-4 h-4 text-amber-400 animate-spin shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    @endif
+                    <span>{{ $statusMessage }}</span>
+                </div>
+            @endif
 
+            @if($mpesaStatus !== 'pending' && $mpesaStatus !== 'success')
+                <form wire:submit.prevent="initiatePayment" class="space-y-4">
+                    <div>
+                        <label for="mpesa_phone" class="block text-xs font-bold text-gray-300 mb-1.5 uppercase tracking-wider">
+                            Safaricom M-Pesa Number
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-500 font-black text-xs">
+                                📱 M-PESA
+                            </div>
+                            <input type="text" wire:model="phone" id="mpesa_phone" placeholder="e.g. 0712345678" 
+                                   class="w-full pl-24 pr-4 py-3 bg-black border border-gray-700 rounded-xl text-white font-mono text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition">
+                        </div>
+                        @error('phone')
+                            <span class="text-[11px] text-red-400 font-semibold mt-1 block">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <button type="submit" wire:loading.attr="disabled" 
+                            class="w-full py-3.5 px-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl transition shadow-lg flex items-center justify-center space-x-2 group">
+                        <span wire:loading.remove>Pay KSh {{ number_format($this->getPriceForOption($selectedOption)) }} with M-Pesa STK Push</span>
+                        <span wire:loading>Processing Request...</span>
+                    </button>
+                </form>
+            @elseif($mpesaStatus === 'pending')
+                <!-- Live Polling Controls -->
+                <div class="text-center space-y-3 py-2" wire:poll.3s="checkPaymentStatus">
+                    <p class="text-[11px] text-gray-400">Waiting for M-Pesa PIN input. Checking status automatically...</p>
+                    <button type="button" wire:click="checkPaymentStatus" class="text-xs font-bold text-emerald-400 hover:underline">
+                        Tap here to check status now
+                    </button>
+                </div>
+            @endif
+        @endguest
     </div>
 
 </div>

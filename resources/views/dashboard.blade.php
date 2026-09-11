@@ -289,37 +289,212 @@
                     </div>
                 </div>
 
-                <!-- Reader Comment History -->
+                <!-- Active Subscription & Pass Status Card -->
+                @php
+                    $hasSub = auth()->user()->hasActiveSubscription();
+                    $subPlan = auth()->user()->subscription_plan;
+                    $subExpires = auth()->user()->subscription_expires_at;
+                    $userPurchases = auth()->user()->articlePurchases()->with('article')->get();
+                    $userSubscriptions = auth()->user()->articleSubscriptions()->get();
+                    $currencySymbol = \App\Models\Setting::get('currency_symbol', 'KSh');
+                @endphp
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div class="p-6 border-b border-gray-150 dark:border-gray-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-gray-50/50 dark:bg-gray-900/10">
+                        <div>
+                            <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center">
+                                <span class="mr-2">💳</span> My Subscription & Article Pass Status
+                            </h4>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Manage your active pass and review unlocked story access.</p>
+                        </div>
+                        @if($hasSub)
+                            <span class="px-3 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-xs font-black uppercase tracking-wider rounded-full flex items-center space-x-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span>Active {{ ucfirst($subPlan) }} Pass</span>
+                            </span>
+                        @else
+                            <span class="px-3 py-1 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-xs font-extrabold uppercase tracking-wider rounded-full">
+                                No Active Subscription
+                            </span>
+                        @endif
+                    </div>
+                    <div class="p-6">
+                        @if($hasSub)
+                            <div class="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div class="space-y-1">
+                                    <h5 class="text-sm font-extrabold text-emerald-900 dark:text-emerald-300">
+                                        Getembe {{ ucfirst($subPlan) }} Pass Active
+                                    </h5>
+                                    <p class="text-xs text-emerald-700 dark:text-emerald-400">
+                                        Unlimited access to all premium investigative stories until <strong class="font-black">{{ $subExpires?->format('M d, Y \a\t g:i A') }}</strong> ({{ $subExpires?->diffForHumans() }}).
+                                    </p>
+                                </div>
+                                <a href="/" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-lg transition shrink-0">
+                                    Browse Premium Stories
+                                </a>
+                            </div>
+                        @else
+                            <div class="p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div class="space-y-1">
+                                    <h5 class="text-sm font-extrabold text-gray-900 dark:text-white">
+                                        No Active Getembe Pass
+                                    </h5>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        Unlock unlimited premium investigative journalism with a Daily, Weekly, or Monthly Pass.
+                                    </p>
+                                </div>
+                                <a href="/" class="px-4 py-2 bg-[#C8102E] hover:bg-red-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-lg transition shrink-0">
+                                    Get Unlimited Access
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Unlocked Premium Articles Ledger -->
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                     <div class="p-6 border-b border-gray-150 dark:border-gray-700 flex items-center justify-between">
                         <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center">
-                            <span class="mr-2">💬</span> My Posted Comments
+                            <span class="mr-2">🔓</span> My Unlocked Premium Articles
                         </h4>
-                        <span class="text-xs text-gray-400 font-semibold">{{ $commentsCount }} Comments</span>
+                        <span class="text-xs text-gray-400 font-semibold">{{ $userPurchases->where('status', 'completed')->count() }} Stories Unlocked</span>
                     </div>
                     <div class="p-6">
-                        @php $comments = auth()->user()->comments()->with('article')->latest()->take(10)->get(); @endphp
-                        @if($comments->count() > 0)
-                            <div class="space-y-4">
-                                @foreach($comments as $comment)
-                                    <div class="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 space-y-2">
-                                        <div class="flex items-center justify-between text-xs">
-                                            <span class="font-bold text-gray-900 dark:text-white">
-                                                Article: <a href="/articles/{{ $comment->article?->slug }}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">{{ $comment->article?->title ?? 'News Article' }}</a>
-                                            </span>
-                                            <span class="text-[10px] text-gray-500">{{ $comment->created_at->diffForHumans() }}</span>
+                        @php $completedPurchases = $userPurchases->where('status', 'completed'); @endphp
+                        @if($completedPurchases->count() > 0)
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @foreach($completedPurchases as $purchase)
+                                    @if($purchase->article)
+                                        <div class="p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl flex flex-col justify-between space-y-3 hover:border-[#C8102E]/50 transition">
+                                            <div>
+                                                <span class="text-[9px] font-black text-[#C8102E] uppercase tracking-wider block">Single Story Pass</span>
+                                                <h5 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-white mt-1 line-clamp-2">
+                                                    <a href="/articles/{{ $purchase->article->slug }}" target="_blank" class="hover:underline">
+                                                        {{ $purchase->article->title }}
+                                                    </a>
+                                                </h5>
+                                            </div>
+                                            <div class="pt-3 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between text-[11px] text-gray-500">
+                                                <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ $currencySymbol }} {{ number_format($purchase->amount, 2) }}</span>
+                                                <span class="font-mono text-[10px] text-gray-400">{{ $purchase->mpesa_reference ?: 'M-PESA' }}</span>
+                                            </div>
+                                            <a href="/articles/{{ $purchase->article->slug }}" target="_blank" class="w-full py-1.5 bg-[#C8102E] hover:bg-red-700 text-white font-extrabold text-[10px] uppercase tracking-wider rounded text-center transition">
+                                                Read Full Story
+                                            </a>
                                         </div>
-                                        <p class="text-xs text-gray-700 dark:text-gray-300 italic">"{{ $comment->body }}"</p>
-                                        <div>
-                                            <span class="px-2 py-0.5 text-[9px] font-bold uppercase rounded {{ $comment->status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-950/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/30 dark:text-yellow-300' }}">
-                                                {{ ucfirst($comment->status) }}
-                                            </span>
-                                        </div>
-                                    </div>
+                                    @endif
                                 @endforeach
                             </div>
                         @else
-                            <p class="text-xs text-gray-400 text-center py-6">You haven't posted any comments yet. Join the conversation under news stories!</p>
+                            <div class="text-center py-6 space-y-2">
+                                <div class="text-2xl">📰</div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">You haven't unlocked any individual single articles yet.</p>
+                                <p class="text-[11px] text-gray-400">Single story unlocks give lifetime access to specific premium investigative reports.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Complete M-Pesa Transaction & Subscription History Logs -->
+                @php
+                    $allTransactions = collect();
+
+                    foreach ($userSubscriptions as $sub) {
+                        $allTransactions->push([
+                            'id' => 'sub_' . $sub->id,
+                            'title' => ucfirst($sub->plan) . ' Getembe Pass Subscription',
+                            'type' => 'Pass Subscription (' . ucfirst($sub->plan) . ')',
+                            'amount' => $sub->amount,
+                            'reference' => $sub->mpesa_reference ?: $sub->checkout_request_id,
+                            'phone' => $sub->phone_number,
+                            'status' => $sub->status ?: 'completed',
+                            'date' => $sub->created_at,
+                            'url' => '/',
+                        ]);
+                    }
+
+                    foreach ($userPurchases as $pur) {
+                        $allTransactions->push([
+                            'id' => 'pur_' . $pur->id,
+                            'title' => $pur->article ? $pur->article->title : 'Single Article Unlock',
+                            'type' => 'Single Story Purchase',
+                            'amount' => $pur->amount,
+                            'reference' => $pur->mpesa_reference ?: $pur->checkout_request_id,
+                            'phone' => $pur->phone_number,
+                            'status' => $pur->status ?: 'completed',
+                            'date' => $pur->created_at,
+                            'url' => $pur->article ? '/articles/' . $pur->article->slug : '#',
+                        ]);
+                    }
+
+                    $sortedTransactions = $allTransactions->sortByDesc('date');
+                @endphp
+
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div class="p-6 border-b border-gray-150 dark:border-gray-700 flex items-center justify-between">
+                        <h4 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center">
+                            <span class="mr-2">📜</span> M-Pesa Payment & Subscription Logs
+                        </h4>
+                        <span class="text-xs text-gray-400 font-semibold">{{ $sortedTransactions->count() }} Transactions</span>
+                    </div>
+                    <div class="p-6">
+                        @if($sortedTransactions->count() > 0)
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr class="bg-gray-50 dark:bg-gray-900 text-gray-400 font-bold border-b border-gray-150 dark:border-gray-700 uppercase tracking-wider text-[10px]">
+                                            <th class="p-3">Item / Service</th>
+                                            <th class="p-3">Type</th>
+                                            <th class="p-3">M-Pesa Ref / Receipt</th>
+                                            <th class="p-3">Phone</th>
+                                            <th class="p-3 text-right">Amount</th>
+                                            <th class="p-3 text-center">Status</th>
+                                            <th class="p-3 text-right">Date & Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700 font-medium">
+                                        @foreach($sortedTransactions as $tx)
+                                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                                                <td class="p-3 font-bold text-gray-900 dark:text-white max-w-xs truncate">
+                                                    @if($tx['url'] !== '#')
+                                                        <a href="{{ $tx['url'] }}" target="_blank" class="hover:text-[#C8102E] hover:underline">
+                                                            {{ Str::limit($tx['title'], 50) }}
+                                                        </a>
+                                                    @else
+                                                        {{ Str::limit($tx['title'], 50) }}
+                                                    @endif
+                                                </td>
+                                                <td class="p-3 text-gray-500 text-[11px]">{{ $tx['type'] }}</td>
+                                                <td class="p-3 font-mono text-gray-800 dark:text-gray-200 text-[11px]">{{ $tx['reference'] ?: 'N/A' }}</td>
+                                                <td class="p-3 font-mono text-gray-500 text-[11px]">{{ $tx['phone'] ?: 'N/A' }}</td>
+                                                <td class="p-3 text-right font-black text-emerald-600 dark:text-emerald-400">
+                                                    {{ $currencySymbol }} {{ number_format($tx['amount'], 2) }}
+                                                </td>
+                                                <td class="p-3 text-center">
+                                                    @if($tx['status'] === 'completed' || $tx['status'] === 'success' || $tx['status'] === 'paid' || $tx['status'] === 'active')
+                                                        <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 font-extrabold text-[9px] uppercase rounded-full">
+                                                            {{ $tx['status'] === 'active' ? 'Active Pass' : 'Completed' }}
+                                                        </span>
+                                                    @elseif($tx['status'] === 'pending')
+                                                        <span class="px-2 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 font-extrabold text-[9px] uppercase rounded-full">
+                                                            Pending
+                                                        </span>
+                                                    @else
+                                                        <span class="px-2 py-0.5 bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300 font-extrabold text-[9px] uppercase rounded-full">
+                                                            {{ ucfirst($tx['status']) }}
+                                                        </span>
+                                                    @endif
+                                                </td>
+                                                <td class="p-3 text-right text-gray-500 text-[10px]">
+                                                    {{ $tx['date'] ? $tx['date']->format('M d, Y H:i') : 'N/A' }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <p class="text-xs text-gray-400 text-center py-6">No payment or subscription transactions recorded yet.</p>
                         @endif
                     </div>
                 </div>

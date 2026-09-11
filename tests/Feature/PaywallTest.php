@@ -264,4 +264,49 @@ class PaywallTest extends TestCase
 
         $this->assertTrue($user->fresh()->hasActiveSubscription());
     }
+
+    public function test_user_dashboard_displays_paid_articles_and_transaction_logs(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'subscriber',
+            'email_verified_at' => now(),
+            'subscription_plan' => 'weekly',
+            'subscription_expires_at' => now()->addDays(7),
+        ]);
+
+        $article = $this->createArticle([
+            'title' => 'Dashboard Ledger Unlocked Story',
+            'is_premium' => true,
+        ]);
+
+        ArticlePurchase::create([
+            'user_id' => $user->id,
+            'article_id' => $article->id,
+            'amount' => 10,
+            'phone_number' => '254712345678',
+            'mpesa_reference' => 'DASHBOARDMPESA123',
+            'status' => 'completed',
+        ]);
+
+        ArticleSubscription::create([
+            'user_id' => $user->id,
+            'plan' => 'weekly',
+            'amount' => 50,
+            'phone_number' => '254712345678',
+            'starts_at' => now(),
+            'expires_at' => now()->addDays(7),
+            'mpesa_reference' => 'DASHBOARDSUB456',
+            'status' => 'active',
+        ]);
+
+        $response = $this->actingAs($user)->get('/dashboard');
+        $response->assertOk();
+        $response->assertSee('My Subscription & Article Pass Status', false);
+        $response->assertSee('Active Weekly Pass');
+        $response->assertSee('My Unlocked Premium Articles');
+        $response->assertSee('Dashboard Ledger Unlocked Story');
+        $response->assertSee('M-Pesa Payment & Subscription Logs', false);
+        $response->assertSee('DASHBOARDMPESA123');
+        $response->assertSee('DASHBOARDSUB456');
+    }
 }

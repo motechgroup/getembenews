@@ -224,4 +224,14 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Article::class, 'saved_articles', 'user_id', 'article_id');
     }
+
+    public function articlePurchases()
+    {
+        return $this->hasMany(ArticlePurchase::class)->orderBy('created_at', 'desc');
+    }
+
+    public function articleSubscriptions()
+    {
+        return $this->hasMany(ArticleSubscription::class)->orderBy('created_at', 'desc');
+    }
 }

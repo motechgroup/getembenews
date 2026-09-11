@@ -74,12 +74,13 @@
     <!-- Main Action Button (Triggers Payment Modal for Logged-in / Redirects to Register for Guests) -->
     <div class="relative z-10 max-w-md mx-auto mt-6 text-center space-y-3">
         <button type="button" wire:click="openPaymentModal" 
-                class="w-full py-4 px-6 bg-gradient-to-r from-[#C8102E] to-red-700 hover:from-red-600 hover:to-red-800 text-white font-black text-xs sm:text-sm uppercase tracking-widest rounded-xl transition shadow-xl flex items-center justify-center space-x-2 cursor-pointer transform hover:-translate-y-0.5 group">
-            <svg class="w-4 h-4 fill-current text-white/90 group-hover:scale-110 transition" viewBox="0 0 20 20">
+                style="background-color: #C8102E !important; color: #ffffff !important;"
+                class="w-full py-4 px-6 bg-[#C8102E] hover:bg-red-700 text-white font-black text-xs sm:text-sm uppercase tracking-widest rounded-xl transition shadow-xl flex items-center justify-center space-x-2 cursor-pointer transform hover:-translate-y-0.5 group">
+            <svg class="w-4 h-4 fill-current text-white group-hover:scale-110 transition" viewBox="0 0 20 20">
                 <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
                 <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/>
             </svg>
-            <span>
+            <span style="color: #ffffff !important;">
                 @if($selectedOption === 'article')
                     Unlock This Story (KSh {{ number_format($this->getPriceForOption('article')) }})
                 @else
@@ -171,9 +172,10 @@
                                 Cancel
                             </button>
                             <button type="submit" wire:loading.attr="disabled" 
-                                    class="w-2/3 py-3.5 px-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl transition shadow-lg flex items-center justify-center space-x-2 group cursor-pointer">
-                                <span wire:loading.remove>Send STK Push</span>
-                                <span wire:loading>Processing...</span>
+                                    style="background-color: #059669 !important; color: #ffffff !important;"
+                                    class="w-2/3 py-3.5 px-4 bg-[#059669] hover:bg-emerald-600 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl transition shadow-lg flex items-center justify-center space-x-2 group cursor-pointer">
+                                <span wire:loading.remove style="color: #ffffff !important;">Send STK Push</span>
+                                <span wire:loading style="color: #ffffff !important;">Processing...</span>
                             </button>
                         </div>
                     </form>

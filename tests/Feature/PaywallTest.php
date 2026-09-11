@@ -87,6 +87,24 @@ class PaywallTest extends TestCase
             ->assertRedirect(route('register'));
     }
 
+    public function test_logged_in_user_opens_payment_modal_popup(): void
+    {
+        $user = User::factory()->create(['role' => 'subscriber']);
+        $article = $this->createArticle([
+            'title' => 'Logged In User Modal Test Article',
+            'is_premium' => true,
+            'price' => 50,
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(\App\Livewire\ArticlePaywallModal::class, ['article' => $article])
+            ->assertSet('showPaymentModal', false)
+            ->call('openPaymentModal')
+            ->assertSet('showPaymentModal', true)
+            ->call('closePaymentModal')
+            ->assertSet('showPaymentModal', false);
+    }
+
     public function test_staff_users_automatically_bypass_premium_paywall(): void
     {
         $editor = User::factory()->create(['role' => 'editor']);

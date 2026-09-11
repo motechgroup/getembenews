@@ -21,6 +21,8 @@ class ArticlePaywallModal extends Component
     public string $statusMessage = '';
     public ?string $checkoutRequestId = null;
 
+    public bool $showPaymentModal = false;
+
     public function mount(Article $article): void
     {
         $this->article = $article;
@@ -30,15 +32,33 @@ class ArticlePaywallModal extends Component
         }
     }
 
+    public function openPaymentModal()
+    {
+        if (!Auth::check()) {
+            return $this->redirect(route('register'), navigate: true);
+        }
+
+        $this->mpesaStatus = 'idle';
+        $this->statusMessage = '';
+        $this->showPaymentModal = true;
+    }
+
+    public function closePaymentModal(): void
+    {
+        $this->showPaymentModal = false;
+        $this->mpesaStatus = 'idle';
+        $this->statusMessage = '';
+    }
+
     public function selectOption(string $option)
     {
         $this->selectedOption = $option;
-        $this->mpesaStatus = 'idle';
-        $this->statusMessage = '';
 
         if (!Auth::check()) {
             return $this->redirect(route('register'), navigate: true);
         }
+
+        $this->openPaymentModal();
     }
 
     public function getPriceForOption(string $option): float

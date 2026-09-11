@@ -10,7 +10,7 @@ class Article extends Model
 
     protected $fillable = [
         'title', 'slug', 'subtitle', 'body', 'featured_image', 'user_id', 
-        'category_id', 'status', 'is_featured', 'is_breaking', 'is_pinned', 
+        'category_id', 'status', 'is_featured', 'is_breaking', 'is_pinned', 'is_premium', 'price',
         'published_at', 'seo_title', 'seo_description', 'read_time', 'views_count',
         'format', 'format_meta', 'faq_items', 'downloads'
     ];
@@ -22,12 +22,23 @@ class Article extends Model
             'is_featured' => 'boolean',
             'is_breaking' => 'boolean',
             'is_pinned' => 'boolean',
+            'is_premium' => 'boolean',
+            'price' => 'decimal:2',
             'views_count' => 'integer',
             'read_time' => 'integer',
             'format_meta' => 'array',
             'faq_items' => 'array',
             'downloads' => 'array',
         ];
+    }
+
+    public function getEffectivePrice(): float
+    {
+        if ($this->price !== null && (float) $this->price > 0) {
+            return (float) $this->price;
+        }
+
+        return (float) \App\Models\Setting::get('paywall_default_article_price', 20.00);
     }
 
     // Relationships

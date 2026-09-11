@@ -24,12 +24,22 @@
             <!-- Left Side: Main Article Content -->
             <div class="lg:col-span-2 space-y-6">
                 
-                <!-- Category Badge -->
-                @if($article->category)
-                    <a href="/{{ $article->category->slug }}" class="inline-block text-xs font-bold text-[#C8102E] uppercase hover:underline">
-                        {{ $article->category->name }}
-                    </a>
-                @endif
+                <!-- Category & Premium Badges -->
+                <div class="flex items-center space-x-2">
+                    @if($article->category)
+                        <a href="/{{ $article->category->slug }}" class="inline-block text-xs font-bold text-[#C8102E] uppercase hover:underline">
+                            {{ $article->category->name }}
+                        </a>
+                    @endif
+                    @if($article->is_premium)
+                        <span class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 uppercase tracking-wider">
+                            <svg class="w-3 h-3 fill-current" viewBox="0 0 20 20">
+                                <path d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2a3 3 0 00-6 0v2h6V7z"/>
+                            </svg>
+                            <span>PREMIUM ARTICLE (KSh {{ number_format($article->getEffectivePrice()) }})</span>
+                        </span>
+                    @endif
+                </div>
 
                 <!-- Headline -->
                 <h1 class="text-3xl sm:text-4xl font-serif font-black tracking-tight text-gray-900 dark:text-white leading-tight break-words">
@@ -378,7 +388,30 @@
                         @endif
                     </div>
 
-                    {!! $bodyContent !!}
+                    @php
+                        $canAccessArticle = auth()->check() ? auth()->user()->canAccessArticle($article) : !$article->is_premium;
+                    @endphp
+
+                    @if($canAccessArticle)
+                        {!! $bodyContent !!}
+                    @else
+                        @php
+                            $teaserParagraphs = array_slice($paragraphs, 0, 2);
+                            $teaserHtml = implode('</p>', $teaserParagraphs);
+                            if (!str_ends_with(trim($teaserHtml), '</p>')) {
+                                $teaserHtml .= '</p>';
+                            }
+                        @endphp
+                        <div class="relative overflow-hidden max-h-80 mb-6">
+                            <div class="prose max-w-none dark:prose-invert prose-sm sm:prose-base leading-relaxed text-gray-800 dark:text-gray-200 space-y-4">
+                                {!! $teaserHtml !!}
+                            </div>
+                            <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white dark:from-gray-900 to-transparent pointer-events-none"></div>
+                        </div>
+
+                        <!-- Livewire Paywall Lock Card & Modal -->
+                        <livewire:article-paywall-modal :article="$article" />
+                    @endif
 
                     <!-- Watch Live TV / Listen Live Radio End Banners -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 border-y border-gray-150 dark:border-gray-800 py-3.5">

@@ -14,7 +14,7 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'bio', 'photo_url', 'social_links'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'bio', 'photo_url', 'social_links', 'subscription_plan', 'subscription_expires_at', 'mpesa_phone'];
     protected $hidden = ['password', 'remember_token'];
 
     /**
@@ -54,7 +54,38 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'social_links' => 'array',
+            'subscription_expires_at' => 'datetime',
         ];
+    }
+
+    public function hasActiveSubscription(): bool
+    {
+        return $this->subscription_expires_at !== null && $this->subscription_expires_at->isFuture();
+    }
+
+    public function hasPurchasedArticle(Article $article): bool
+    {
+        return ArticlePurchase::where('user_id', $this->id)
+            ->where('article_id', $article->id)
+            ->where('status', 'completed')
+            ->exists();
+    }
+
+    public function canAccessArticle(Article $article): bool
+    {
+        if (!$article->is_premium) {
+            return true;
+        }
+
+        if ($this->isStaff()) {
+            return true;
+        }
+
+        if ($this->hasActiveSubscription()) {
+            return true;
+        }
+
+        return $this->hasPurchasedArticle($article);
     }
 
     // Role helper methods

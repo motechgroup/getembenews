@@ -39,23 +39,76 @@ class MpesaCallbackController extends Controller
         ], 300);
 
         if ($resultCode == 0) {
-            // Find announcement mapped to this CheckoutRequestID
+            // 1. Parse Safaricom metadata for receipt / Reference
+            $ref = 'MPESA-CB-' . \Illuminate\Support\Str::random(10);
+            $metadata = $callbackData['CallbackMetadata']['Item'] ?? [];
+            foreach ($metadata as $item) {
+                if (($item['Name'] ?? '') === 'MpesaReceiptNumber') {
+                    $ref = $item['Value'];
+                    break;
+                }
+            }
+
+            // 2. Check if Paywall Purchase/Subscription mapped to CheckoutRequestID
+            $paywallData = Cache::get('mpesa_paywall_' . $checkoutRequestId);
+            if ($paywallData && is_array($paywallData)) {
+                $userId = $paywallData['user_id'] ?? null;
+                $articleId = $paywallData['article_id'] ?? null;
+                $option = $paywallData['option'] ?? 'article';
+                $amount = (float) ($paywallData['amount'] ?? 0);
+                $phone = $paywallData['phone'] ?? null;
+
+                if (in_array($option, ['single', 'article']) && $articleId) {
+                    \App\Models\ArticlePurchase::updateOrCreate([
+                        'checkout_request_id' => $checkoutRequestId,
+                    ], [
+                        'user_id' => $userId,
+                        'article_id' => $articleId,
+                        'amount' => $amount,
+                        'phone_number' => $phone,
+                        'mpesa_reference' => $ref,
+                        'status' => 'completed',
+                    ]);
+                    Log::info("Paywall Single Article ID {$articleId} purchased successfully via webhook. Ref: {$ref}");
+                } elseif (in_array($option, ['daily', 'weekly', 'monthly']) && $userId) {
+                    $user = \App\Models\User::find($userId);
+                    if ($user) {
+                        $days = match($option) {
+                            'daily' => 1,
+                            'weekly' => 7,
+                            'monthly' => 30,
+                            default => 1,
+                        };
+                        $expiresAt = now()->addDays($days);
+                        
+                        $user->update([
+                            'subscription_plan' => $option,
+                            'subscription_expires_at' => $expiresAt,
+                        ]);
+
+                        \App\Models\ArticleSubscription::updateOrCreate([
+                            'checkout_request_id' => $checkoutRequestId,
+                        ], [
+                            'user_id' => $user->id,
+                            'plan' => $option,
+                            'amount' => $amount,
+                            'phone_number' => $phone,
+                            'starts_at' => now(),
+                            'expires_at' => $expiresAt,
+                            'mpesa_reference' => $ref,
+                            'status' => 'active',
+                        ]);
+                        Log::info("User ID {$user->id} subscribed to {$option} pass successfully via webhook. Ref: {$ref}");
+                    }
+                }
+            }
+
+            // 3. Find announcement mapped to this CheckoutRequestID
             $announcementId = Cache::get('mpesa_ann_' . $checkoutRequestId);
             
             if ($announcementId) {
                 $announcement = Announcement::find($announcementId);
                 if ($announcement && $announcement->payment_status !== 'paid') {
-                    
-                    // Parse Safaricom metadata for receipt / Reference
-                    $ref = 'MPESA-CB-' . \Illuminate\Support\Str::random(10);
-                    $metadata = $callbackData['CallbackMetadata']['Item'] ?? [];
-                    foreach ($metadata as $item) {
-                        if (($item['Name'] ?? '') === 'MpesaReceiptNumber') {
-                            $ref = $item['Value'];
-                            break;
-                        }
-                    }
-
                     $commissionAmount = 0;
                     if ($announcement->agent_id) {
                         $agent = \App\Models\Agent::find($announcement->agent_id);

@@ -27,6 +27,8 @@ state([
     'is_featured' => false,
     'is_breaking' => false,
     'is_pinned' => false,
+    'is_premium' => false,
+    'price' => '',
     'seo_title' => '',
     'seo_description' => '',
     'ai_provider' => 'gemini',
@@ -57,6 +59,8 @@ rules([
     'is_featured' => 'nullable|boolean',
     'is_breaking' => 'nullable|boolean',
     'is_pinned' => 'nullable|boolean',
+    'is_premium' => 'nullable|boolean',
+    'price' => 'nullable|numeric|min:0',
     'seo_title' => 'nullable|string|max:255',
     'seo_description' => 'nullable|string|max:500',
     'format' => 'required|string|max:255',
@@ -93,7 +97,7 @@ $create = function () {
     $this->resetErrorBag();
     $this->reset([
         'articleId', 'title', 'slug', 'subtitle', 'body', 'featured_image',
-        'category_id', 'status', 'is_featured', 'is_breaking', 'is_pinned',
+        'category_id', 'status', 'is_featured', 'is_breaking', 'is_pinned', 'is_premium', 'price',
         'seo_title', 'seo_description', 'format', 'format_meta', 'faq_items', 'downloads', 'tags_input', 'published_at'
     ]);
     $this->selectedCategories = [];
@@ -146,6 +150,8 @@ $edit = function ($id) {
     $this->is_featured = $article->is_featured;
     $this->is_breaking = $article->is_breaking;
     $this->is_pinned = $article->is_pinned;
+    $this->is_premium = $article->is_premium;
+    $this->price = $article->price !== null ? (string) $article->price : '';
     $this->seo_title = $article->seo_title;
     $this->seo_description = $article->seo_description;
     
@@ -230,6 +236,8 @@ $save = function () {
         'is_featured' => (bool) $this->is_featured,
         'is_breaking' => (bool) $this->is_breaking,
         'is_pinned' => (bool) $this->is_pinned,
+        'is_premium' => (bool) $this->is_premium,
+        'price' => $this->price !== '' ? (float) $this->price : null,
         'published_at' => $pubDate,
         'seo_title' => $this->seo_title ?: $this->title,
         'seo_description' => $this->seo_description ?: Str::limit(strip_tags($this->body), 150),
@@ -627,6 +635,9 @@ $generateIdeas = function () {
                             <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-850/50">
                                 <td class="p-3 font-bold text-gray-900 dark:text-white truncate max-w-xs">
                                     <a href="/articles/{{ $article->slug }}" target="_blank" class="hover:underline">{{ $article->title }}</a>
+                                    @if($article->is_premium)
+                                        <span class="ml-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-red-600 text-white">PRO</span>
+                                    @endif
                                 </td>
                                 <td class="p-3 text-gray-500">{{ $article->author->name }}</td>
                                 <td class="p-3 text-gray-500">{{ $article->category->name }}</td>
@@ -1073,7 +1084,21 @@ $generateIdeas = function () {
                         <input type="checkbox" wire:model="is_breaking" id="is_breaking" class="rounded text-[#C8102E] focus:ring-[#C8102E] border-gray-350 dark:border-gray-700">
                         <label for="is_breaking" class="ml-2 text-xs font-semibold text-gray-700 dark:text-gray-300 cursor-pointer">Breaking News Alert</label>
                     </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" wire:model.live="is_premium" id="is_premium" class="rounded text-[#C8102E] focus:ring-[#C8102E] border-gray-350 dark:border-gray-700">
+                        <label for="is_premium" class="ml-2 text-xs font-bold text-red-600 dark:text-red-400 cursor-pointer">🔒 Premium Paywall Article (Requires payment or subscription)</label>
+                    </div>
                 </div>
+
+                @if($is_premium)
+                    <div class="space-y-1 p-3 bg-red-50 dark:bg-red-955/20 border border-red-200 dark:border-red-900/50 rounded-lg">
+                        <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Custom Unlock Price (KSh)</label>
+                        <input type="number" step="1" min="0" wire:model="price" placeholder="Leave empty for default (KSh 20)"
+                               class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#C8102E] dark:text-white font-semibold">
+                        <p class="text-[10px] text-gray-500">If left empty, default article price from Admin Settings will apply.</p>
+                        @error('price') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                    </div>
+                @endif
 
                 <!-- SEO Details -->
                 <div class="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">

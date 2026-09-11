@@ -262,6 +262,13 @@ state([
     'mpesaTestMessage' => '',
     'testMpesaPhone' => '',
 
+    // Paywall & Subscriptions Settings
+    'paywall_enabled' => fn() => (bool) Setting::get('paywall_enabled', true),
+    'paywall_default_article_price' => fn() => Setting::get('paywall_default_article_price', '50'),
+    'paywall_daily_price' => fn() => Setting::get('paywall_daily_price', '20'),
+    'paywall_weekly_price' => fn() => Setting::get('paywall_weekly_price', '100'),
+    'paywall_monthly_price' => fn() => Setting::get('paywall_monthly_price', '300'),
+
     // Dynamic Lists inputs / States
     'newRoleName' => '',
     'newRoleSlug' => '',
@@ -1276,7 +1283,8 @@ $save = function () use ($logAction) {
         'sms_textsms_api_key', 'sms_textsms_partner_id', 'sms_textsms_shortcode',
         'sms_template_draft', 'sms_template_payment',
         'mpesa_env', 'mpesa_transaction_type', 'mpesa_consumer_key', 'mpesa_consumer_secret',
-        'mpesa_shortcode', 'mpesa_till_number', 'mpesa_passkey', 'mpesa_initiator_name', 'mpesa_initiator_password', 'mpesa_callback_url'
+        'mpesa_shortcode', 'mpesa_till_number', 'mpesa_passkey', 'mpesa_initiator_name', 'mpesa_initiator_password', 'mpesa_callback_url',
+        'paywall_enabled', 'paywall_default_article_price', 'paywall_daily_price', 'paywall_weekly_price', 'paywall_monthly_price'
     ];
 
     foreach (['tv_schedule', 'radio_schedule'] as $schedKey) {
@@ -2818,6 +2826,38 @@ $sendTestEmail = function () {
                             <span class="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-bold bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/30">
                                 📱 Lipa Na M-Pesa STK Push
                             </span>
+                        </div>
+                    </div>
+
+                    <!-- Article Paywall & Subscription Default Pricing -->
+                    <div class="border-t border-gray-150 dark:border-gray-800 pt-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Article Paywall & Subscription Pricing</h4>
+                                <p class="text-[10px] text-gray-500">Configure global paywall status and pricing for pay-per-article and subscription passes.</p>
+                            </div>
+                            <label class="flex items-center cursor-pointer space-x-2">
+                                <input type="checkbox" wire:model="paywall_enabled" class="rounded border-gray-300 text-[#C8102E] shadow-sm focus:ring-[#C8102E]">
+                                <span class="text-xs font-bold text-gray-800 dark:text-gray-200">Enable Paywall System</span>
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300 uppercase">Single Article Default Price (KSh)</label>
+                                <input type="number" wire:model="paywall_default_article_price" min="1" step="1" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs font-mono text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300 uppercase">Daily Pass (24 Hours) Price (KSh)</label>
+                                <input type="number" wire:model="paywall_daily_price" min="1" step="1" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs font-mono text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300 uppercase">Weekly Pass (7 Days) Price (KSh)</label>
+                                <input type="number" wire:model="paywall_weekly_price" min="1" step="1" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs font-mono text-gray-900 dark:text-white">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-gray-700 dark:text-gray-300 uppercase">Monthly Pass (30 Days) Price (KSh)</label>
+                                <input type="number" wire:model="paywall_monthly_price" min="1" step="1" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs font-mono text-gray-900 dark:text-white">
+                            </div>
                         </div>
                     </div>
 

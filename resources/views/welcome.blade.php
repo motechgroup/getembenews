@@ -122,9 +122,9 @@
                             @if($featuredArticle && $featuredArticle instanceof \App\Models\Article)
                                 <article class="md:col-span-2 relative aspect-[16/10] overflow-hidden rounded-lg group shadow-md border border-gray-200 dark:border-gray-800 bg-gray-950">
                                     <img src="{{ $featuredArticle->optimizedImage(800, 450) }}" alt="{{ $featuredArticle->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-101 opacity-85 group-hover:opacity-75 transition duration-500" fetchpriority="high" decoding="async">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent flex flex-col justify-end p-6 space-y-1">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 via-40% to-transparent flex flex-col justify-end p-4 sm:p-5 space-y-1">
                                         <span class="text-[10px] font-bold text-red-500 uppercase tracking-widest">{{ $featuredArticle->category?->name ?? 'General' }}</span>
-                                        <h3 class="text-xl sm:text-2xl font-serif font-black text-white leading-tight">
+                                        <h3 class="text-lg sm:text-xl font-serif font-bold text-white leading-snug line-clamp-2 sm:line-clamp-3">
                                             <a href="/articles/{{ $featuredArticle->slug }}">{{ $featuredArticle->title }}</a>
                                         </h3>
                                         <p class="text-xs text-gray-300 line-clamp-2 leading-relaxed">{{ $featuredArticle->subtitle }}</p>
@@ -134,10 +134,10 @@
 
                             @foreach($topStories as $story)
                                 <article class="relative aspect-[16/10] overflow-hidden rounded-lg group shadow-sm border border-gray-250 dark:border-gray-800 bg-gray-950">
-                                    <img src="{{ $story->optimizedImage(500, 320) }}" alt="{{ $story->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 opacity-85 group-hover:opacity-75 transition duration-500" loading="lazy" decoding="async">
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent flex flex-col justify-end p-4 space-y-1">
+                                    <img src="{{ $story->optimizedImage(500, 320) }}" alt="{{ $story->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 opacity-90 group-hover:opacity-85 transition duration-500" loading="lazy" decoding="async">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 via-45% to-transparent flex flex-col justify-end p-3 sm:p-3.5 space-y-1">
                                         <span class="text-[9px] font-bold text-red-500 uppercase tracking-widest">{{ $story->category?->name ?? 'General' }}</span>
-                                        <h3 class="text-sm font-serif font-bold text-white leading-tight line-clamp-2">
+                                        <h3 class="text-xs font-serif font-bold text-white leading-snug line-clamp-2">
                                             <a href="/articles/{{ $story->slug }}">{{ $story->title }}</a>
                                         </h3>
                                     </div>
@@ -212,14 +212,14 @@
                 @if($featuredArticle && $featuredArticle instanceof \App\Models\Article)
                     <div class="lg:col-span-2 relative block aspect-[16/10] lg:aspect-auto lg:h-[450px] overflow-hidden rounded group bg-gray-950 shadow-md">
                         <a href="/articles/{{ $featuredArticle->slug }}" class="absolute inset-0 z-0">
-                            <img src="{{ $featuredArticle->optimizedImage(800, 450) }}" alt="{{ $featuredArticle->title }}" class="w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85" fetchpriority="high" decoding="async">
+                            <img src="{{ $featuredArticle->optimizedImage(800, 450) }}" alt="{{ $featuredArticle->title }}" class="w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-95 group-hover:opacity-90" fetchpriority="high" decoding="async">
                         </a>
                         <!-- Red category tag on top-left -->
-                        <span class="absolute top-4 left-4 px-3 py-1 bg-[#C8102E] text-white text-[10px] font-black uppercase tracking-widest rounded shadow z-10">
+                        <span class="absolute top-3.5 left-3.5 px-2.5 py-1 bg-[#C8102E] text-white text-[9px] font-black uppercase tracking-widest rounded shadow z-10">
                             {{ $featuredArticle->category?->name ?? 'General' }}
                         </span>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent flex flex-col justify-end p-6 space-y-2 pointer-events-none z-10">
-                            <h2 class="text-xl sm:text-2xl lg:text-3xl font-serif font-black text-white leading-tight group-hover:text-red-400 transition break-words pointer-events-auto">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 via-40% to-transparent flex flex-col justify-end p-4 sm:p-5 space-y-1.5 pointer-events-none z-10">
+                            <h2 class="text-base sm:text-xl lg:text-2xl font-serif font-bold text-white leading-snug line-clamp-2 sm:line-clamp-3 group-hover:text-red-400 transition break-words pointer-events-auto">
                                 <a href="/articles/{{ $featuredArticle->slug }}">{{ $featuredArticle->title }}</a>
                             </h2>
                             <div class="flex items-center space-x-3 text-[10px] text-gray-300 font-semibold pointer-events-auto">
@@ -245,7 +245,7 @@
                             </div>
                         </div>
                         @if($featuredArticle->is_featured)
-                            <span class="absolute top-4 right-4 bg-yellow-500 text-white p-1 rounded-full shadow-md z-20">
+                            <span class="absolute top-3.5 right-3.5 bg-yellow-500 text-white p-1 rounded-full shadow-md z-20">
                                 <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                             </span>
                         @endif
@@ -257,14 +257,14 @@
                     @foreach($topStories->take(4) as $story)
                         <div class="relative block aspect-[16/10] overflow-hidden rounded group bg-gray-950 shadow border border-gray-150 dark:border-gray-855">
                             <a href="/articles/{{ $story->slug }}" class="absolute inset-0 z-0">
-                                <img src="{{ $story->optimizedImage(500, 320) }}" alt="{{ $story->title }}" class="w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85" loading="lazy" decoding="async">
+                                <img src="{{ $story->optimizedImage(500, 320) }}" alt="{{ $story->title }}" class="w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-95 group-hover:opacity-90" loading="lazy" decoding="async">
                             </a>
                             <!-- Category tag with custom color overlay -->
-                            <span class="absolute top-3 left-3 px-2 py-0.5 bg-[#FF7900] text-white text-[9px] font-black uppercase tracking-wider rounded shadow z-10">
+                            <span class="absolute top-2.5 left-2.5 px-2 py-0.5 bg-[#FF7900] text-white text-[8px] font-black uppercase tracking-wider rounded shadow z-10">
                                 {{ $story->category?->name ?? 'General' }}
                             </span>
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent flex flex-col justify-end p-4 space-y-1.5 pointer-events-none z-10">
-                                <h3 class="text-xs sm:text-sm font-serif font-bold text-white leading-tight line-clamp-2 group-hover:text-red-400 transition break-words pointer-events-auto">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 via-45% to-transparent flex flex-col justify-end p-3 sm:p-3.5 space-y-1 pointer-events-none z-10">
+                                <h3 class="text-xs sm:text-xs font-serif font-bold text-white leading-snug line-clamp-2 group-hover:text-red-400 transition break-words pointer-events-auto">
                                     <a href="/articles/{{ $story->slug }}">{{ $story->title }}</a>
                                 </h3>
                                 <div class="flex items-center space-x-2 text-[9px] text-gray-355 pointer-events-auto">
@@ -285,7 +285,7 @@
                                 </div>
                             </div>
                             @if($story->is_featured)
-                                <span class="absolute top-3 right-3 bg-yellow-500 text-white p-0.5 rounded-full shadow-md z-20">
+                                <span class="absolute top-2.5 right-2.5 bg-yellow-500 text-white p-0.5 rounded-full shadow-md z-20">
                                     <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                 </span>
                             @endif
@@ -593,8 +593,8 @@
                                     <div class="absolute bottom-3 left-3 bg-[#C8102E] text-white text-[8px] font-black uppercase px-2 py-0.5 tracking-wider rounded z-20">
                                         {{ $recItem->category?->name ?? 'General' }}
                                     </div>
-                                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent flex flex-col justify-end p-4 space-y-1">
-                                        <h4 class="text-xs font-serif font-bold text-white leading-tight line-clamp-2 pt-4">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 via-45% to-transparent flex flex-col justify-end p-3 space-y-1">
+                                        <h4 class="text-xs font-serif font-bold text-white leading-snug line-clamp-2">
                                             {{ $recItem->title }}
                                         </h4>
                                     </div>

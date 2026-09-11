@@ -250,6 +250,45 @@ class MobileAppController extends Controller
         // Increment view count dynamically
         $article->increment('views_count');
 
+        // Check user authentication & access rights for paywall
+        $user = auth('sanctum')->user();
+        $canAccess = $user ? $user->canAccessArticle($article) : !$article->is_premium;
+
+        $paywallInfo = [
+            'is_premium' => (bool) $article->is_premium,
+            'is_locked' => !$canAccess,
+            'user_has_access' => (bool) $canAccess,
+            'article_price' => (int) ($article->price ?: Setting::get('paywall_default_article_price', '50')),
+            'subscription_options' => [
+                'daily' => (int) Setting::get('paywall_daily_price', '20'),
+                'weekly' => (int) Setting::get('paywall_weekly_price', '100'),
+                'monthly' => (int) Setting::get('paywall_monthly_price', '300'),
+            ]
+        ];
+
+        if (!$canAccess) {
+            // Truncate article body to 1 paragraph teaser snippet for locked premium articles
+            $rawBody = $article->body;
+            $normalizedBody = preg_replace('/(<br\s*\/?>\s*){2,}/i', '</p><p>', $rawBody);
+            $normalizedBody = preg_replace('/<\/div>\s*<div[^>]*>/i', '</p><p>', $normalizedBody);
+            $normalizedBody = preg_replace('/(?:\r?\n){2,}/', '</p><p>', $normalizedBody);
+
+            if (preg_match_all('/<p[^>]*>(.*?)<\/p>/is', $normalizedBody, $pMatches) && !empty($pMatches[0])) {
+                $cleanParagraphsList = array_values(array_filter($pMatches[0], fn($p) => trim(strip_tags($p)) !== ''));
+            } else {
+                $chunks = preg_split('/<br\s*\/?>|\n/i', strip_tags($normalizedBody, '<a><strong><b><i><em>'));
+                $cleanParagraphsList = [];
+                foreach ($chunks as $chunk) {
+                    $chunk = trim($chunk);
+                    if (!empty($chunk)) {
+                        $cleanParagraphsList[] = '<p>' . $chunk . '</p>';
+                    }
+                }
+            }
+
+            $article->body = !empty($cleanParagraphsList) ? $cleanParagraphsList[0] : '<p>' . \Illuminate\Support\Str::limit(strip_tags($rawBody), 180) . '</p>';
+        }
+
         // Fetch approved comments
         $comments = Comment::where('article_id', $article->id)
             ->where('status', 'approved')
@@ -268,6 +307,7 @@ class MobileAppController extends Controller
             'status' => 'success',
             'data' => [
                 'article' => $article,
+                'paywall' => $paywallInfo,
                 'comments' => $comments,
                 'related_articles' => $related
             ]
@@ -1120,6 +1160,171 @@ class MobileAppController extends Controller
         }
 
         return "";
+    }
+
+    /**
+     * Trigger M-Pesa STK Push payment for single article purchase on Mobile App.
+     */
+    public function payArticle(Request $request, int $id)
+    {
+        $this->checkMaintenance();
+
+        $article = Article::findOrFail($id);
+        $user = $request->user();
+
+        if ($user->canAccessArticle($article)) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'You already have access to this article.',
+                'data' => ['has_access' => true]
+            ]);
+        }
+
+        $request->validate([
+            'phone' => 'required|string|max:20',
+        ]);
+
+        $phone = trim($request->phone);
+        $amount = (float) ($article->price ?: Setting::get('paywall_default_article_price', '50'));
+        $reference = 'ART-' . $article->id;
+
+        $stkResult = \App\Support\Mpesa::stkPush($phone, $amount, $reference);
+
+        if ($stkResult['success']) {
+            $checkoutRequestId = $stkResult['checkout_request_id'];
+            \Illuminate\Support\Facades\Cache::put('mpesa_paywall_' . $checkoutRequestId, [
+                'user_id' => $user->id,
+                'article_id' => $article->id,
+                'option' => 'single',
+                'amount' => $amount,
+                'phone' => $phone,
+            ], 3600);
+
+            return response()->json([
+                'status' => 'success',
+                'mode' => 'stk_push',
+                'checkout_request_id' => $checkoutRequestId,
+                'message' => "M-Pesa STK Push sent to {$phone} for KSh {$amount}. Please enter your M-Pesa PIN on your phone handset screen.",
+                'data' => [
+                    'article_id' => $article->id,
+                    'amount' => $amount
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $stkResult['message'] ?? 'Failed to trigger M-Pesa STK Push.'
+        ], 400);
+    }
+
+    /**
+     * Trigger M-Pesa STK Push payment for subscription pass on Mobile App.
+     */
+    public function paySubscription(Request $request)
+    {
+        $this->checkMaintenance();
+
+        $user = $request->user();
+
+        $request->validate([
+            'plan' => 'required|in:daily,weekly,monthly',
+            'phone' => 'required|string|max:20',
+        ]);
+
+        $plan = $request->plan;
+        $phone = trim($request->phone);
+
+        $amount = match($plan) {
+            'daily' => (float) Setting::get('paywall_daily_price', '20'),
+            'weekly' => (float) Setting::get('paywall_weekly_price', '100'),
+            'monthly' => (float) Setting::get('paywall_monthly_price', '300'),
+            default => 20.0,
+        };
+
+        $reference = 'SUB-' . strtoupper($plan);
+
+        $stkResult = \App\Support\Mpesa::stkPush($phone, $amount, $reference);
+
+        if ($stkResult['success']) {
+            $checkoutRequestId = $stkResult['checkout_request_id'];
+            \Illuminate\Support\Facades\Cache::put('mpesa_paywall_' . $checkoutRequestId, [
+                'user_id' => $user->id,
+                'option' => $plan,
+                'amount' => $amount,
+                'phone' => $phone,
+            ], 3600);
+
+            return response()->json([
+                'status' => 'success',
+                'mode' => 'stk_push',
+                'checkout_request_id' => $checkoutRequestId,
+                'message' => "M-Pesa STK Push sent to {$phone} for " . ucfirst($plan) . " Subscription Pass (KSh {$amount}). Please enter your M-Pesa PIN on your phone.",
+                'data' => [
+                    'plan' => $plan,
+                    'amount' => $amount
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $stkResult['message'] ?? 'Failed to trigger M-Pesa STK Push.'
+        ], 400);
+    }
+
+    /**
+     * Check status of article purchase or subscription.
+     */
+    public function checkPaywallStatus(Request $request)
+    {
+        $this->checkMaintenance();
+
+        $checkoutRequestId = $request->input('checkout_request_id');
+        $user = $request->user();
+
+        if (!empty($checkoutRequestId)) {
+            $cached = \Illuminate\Support\Facades\Cache::get('mpesa_status_' . $checkoutRequestId);
+            if ($cached && ((int) ($cached['code'] ?? -1)) === 0) {
+                return response()->json([
+                    'status' => 'success',
+                    'payment_status' => 'paid',
+                    'user_has_access' => true,
+                    'message' => 'Payment confirmed! You now have full access.',
+                    'user' => $user->fresh()
+                ]);
+            }
+
+            // Query Safaricom directly
+            $query = \App\Support\Mpesa::queryStatus($checkoutRequestId);
+            if ($query['success'] && $query['status'] === 'success') {
+                return response()->json([
+                    'status' => 'success',
+                    'payment_status' => 'paid',
+                    'user_has_access' => true,
+                    'message' => 'Payment confirmed! You now have full access.',
+                    'user' => $user->fresh()
+                ]);
+            }
+        }
+
+        $hasAccess = false;
+        if ($request->filled('article_id')) {
+            $article = Article::find($request->article_id);
+            if ($article) {
+                $hasAccess = $user->canAccessArticle($article);
+            }
+        } else {
+            $hasAccess = $user->hasActiveSubscription();
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'payment_status' => $hasAccess ? 'paid' : 'pending',
+            'user_has_access' => $hasAccess,
+            'message' => $hasAccess ? 'Access verified.' : 'Payment pending PIN entry.',
+            'user' => $user->fresh()
+        ]);
     }
 }
 

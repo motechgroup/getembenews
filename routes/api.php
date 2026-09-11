@@ -66,6 +66,11 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         
         // Interactivity
         Route::post('/articles/{id}/comment', [MobileAppController::class, 'comment']);
+
+        // Paywall & M-Pesa Subscriptions
+        Route::post('/articles/{id}/pay', [MobileAppController::class, 'payArticle'])->middleware('throttle:submissions');
+        Route::post('/subscriptions/pay', [MobileAppController::class, 'paySubscription'])->middleware('throttle:submissions');
+        Route::get('/paywall/status', [MobileAppController::class, 'checkPaywallStatus']);
     });
 
     Route::get('/articles/{slug}', [MobileAppController::class, 'article']);

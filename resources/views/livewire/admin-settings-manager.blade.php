@@ -132,6 +132,10 @@ state([
     'social_pinterest_active' => fn() => (bool) Setting::get('social_pinterest_active', true),
     'social_threads_active' => fn() => (bool) Setting::get('social_threads_active', true),
 
+    // Widget Active Toggles
+    'polls_widget_active' => fn() => (bool) Setting::get('polls_widget_active', true),
+    'quizzes_widget_active' => fn() => (bool) Setting::get('quizzes_widget_active', true),
+
 
     // 3. Contact Settings
     'contact_email' => fn() => Setting::get('contact_email', 'contact@getembenews.com'),
@@ -1398,6 +1402,26 @@ $toggleAppDownloadPopup = function () use ($logAction) {
     $this->app_download_popup_enabled = $newStatus;
     \Illuminate\Support\Facades\Cache::forget('setting_v1_app_download_popup_enabled');
     $logAction("Toggled App Download Popup " . ($newStatus ? 'ON' : 'OFF'));
+    $this->dispatch('settings-saved');
+};
+
+$togglePollsWidget = function () use ($logAction) {
+    $current = (bool) Setting::get('polls_widget_active', true);
+    $newStatus = !$current;
+    Setting::set('polls_widget_active', $newStatus);
+    $this->polls_widget_active = $newStatus;
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_polls_widget_active');
+    $logAction("Toggled Polls Widget " . ($newStatus ? 'ON' : 'OFF'));
+    $this->dispatch('settings-saved');
+};
+
+$toggleQuizzesWidget = function () use ($logAction) {
+    $current = (bool) Setting::get('quizzes_widget_active', true);
+    $newStatus = !$current;
+    Setting::set('quizzes_widget_active', $newStatus);
+    $this->quizzes_widget_active = $newStatus;
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_quizzes_widget_active');
+    $logAction("Toggled Quizzes Widget " . ($newStatus ? 'ON' : 'OFF'));
     $this->dispatch('settings-saved');
 };
 
@@ -3855,7 +3879,18 @@ $sendTestEmail = function () {
 
                 <!-- POLLS MANAGEMENT TAB -->
                 <div x-show="activeTab === 'polls'" class="space-y-4" style="display: none;">
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">Polls Management Control</h3>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800 pb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Polls Management Control</h3>
+                            <p class="text-xs text-gray-500">Create, manage, or turn off the audience poll card on the website sidebar.</p>
+                        </div>
+                        <button type="button" 
+                                wire:click="togglePollsWidget"
+                                class="shrink-0 px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 {{ $polls_widget_active ? 'bg-green-600 hover:bg-green-700 text-white shadow-sm' : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300' }}">
+                            <span class="w-2.5 h-2.5 rounded-full {{ $polls_widget_active ? 'bg-white animate-pulse' : 'bg-gray-400' }}"></span>
+                            <span>{{ $polls_widget_active ? 'Widget Active (ON)' : 'Widget Disabled (OFF)' }}</span>
+                        </button>
+                    </div>
                     
                     @if (session()->has('poll_success'))
                         <div class="p-2.5 bg-green-900/10 border border-green-800 text-green-300 text-xs rounded">
@@ -3902,7 +3937,18 @@ $sendTestEmail = function () {
 
                 <!-- QUIZZES TAB -->
                 <div x-show="activeTab === 'quizzes'" class="space-y-4" style="display: none;">
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">Quizzes Management Panel</h3>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 dark:border-gray-800 pb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Quizzes Management Panel</h3>
+                            <p class="text-xs text-gray-500">Configure trivia quizzes or disable the interactive quiz widget on the sidebar.</p>
+                        </div>
+                        <button type="button" 
+                                wire:click="toggleQuizzesWidget"
+                                class="shrink-0 px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 {{ $quizzes_widget_active ? 'bg-green-600 hover:bg-green-700 text-white shadow-sm' : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300' }}">
+                            <span class="w-2.5 h-2.5 rounded-full {{ $quizzes_widget_active ? 'bg-white animate-pulse' : 'bg-gray-400' }}"></span>
+                            <span>{{ $quizzes_widget_active ? 'Widget Active (ON)' : 'Widget Disabled (OFF)' }}</span>
+                        </button>
+                    </div>
                     
                     @if (session()->has('quiz_success'))
                         <div class="p-2.5 bg-green-900/10 border border-green-800 text-green-300 text-xs rounded">
@@ -3929,7 +3975,7 @@ $sendTestEmail = function () {
                         <h4 class="text-xs font-bold text-gray-750 dark:text-gray-250 uppercase">Configured Reader Quizzes</h4>
                         <div class="space-y-3">
                             @forelse(json_decode(\App\Models\Setting::get('simulated_quizzes', '[]'), true) as $quiz)
-                                <div class="p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-850 rounded-lg flex justify-between items-center text-xs shadow-sm">
+                                <div class="p-4 bg-white dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg flex justify-between items-center text-xs shadow-sm">
                                     <div>
                                         <div class="font-bold text-gray-900 dark:text-white">{{ $quiz['title'] }}</div>
                                         <div class="text-[10px] text-gray-400 mt-1">Questions: <span class="font-bold font-mono text-gray-900 dark:text-white">{{ $quiz['questions_count'] }}</span></div>

@@ -1,22 +1,16 @@
 @php
+    $pollsWidgetActive = (bool) \App\Models\Setting::get('polls_widget_active', true);
     $pollsRaw = \App\Models\Setting::get('simulated_polls', '[]');
     $polls = is_array($pollsRaw) ? $pollsRaw : json_decode($pollsRaw ?? '[]', true);
-    $activePoll = (is_array($polls) && !empty($polls) && isset($polls[0])) ? $polls[0] : [
-        'id' => 'default_poll',
-        'question' => 'What should Getembe County prioritize in the next budget cycle?',
-        'options' => ['Road Networks', 'Youth Tech Hubs', 'Agriculture', 'Healthcare']
-    ];
+    $activePoll = (is_array($polls) && !empty($polls) && isset($polls[0])) ? $polls[0] : null;
 
+    $quizzesWidgetActive = (bool) \App\Models\Setting::get('quizzes_widget_active', true);
     $quizzesRaw = \App\Models\Setting::get('simulated_quizzes', '[]');
     $quizzes = is_array($quizzesRaw) ? $quizzesRaw : json_decode($quizzesRaw ?? '[]', true);
-    $activeQuiz = (is_array($quizzes) && !empty($quizzes) && isset($quizzes[0])) ? $quizzes[0] : [
-        'id' => 'default_quiz',
-        'title' => 'Getembe County History & Culture Trivia',
-        'questions_count' => 3
-    ];
+    $activeQuiz = (is_array($quizzes) && !empty($quizzes) && isset($quizzes[0])) ? $quizzes[0] : null;
 
-    $pollOptionsCount = count($activePoll['options'] ?? [1,2,3,4]);
-    $defaultOptionVotes = array_fill(0, $pollOptionsCount, 25);
+    $pollOptionsCount = $activePoll ? count($activePoll['options'] ?? []) : 0;
+    $defaultOptionVotes = array_fill(0, max($pollOptionsCount, 1), 25);
 
     $defaultQuizQuestions = [
         [
@@ -38,9 +32,10 @@
             'explanation' => 'Getembe News is based in Kisii, Kenya, and defaults to KSH (Kenyan Shilling).'
         ]
     ];
-    $activeQuizQuestions = !empty($activeQuiz['questions']) && is_array($activeQuiz['questions']) ? $activeQuiz['questions'] : $defaultQuizQuestions;
+    $activeQuizQuestions = ($activeQuiz && !empty($activeQuiz['questions']) && is_array($activeQuiz['questions'])) ? $activeQuiz['questions'] : $defaultQuizQuestions;
 @endphp
 
+@if($pollsWidgetActive && !empty($activePoll))
 <!-- Polls Widget -->
 <div class="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg p-5 space-y-4"
      x-data="{ 
@@ -113,7 +108,9 @@
         </template>
     </div>
 </div>
+@endif
 
+@if($quizzesWidgetActive && !empty($activeQuiz))
 <!-- Quizzes Widget -->
 <div class="bg-white dark:bg-gray-955 border border-gray-200 dark:border-gray-850 rounded-lg p-5 space-y-4"
      x-data="{
@@ -241,3 +238,5 @@
         </template>
     </div>
 </div>
+@endif
+

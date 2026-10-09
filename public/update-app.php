@@ -180,6 +180,14 @@ try {
     echo '<div class="error">✖ Cache Clear Note: ' . htmlspecialchars($e->getMessage()) . '</div>';
 }
 
+// 5. Read Recent Log Entries
+$logPath = storage_path('logs/laravel.log');
+if (file_exists($logPath)) {
+    $lines = array_slice(file($logPath), -80);
+    echo '<div class="step-title"><span>📋 Latest Server Exception Logs</span></div>';
+    echo '<pre style="max-height: 400px; color: #f87171;">' . htmlspecialchars(implode('', $lines)) . '</pre>';
+}
+
 echo '
         <div class="btn-group">
             <a href="/admin/settings/social-login" class="btn">Go to Admin Settings (Social OAuth)</a>

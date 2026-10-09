@@ -115,7 +115,7 @@ echo '<div class="file-list">';
 
 $updatedCount = 0;
 foreach ($targetFiles as $relPath) {
-    $url = $rawBaseUrl . $relPath;
+    $url = $rawBaseUrl . $relPath . '?v=' . time();
     $targetPath = $baseDir . '/' . $relPath;
 
     try {

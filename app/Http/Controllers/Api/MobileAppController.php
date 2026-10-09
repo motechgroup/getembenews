@@ -342,6 +342,21 @@ class MobileAppController extends Controller
     {
         $this->checkMaintenance();
 
+        // Normalize phone number if supplied (remove spaces, strip +254/254 prefix to 0)
+        if ($request->has('phone') && !empty($request->phone)) {
+            $phoneInput = preg_replace('/\s+/', '', trim($request->phone));
+            $phoneInput = preg_replace('/^(?:\+254|254)/', '0', $phoneInput);
+            $request->merge(['phone' => $phoneInput]);
+        }
+
+        // Convert empty string inputs to null so nullable validation passes cleanly
+        if ($request->has('email') && trim((string)$request->email) === '') {
+            $request->merge(['email' => null]);
+        }
+        if ($request->has('phone') && trim((string)$request->phone) === '') {
+            $request->merge(['phone' => null]);
+        }
+
         // Validate strictly 10-digit Kenyan phone format starting with 07 or 01 (e.g. 0712345678 or 0112345678)
         $request->validate([
             'name' => 'required|string|max:255',

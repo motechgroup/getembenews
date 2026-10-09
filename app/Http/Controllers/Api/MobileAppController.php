@@ -357,20 +357,36 @@ class MobileAppController extends Controller
             $request->merge(['phone' => null]);
         }
 
+    /**
+     * Generate all possible formatting variants for a Kenyan phone number.
+     */
+    private function getPhoneVariants(?string $input): array
+    {
+        if (empty($input)) return [];
+        $digits = preg_replace('/[^0-9]/', '', trim($input));
+        if (empty($digits)) return [];
+
+        $clean07 = preg_replace('/^(?:254|0)/', '0', $digits);
+        $intl254 = preg_replace('/^0/', '254', $clean07);
+        $plus254 = '+' . $intl254;
+
+        return array_values(array_unique([trim($input), $digits, $clean07, $intl254, $plus254]));
+    }
+
+    /**
+     * Register a new user via mobile app (Phone or Email).
+     */
+    public function register(Request $request)
+    {
+        $this->checkMaintenance();
+
         $hasPhoneColumn = \Illuminate\Support\Facades\Schema::hasColumn('users', 'phone');
 
-        // Validation rules matching available database columns
         $rules = [
             'name' => 'required|string|max:255',
-            'email' => 'nullable|string|email|max:255|unique:users,email',
+            'email' => 'nullable|string|email|max:255',
             'password' => 'required|string|min:6',
         ];
-
-        if ($hasPhoneColumn) {
-            $rules['phone'] = ['nullable', 'string', 'regex:/^(07|01)\d{8}$/', 'unique:users,phone'];
-        } else {
-            $rules['phone'] = ['nullable', 'string', 'regex:/^(07|01)\d{8}$/', 'unique:users,mpesa_phone'];
-        }
 
         $request->validate($rules);
 
@@ -380,15 +396,50 @@ class MobileAppController extends Controller
             ]);
         }
 
-        $phone = $request->filled('phone') ? trim($request->phone) : null;
         $email = $request->filled('email') ? strip_tags(trim(strtolower($request->email))) : null;
+        if ($email) {
+            $existingEmailUser = User::where('email', $email)->first();
+            if ($existingEmailUser) {
+                throw ValidationException::withMessages([
+                    'email' => ['An account with this email address already exists. Please sign in.'],
+                ]);
+            }
+        }
+
+        $phoneInput = $request->filled('phone') ? trim($request->phone) : null;
+        $phoneVariants = $this->getPhoneVariants($phoneInput);
+        $cleanPhone = null;
+
+        if (!empty($phoneVariants)) {
+            foreach ($phoneVariants as $v) {
+                if (preg_match('/^(07|01)\d{8}$/', $v)) {
+                    $cleanPhone = $v;
+                    break;
+                }
+            }
+            if (!$cleanPhone) {
+                $cleanPhone = $phoneVariants[0];
+            }
+
+            $existingPhoneUserQuery = User::whereIn('mpesa_phone', $phoneVariants);
+            if ($hasPhoneColumn) {
+                $existingPhoneUserQuery->orWhereIn('phone', $phoneVariants);
+            }
+            $existingPhoneUser = $existingPhoneUserQuery->first();
+
+            if ($existingPhoneUser) {
+                throw ValidationException::withMessages([
+                    'phone' => ['An account with this phone number already exists. Please sign in with your phone and password.'],
+                ]);
+            }
+        }
 
         try {
             $user = User::create([
                 'name' => strip_tags(trim($request->name)),
                 'email' => $email,
-                'phone' => $phone,
-                'mpesa_phone' => $phone,
+                'phone' => $cleanPhone,
+                'mpesa_phone' => $cleanPhone,
                 'password' => Hash::make($request->password),
                 'role' => 'subscriber',
             ]);
@@ -513,23 +564,31 @@ class MobileAppController extends Controller
             ]);
         }
 
-        // Normalize Kenyan phone format if starting with country code (+254 or 254)
-        $cleanPhone = preg_replace('/^(?:\+254|254)/', '0', $inputKey);
-
+        $phoneVariants = $this->getPhoneVariants($inputKey);
         $hasPhoneColumn = \Illuminate\Support\Facades\Schema::hasColumn('users', 'phone');
 
-        $userQuery = User::where('email', strtolower($inputKey))
-            ->orWhere('mpesa_phone', $cleanPhone);
+        // Retrieve candidate users matching email or any phone variant
+        $userCandidates = User::where(function($q) use ($inputKey, $phoneVariants, $hasPhoneColumn) {
+            $q->where('email', strtolower($inputKey));
+            if (!empty($phoneVariants)) {
+                if ($hasPhoneColumn) {
+                    $q->orWhereIn('phone', $phoneVariants);
+                }
+                $q->orWhereIn('mpesa_phone', $phoneVariants);
+            }
+        })->get();
 
-        if ($hasPhoneColumn) {
-            $userQuery->orWhere('phone', $cleanPhone);
+        $user = null;
+        foreach ($userCandidates as $candidate) {
+            if (!empty($candidate->password) && Hash::check($request->password, $candidate->password)) {
+                $user = $candidate;
+                break;
+            }
         }
 
-        $user = $userQuery->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user) {
             throw ValidationException::withMessages([
-                'login_key' => ['The provided credentials are incorrect.'],
+                'login_key' => ['The provided credentials are incorrect. Please verify your phone number and password.'],
             ]);
         }
 

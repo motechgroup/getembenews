@@ -24,7 +24,7 @@ rules(function () {
     return [
         'name' => 'required|string|max:255',
         'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->userId)],
-        'phone' => ['nullable', 'string', 'max:20', Rule::unique('users')->ignore($this->userId)],
+        'phone' => ['nullable', 'string', 'regex:/^(07|01)\d{8}$/', Rule::unique('users')->ignore($this->userId)],
         'password' => $this->userId ? 'nullable|string|min:8' : 'required|string|min:8',
         'role' => 'required|string|in:admin,editor,author,user,reporter,contributor,subscriber,manager,writing-article',
     ];
@@ -57,10 +57,15 @@ $closeForm = function () {
 };
 
 $saveUser = function () {
+    // Auto-clean phone input (strip non-numeric characters)
+    if ($this->phone) {
+        $this->phone = preg_replace('/[^0-9]/', '', trim($this->phone));
+    }
+
     $this->validate();
 
     if (empty($this->email) && empty($this->phone)) {
-        $this->addError('email', 'Please provide either an Email address or Phone number.');
+        $this->addError('phone', 'Please provide either a 10-digit Kenyan Phone number or Email address.');
         return;
     }
 
@@ -191,31 +196,51 @@ with(function () {
     <!-- Users Form Modal -->
     @if($isFormOpen)
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 shadow space-y-4">
-            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">
-                {{ $userId ? 'Edit User Details' : 'Create New Account' }}
-            </h3>
+            <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
+                <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                    {{ $userId ? 'Edit User Details' : 'Create New Account' }}
+                </h3>
+                <span class="text-[11px] text-gray-500 font-semibold">User can register using Kenyan Phone (07/01) or Email</span>
+            </div>
             
-            <form wire:submit.prevent="saveUser" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="space-y-1">
+            <form wire:submit.prevent="saveUser" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div class="space-y-1 sm:col-span-2">
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Full Name</label>
-                    <input type="text" wire:model="name" required class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                    <input type="text" wire:model="name" required placeholder="e.g. John Doe" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:ring-1 focus:ring-[#C8102E]">
                     @error('name') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>
-                <div class="space-y-1">
-                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Address (Optional if Phone provided)</label>
-                    <input type="email" wire:model="email" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
-                    @error('email') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+
+                <!-- Featured Phone Number Input Card -->
+                <div class="p-3.5 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900 rounded-lg space-y-1">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                            <span>📱</span> Kenyan Phone Number
+                        </label>
+                        <span class="text-[9px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded">Mobile Auth</span>
+                    </div>
+                    <input type="text" wire:model="phone" placeholder="e.g. 0712345678 or 0112345678" class="w-full bg-white dark:bg-gray-800 border border-emerald-300 dark:border-emerald-800 rounded p-2 text-xs text-gray-900 dark:text-white font-mono focus:ring-1 focus:ring-emerald-500">
+                    <p class="text-[10px] text-emerald-700 dark:text-emerald-400">Strictly 10 digits starting with 07 or 01 (No country code).</p>
+                    @error('phone') <p class="text-red-500 text-[10px] font-bold">{{ $message }}</p> @enderror
                 </div>
-                <div class="space-y-1">
-                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Kenyan Phone Number (Optional if Email provided)</label>
-                    <input type="text" wire:model="phone" placeholder="e.g. 0712345678" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
-                    @error('phone') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+
+                <!-- Featured Email Address Input Card -->
+                <div class="p-3.5 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 rounded-lg space-y-1">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
+                            <span>✉️</span> Email Address
+                        </label>
+                        <span class="text-[9px] font-bold bg-blue-100 dark:bg-blue-900/60 text-blue-800 dark:text-blue-300 px-1.5 py-0.5 rounded">Web Auth</span>
+                    </div>
+                    <input type="email" wire:model="email" placeholder="e.g. user@example.com" class="w-full bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-800 rounded p-2 text-xs text-gray-900 dark:text-white font-mono focus:ring-1 focus:ring-blue-500">
+                    <p class="text-[10px] text-blue-700 dark:text-blue-400">Required if Phone number is omitted.</p>
+                    @error('email') <p class="text-red-500 text-[10px] font-bold">{{ $message }}</p> @enderror
                 </div>
+
                 <div class="space-y-1">
-                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Role</label>
+                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Account Role</label>
                     <select wire:model="role" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
-                        <option value="user">User (Subscriber)</option>
-                        <option value="author">Author</option>
+                        <option value="user">User (Reader / Mobile App)</option>
+                        <option value="author">Author (Content Creator)</option>
                         <option value="writing-article">Writing Article</option>
                         <option value="manager">Manager</option>
                         <option value="editor">Editor</option>
@@ -223,19 +248,20 @@ with(function () {
                     </select>
                     @error('role') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>
-                <div class="space-y-1 sm:col-span-2">
+
+                <div class="space-y-1">
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">
                         Password {{ $userId ? '(Leave blank to keep current)' : '' }}
                     </label>
-                    <input type="password" wire:model="password" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                    <input type="password" wire:model="password" placeholder="At least 8 characters" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                     @error('password') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="sm:col-span-2 pt-4 flex space-x-2">
-                    <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded transition">
-                        {{ $userId ? 'Save Changes' : 'Create Account' }}
+                <div class="sm:col-span-2 pt-4 flex space-x-2 border-t border-gray-100 dark:border-gray-800">
+                    <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white text-xs font-bold px-5 py-2.5 rounded transition shadow">
+                        {{ $userId ? 'Save Account Changes' : 'Create User Account' }}
                     </button>
-                    <button type="button" wire:click="closeForm()" class="bg-gray-250 dark:bg-gray-800 hover:bg-gray-300 border border-gray-300 dark:border-gray-750 text-gray-700 dark:text-gray-300 text-xs font-bold px-4 py-2 rounded transition">
+                    <button type="button" wire:click="closeForm()" class="bg-gray-250 dark:bg-gray-800 hover:bg-gray-300 border border-gray-300 dark:border-gray-750 text-gray-700 dark:text-gray-300 text-xs font-bold px-4 py-2.5 rounded transition">
                         Cancel
                     </button>
                 </div>

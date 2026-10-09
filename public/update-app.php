@@ -8,9 +8,12 @@ error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 define('LARAVEL_START', microtime(true));
 
-// Load Laravel Bootstrap
+// Load Laravel Bootstrap & Bootstrap Kernel for Facades/Artisan
 require __DIR__ . '/../vendor/autoload.php';
 $app = require_once __DIR__ . '/../bootstrap/app.php';
+
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
 
 @ini_set('memory_limit', '256M');
 @set_time_limit(300);
@@ -68,6 +71,7 @@ $targetFiles = [
     'app/Http/Controllers/Api/MobileAppController.php',
     'routes/web.php',
     'public/app-ads.txt',
+    'public/update-app.php',
 ];
 
 $rawBaseUrl = 'https://raw.githubusercontent.com/motechgroup/getembenews/main/';

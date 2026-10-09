@@ -383,16 +383,21 @@ class MobileAppController extends Controller
         $phone = $request->filled('phone') ? trim($request->phone) : null;
         $email = $request->filled('email') ? strip_tags(trim(strtolower($request->email))) : null;
 
-        $userData = [
-            'name' => strip_tags(trim($request->name)),
-            'email' => $email,
-            'phone' => $phone,
-            'mpesa_phone' => $phone,
-            'password' => Hash::make($request->password),
-            'role' => 'subscriber',
-        ];
-
-        $user = User::create($userData);
+        try {
+            $user = User::create([
+                'name' => strip_tags(trim($request->name)),
+                'email' => $email,
+                'phone' => $phone,
+                'mpesa_phone' => $phone,
+                'password' => Hash::make($request->password),
+                'role' => 'subscriber',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Registration error: ' . $e->getMessage()
+            ], 500);
+        }
 
         $token = $user->createToken('mobile-app-token')->plainTextToken;
 

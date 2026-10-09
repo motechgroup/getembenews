@@ -1,6 +1,6 @@
 <?php
 /**
- * Standalone Shared Hosting Zip Auto-Updater & Migration Tool
+ * Getembe News - Comprehensive Shared Hosting Auto-Updater & Diagnostics Tool
  * Accessible directly via browser: https://getembetv.co.ke/update-app.php
  */
 
@@ -17,32 +17,80 @@ $response = $kernel->handle(
 
 header('Content-Type: text/html; charset=utf-8');
 
-echo '<!DOCTYPE html>
-<html>
+?>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Getembe News - Shared Hosting 1-Click Updater</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Getembe News - 1-Click Codebase & Database Deployment</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; padding: 40px 20px; line-height: 1.6; }
-        .card { max-width: 720px; margin: 0 auto; background: #1e293b; border-radius: 12px; padding: 28px; border: 1px solid #334155; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5); }
-        h1 { color: #38bdf8; font-size: 22px; margin-top: 0; }
-        .success { color: #4ade80; font-weight: bold; margin-top: 10px; }
-        .error { color: #f87171; font-weight: bold; margin-top: 10px; }
-        pre { background: #090d16; padding: 14px; border-radius: 8px; color: #38bdf8; overflow-x: auto; font-size: 13px; max-height: 250px; }
-        .btn { display: inline-block; background: #c8102e; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; margin-top: 20px; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0b0f19; color: #f1f5f9; padding: 30px 15px; margin: 0; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: #131c2e; border-radius: 16px; padding: 32px; border: 1px solid #1e2d4a; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.7); }
+        .header { border-bottom: 1px solid #1e2d4a; padding-bottom: 20px; margin-bottom: 24px; }
+        h1 { color: #38bdf8; font-size: 24px; margin: 0 0 6px 0; display: flex; align-items: center; gap: 10px; }
+        .subtitle { color: #94a3b8; font-size: 13px; margin: 0; }
+        .step-title { font-size: 14px; font-weight: bold; color: #f8fafc; margin-top: 20px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .badge { background: #0284c7; color: #fff; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 9999px; text-transform: uppercase; }
+        .badge-success { background: #15803d; }
+        pre { background: #070a12; padding: 16px; border-radius: 10px; color: #38bdf8; overflow-x: auto; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; border: 1px solid #1e2d4a; max-height: 280px; }
+        .success { color: #4ade80; font-weight: bold; }
+        .error { color: #f87171; font-weight: bold; }
+        .file-list { background: #070a12; padding: 12px 16px; border-radius: 10px; max-height: 180px; overflow-y: auto; font-family: monospace; font-size: 11px; color: #cbd5e1; border: 1px solid #1e2d4a; }
+        .file-item { padding: 2px 0; border-bottom: 1px solid #111827; }
+        .file-item:last-child { border-bottom: none; }
+        .btn-group { display: flex; gap: 12px; margin-top: 28px; border-top: 1px solid #1e2d4a; padding-top: 20px; flex-wrap: wrap; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; background: #c8102e; color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 8px; font-weight: bold; font-size: 13px; transition: background 0.2s; }
+        .btn:hover { background: #a60d25; }
+        .btn-secondary { background: #334155; }
+        .btn-secondary:hover { background: #475569; }
+        .commit-info { background: #0f172a; padding: 14px 18px; border-radius: 10px; border: 1px solid #1e2d4a; margin-bottom: 20px; font-size: 13px; }
     </style>
 </head>
 <body>
-<div class="card">
-    <h1>🚀 Getembe News Shared Hosting Auto-Updater</h1>';
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <h1>🚀 Getembe News Shared Hosting Auto-Updater</h1>
+            <p class="subtitle">Direct GitHub ZIP Deployment & Database Synchronizer (v3.0)</p>
+        </div>
+<?php
 
 $baseDir = realpath(__DIR__ . '/..');
 $zipUrl = 'https://github.com/motechgroup/getembenews/archive/refs/heads/main.zip';
 $tempZip = storage_path('app/latest-github.zip');
 
-$logs = [];
+// 1. Fetch GitHub Commit Details via API
+$commitHash = 'Unknown';
+$commitMsg = 'Unknown';
+$commitDate = 'Unknown';
 
-// 1. Download Latest Main.zip from GitHub repository
-$logs[] = "📥 <strong>Step 1:</strong> Fetching latest codebase ZIP package from GitHub...";
+$chCommit = curl_init('https://api.github.com/repos/motechgroup/getembenews/commits/main');
+curl_setopt($chCommit, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($chCommit, CURLOPT_USERAGENT, 'GetembeUpdater/1.0');
+curl_setopt($chCommit, CURLOPT_SSL_VERIFYPEER, false);
+$commitJson = curl_exec($chCommit);
+curl_close($chCommit);
+
+if ($commitJson && ($commitData = json_decode($commitJson, true))) {
+    $commitHash = substr($commitData['sha'] ?? 'Unknown', 0, 7);
+    $commitMsg = $commitData['commit']['message'] ?? 'No commit message';
+    $commitDate = isset($commitData['commit']['committer']['date']) ? date('M d, Y H:i:s T', strtotime($commitData['commit']['committer']['date'])) : 'Unknown';
+}
+
+echo '<div class="commit-info">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <strong style="color:#38bdf8;">📦 Latest Target Commit on GitHub:</strong>
+        <span class="badge badge-success">Commit ' . htmlspecialchars($commitHash) . '</span>
+    </div>
+    <div style="font-weight:bold; color:#f8fafc;">"' . htmlspecialchars($commitMsg) . '"</div>
+    <div style="color:#94a3b8; font-size:11px; margin-top:4px;">Committed on ' . htmlspecialchars($commitDate) . '</div>
+</div>';
+
+// 2. Download ZIP from GitHub
+echo '<div class="step-title"><span>📥 Step 1: Downloading Latest Codebase ZIP</span></div>';
 $ch = curl_init($zipUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -54,19 +102,18 @@ curl_close($ch);
 
 if ($httpCode === 200 && $zipData && strlen($zipData) > 1000) {
     file_put_contents($tempZip, $zipData);
-    $logs[] = "<span class='success'>✔ Downloaded main.zip successfully (" . round(strlen($zipData) / 1024, 1) . " KB)</span>";
+    echo '<div class="success">✔ Downloaded main.zip successfully (' . round(strlen($zipData) / 1024, 1) . ' KB)</div>';
 
-    // 2. Unzip & Extract Overwriting Changed Files
+    // 3. Extract Files
+    echo '<div class="step-title"><span>📂 Step 2: Extracting & Overwriting Project Files</span></div>';
     if (class_exists('ZipArchive')) {
         $zip = new ZipArchive;
         if ($zip->open($tempZip) === TRUE) {
-            $extractedCount = 0;
+            $extractedFiles = [];
             for ($i = 0; $i < $zip->numFiles; $i++) {
                 $filename = $zip->getNameIndex($i);
-                // Strip the top folder prefix (getembenews-main/)
                 $relativePath = preg_replace('/^getembenews-main\//', '', $filename);
                 
-                // Skip root folder or protected files (.env, vendor/, storage/)
                 if (empty($relativePath) || str_starts_with($relativePath, '.env') || str_starts_with($relativePath, 'vendor/') || str_starts_with($relativePath, 'storage/')) {
                     continue;
                 }
@@ -84,59 +131,69 @@ if ($httpCode === 200 && $zipData && strlen($zipData) > 1000) {
                     }
                     $content = $zip->getFromIndex($i);
                     @file_put_contents($targetPath, $content);
-                    $extractedCount++;
+                    $extractedFiles[] = $relativePath;
                 }
             }
             $zip->close();
             @unlink($tempZip);
-            $logs[] = "<span class='success'>✔ <strong>Step 2:</strong> Extracted {$extractedCount} updated project files directly into your project root.</span>";
+
+            echo '<div class="success">✔ Extracted ' . count($extractedFiles) . ' updated files directly into project root:</div>';
+            echo '<div class="file-list">';
+            foreach (array_slice($extractedFiles, 0, 40) as $f) {
+                echo '<div class="file-item">✓ ' . htmlspecialchars($f) . '</div>';
+            }
+            if (count($extractedFiles) > 40) {
+                echo '<div class="file-item" style="color:#38bdf8;">... and ' . (count($extractedFiles) - 40) . ' more files updated.</div>';
+            }
+            echo '</div>';
         } else {
-            $logs[] = "<span class='error'>✖ Could not open downloaded zip file.</span>";
+            echo '<div class="error">✖ Could not open downloaded zip file.</div>';
         }
     } else {
-        $logs[] = "<span class='error'>✖ PHP ZipArchive extension not enabled on host.</span>";
+        echo '<div class="error">✖ PHP ZipArchive extension is disabled on host.</div>';
     }
 } else {
-    $logs[] = "<span class='error'>✖ Failed downloading zip from GitHub (HTTP {$httpCode}).</span>";
+    echo '<div class="error">✖ Failed downloading zip from GitHub (HTTP ' . $httpCode . ').</div>';
 }
 
-// 3. Run Database Migrations
+// 4. Database Migrations
+echo '<div class="step-title"><span>🗄️ Step 3: Executing Database Migrations</span></div>';
 try {
     Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     $migOutput = Illuminate\Support\Facades\Artisan::output();
-    $logs[] = "✔ <strong>Step 3: Database Migrations Output:</strong><pre>" . htmlspecialchars($migOutput ?: 'Nothing to migrate.') . "</pre>";
+    echo '<pre>' . htmlspecialchars($migOutput ?: 'INFO Nothing to migrate (Database schema up to date).') . '</pre>';
 } catch (\Throwable $e) {
-    $logs[] = "<span class='error'>✖ Migration Note: " . htmlspecialchars($e->getMessage()) . "</span>";
+    echo '<div class="error">✖ Migration Note: ' . htmlspecialchars($e->getMessage()) . '</div>';
 }
 
-// 4. Clear Compiled Views and Application Cache
+// 5. Purge Caches & Compiled Views
+echo '<div class="step-title"><span>⚡ Step 4: Flushing Compiled Blade Views & Application Cache</span></div>';
 try {
     Illuminate\Support\Facades\Artisan::call('optimize:clear');
     
-    // Purge compiled view files in storage/framework/views
     $viewFiles = glob(storage_path('framework/views/*.php'));
+    $purgedViewsCount = 0;
     if ($viewFiles) {
         foreach ($viewFiles as $file) {
-            @unlink($file);
+            if (@unlink($file)) {
+                $purgedViewsCount++;
+            }
         }
     }
 
     if (function_exists('opcache_reset')) {
         @opcache_reset();
     }
-    $logs[] = "<span class='success'>✔ <strong>Step 4:</strong> Application Caches & Compiled Views Cleared!</span>";
+    echo '<div class="success">✔ Cleared ' . $purgedViewsCount . ' compiled Blade view templates & reset OPcache!</div>';
 } catch (\Throwable $e) {
-    $logs[] = "<span class='error'>✖ Cache Clear Note: " . htmlspecialchars($e->getMessage()) . "</span>";
-}
-
-foreach ($logs as $log) {
-    echo "<div style='margin-bottom: 12px;'>{$log}</div>";
+    echo '<div class="error">✖ Cache Clear Note: ' . htmlspecialchars($e->getMessage()) . '</div>';
 }
 
 echo '
-    <div style="margin-top: 24px; border-top: 1px solid #334155; padding-top: 16px;">
-        <p class="success">🎉 Success! The latest GitHub code and migrations have been downloaded & applied onto your server.</p>
-        <a href="/admin/settings/social-login" class="btn">Go to Admin Settings (Social OAuth)</a>
+        <div class="btn-group">
+            <a href="/admin/settings/social-login" class="btn">Go to Admin Settings (Social OAuth)</a>
+            <a href="/admin/users" class="btn btn-secondary">Go to User Accounts Manager</a>
+        </div>
     </div>
 </div>
 </body>

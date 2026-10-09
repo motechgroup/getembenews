@@ -588,17 +588,54 @@ class MobileAppController extends Controller
             'name' => 'required|string|max:255',
             'bio' => 'nullable|string|max:1000',
             'photo_url' => 'nullable|string|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif,heic|max:10240',
         ]);
+
+        $photoUrl = $user->photo_url;
+
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('avatars', 'public');
+            $photoUrl = asset('storage/' . $path);
+        } elseif ($request->has('photo_url')) {
+            $photoUrl = $request->photo_url ? strip_tags(trim($request->photo_url)) : null;
+        }
 
         $user->update([
             'name' => strip_tags(trim($request->name)),
             'bio' => $request->bio ? strip_tags(trim($request->bio)) : null,
-            'photo_url' => $request->photo_url ? strip_tags(trim($request->photo_url)) : null,
+            'photo_url' => $photoUrl,
         ]);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Profile updated successfully.',
+            'data' => $user
+        ]);
+    }
+
+    /**
+     * Upload user profile photo.
+     */
+    public function uploadProfilePhoto(Request $request)
+    {
+        $this->checkMaintenance();
+
+        $user = $request->user();
+
+        $request->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg,webp,gif,heic|max:10240',
+        ]);
+
+        $path = $request->file('photo')->store('avatars', 'public');
+        $photoUrl = asset('storage/' . $path);
+
+        $user->update([
+            'photo_url' => $photoUrl,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Profile photo uploaded successfully.',
             'data' => $user
         ]);
     }

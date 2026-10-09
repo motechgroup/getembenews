@@ -59,6 +59,8 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::post('/auth/logout', [MobileAppController::class, 'logout']);
         Route::get('/auth/profile', [MobileAppController::class, 'profile']);
         Route::put('/auth/profile', [MobileAppController::class, 'updateProfile']);
+        Route::post('/auth/profile', [MobileAppController::class, 'updateProfile']);
+        Route::post('/auth/profile/photo', [MobileAppController::class, 'uploadProfilePhoto']);
         
         // Saved/Bookmarked Articles
         Route::get('/articles/saved', [MobileAppController::class, 'savedArticles']);

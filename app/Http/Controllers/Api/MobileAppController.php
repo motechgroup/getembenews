@@ -357,13 +357,22 @@ class MobileAppController extends Controller
             $request->merge(['phone' => null]);
         }
 
-        // Validate strictly 10-digit Kenyan phone format starting with 07 or 01 (e.g. 0712345678 or 0112345678)
-        $request->validate([
+        $hasPhoneColumn = \Illuminate\Support\Facades\Schema::hasColumn('users', 'phone');
+
+        // Validation rules matching available database columns
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => 'nullable|string|email|max:255|unique:users,email',
-            'phone' => ['nullable', 'string', 'regex:/^(07|01)\d{8}$/', 'unique:users,phone'],
             'password' => 'required|string|min:6',
-        ]);
+        ];
+
+        if ($hasPhoneColumn) {
+            $rules['phone'] = ['nullable', 'string', 'regex:/^(07|01)\d{8}$/', 'unique:users,phone'];
+        } else {
+            $rules['phone'] = ['nullable', 'string', 'regex:/^(07|01)\d{8}$/', 'unique:users,mpesa_phone'];
+        }
+
+        $request->validate($rules);
 
         if (empty($request->email) && empty($request->phone)) {
             throw ValidationException::withMessages([
@@ -374,14 +383,37 @@ class MobileAppController extends Controller
         $phone = $request->filled('phone') ? trim($request->phone) : null;
         $email = $request->filled('email') ? strip_tags(trim(strtolower($request->email))) : null;
 
-        $user = User::create([
-            'name' => strip_tags(trim($request->name)),
-            'email' => $email,
-            'phone' => $phone,
-            'mpesa_phone' => $phone,
-            'password' => Hash::make($request->password),
-            'role' => 'subscriber',
-        ]);
+        try {
+            $userData = [
+                'name' => strip_tags(trim($request->name)),
+                'email' => $email,
+                'mpesa_phone' => $phone,
+                'password' => Hash::make($request->password),
+                'role' => 'subscriber',
+            ];
+
+            if ($hasPhoneColumn) {
+                $userData['phone'] = $phone;
+            }
+
+            $user = User::create($userData);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Fallback for un-migrated database schema where email column is NOT NULL or phone column missing
+            $fallbackEmail = $email ?: ($phone ? "user_{$phone}@getembetv.co.ke" : null);
+            $userData = [
+                'name' => strip_tags(trim($request->name)),
+                'email' => $fallbackEmail,
+                'mpesa_phone' => $phone,
+                'password' => Hash::make($request->password),
+                'role' => 'subscriber',
+            ];
+
+            if ($hasPhoneColumn) {
+                $userData['phone'] = $phone;
+            }
+
+            $user = User::create($userData);
+        }
 
         $token = $user->createToken('mobile-app-token')->plainTextToken;
 
@@ -500,10 +532,16 @@ class MobileAppController extends Controller
         // Normalize Kenyan phone format if starting with country code (+254 or 254)
         $cleanPhone = preg_replace('/^(?:\+254|254)/', '0', $inputKey);
 
-        $user = User::where('email', strtolower($inputKey))
-            ->orWhere('phone', $cleanPhone)
-            ->orWhere('mpesa_phone', $cleanPhone)
-            ->first();
+        $hasPhoneColumn = \Illuminate\Support\Facades\Schema::hasColumn('users', 'phone');
+
+        $userQuery = User::where('email', strtolower($inputKey))
+            ->orWhere('mpesa_phone', $cleanPhone);
+
+        if ($hasPhoneColumn) {
+            $userQuery->orWhere('phone', $cleanPhone);
+        }
+
+        $user = $userQuery->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([

@@ -5,6 +5,18 @@ use Illuminate\Support\Facades\Route;
 
 // Public Mobile App Routes (v1)
 Route::prefix('v1')->middleware('throttle:120,1')->group(function () {
+    Route::get('/debug-error', function() {
+        try {
+            return app(\App\Http\Controllers\Api\MobileAppController::class)->announcements();
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => explode("\n", $e->getTraceAsString())
+            ]);
+        }
+    });
     Route::get('/deploy-git-pull', function() {
         $output = @shell_exec("cd " . base_path() . " && git pull origin main 2>&1");
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');

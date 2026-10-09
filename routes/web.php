@@ -6,6 +6,44 @@ use App\Models\Advertisement;
 use App\Models\Category;
 use Illuminate\Support\Facades\Cache;
 
+Route::get('/update-app', function () {
+    $results = [];
+    if (function_exists('shell_exec')) {
+        $basePath = base_path();
+        $gitOutput = @shell_exec("cd {$basePath} && git pull origin main 2>&1");
+        if ($gitOutput) {
+            $results[] = '<strong>Git Pull:</strong><pre>' . htmlspecialchars($gitOutput) . '</pre>';
+        }
+    }
+
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $migOutput = \Illuminate\Support\Facades\Artisan::output();
+        $results[] = '<div style="color:#4ade80;">✔ Database Migrations Executed:</div><pre>' . htmlspecialchars($migOutput ?: 'Already up to date.') . '</pre>';
+    } catch (\Throwable $e) {
+        $results[] = '<div style="color:#f87171;">✖ Migration Note:</div><pre>' . htmlspecialchars($e->getMessage()) . '</pre>';
+    }
+
+    try {
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        $viewFiles = glob(storage_path('framework/views/*.php'));
+        if ($viewFiles) {
+            foreach ($viewFiles as $f) {
+                @unlink($f);
+            }
+        }
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+        $results[] = '<div style="color:#4ade80;">✔ Cache & Compiled Views Cleared Successfully!</div>';
+    } catch (\Throwable $e) {
+        $results[] = '<div style="color:#f87171;">✖ Cache Clear Error:</div><pre>' . htmlspecialchars($e->getMessage()) . '</pre>';
+    }
+
+    $html = '<!DOCTYPE html><html><head><title>Getembe Update</title><style>body{font-family:sans-serif;background:#0f172a;color:#fff;padding:30px;}.card{max-width:650px;margin:0 auto;background:#1e293b;padding:24px;border-radius:12px;}pre{background:#090d16;padding:12px;border-radius:6px;color:#38bdf8;}a{display:inline-block;background:#c8102e;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:12px;}</style></head><body><div class="card"><h1>🚀 Getembe Hosting Auto-Updater</h1>' . implode('', $results) . '<br><a href="/admin/settings/social-login">Go to Admin Dashboard</a></div></body></html>';
+    return response($html, 200);
+});
+
 Route::get('/run-git-pull', function () {
     try {
         $cwd = base_path();

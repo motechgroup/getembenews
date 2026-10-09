@@ -4,7 +4,7 @@ use App\Http\Controllers\Api\MobileAppController;
 use Illuminate\Support\Facades\Route;
 
 // Public Mobile App Routes (v1)
-Route::prefix('v1')->middleware('throttle:api')->group(function () {
+Route::prefix('v1')->middleware('throttle:120,1')->group(function () {
     Route::get('/deploy-git-pull', function() {
         $output = @shell_exec("cd " . base_path() . " && git pull origin main 2>&1");
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
@@ -23,26 +23,26 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     Route::get('/authors/{id}', [MobileAppController::class, 'authorProfile']);
     Route::get('/videos', [MobileAppController::class, 'videos']);
     Route::get('/live-streams', [MobileAppController::class, 'liveStreams']);
-    Route::post('/contact', [MobileAppController::class, 'contact'])->middleware('throttle:submissions');
-    Route::post('/newsletter/subscribe', [MobileAppController::class, 'subscribeNewsletter'])->middleware('throttle:submissions');
+    Route::post('/contact', [MobileAppController::class, 'contact'])->middleware('throttle:30,1');
+    Route::post('/newsletter/subscribe', [MobileAppController::class, 'subscribeNewsletter'])->middleware('throttle:30,1');
     Route::get('/advertisements', [MobileAppController::class, 'advertisements']);
     Route::get('/native-ads', [MobileAppController::class, 'nativeAds']);
     Route::get('/breaking-news', [MobileAppController::class, 'breakingNews']);
     Route::get('/announcements', [MobileAppController::class, 'announcements']);
     Route::post('/announcements/ocr', [MobileAppController::class, 'ocrAnnouncement']);
-    Route::post('/announcements', [MobileAppController::class, 'submitAnnouncement'])->middleware('throttle:submissions');
-    Route::post('/announcements/{id}/pay', [MobileAppController::class, 'payAnnouncement'])->middleware('throttle:submissions');
+    Route::post('/announcements', [MobileAppController::class, 'submitAnnouncement'])->middleware('throttle:30,1');
+    Route::post('/announcements/{id}/pay', [MobileAppController::class, 'payAnnouncement'])->middleware('throttle:30,1');
     Route::get('/announcements/{id}/status', [MobileAppController::class, 'checkAnnouncementPaymentStatus']);
     Route::post('/payments/mpesa/callback', [\App\Http\Controllers\Api\MpesaCallbackController::class, 'handleCallback']);
     
     // Agent Portal API endpoints (v1)
     Route::prefix('agent')->group(function () {
-        Route::post('/login', [\App\Http\Controllers\Api\AgentApiController::class, 'login'])->middleware('throttle:auth');
+        Route::post('/login', [\App\Http\Controllers\Api\AgentApiController::class, 'login'])->middleware('throttle:20,1');
         Route::get('/profile', [\App\Http\Controllers\Api\AgentApiController::class, 'profile']);
         Route::post('/pin/regenerate', [\App\Http\Controllers\Api\AgentApiController::class, 'regeneratePin']);
         Route::get('/announcements', [\App\Http\Controllers\Api\AgentApiController::class, 'announcements']);
-        Route::post('/announcements', [\App\Http\Controllers\Api\AgentApiController::class, 'submitAnnouncement'])->middleware('throttle:submissions');
-        Route::post('/announcements/{id}/pay', [\App\Http\Controllers\Api\AgentApiController::class, 'payAnnouncement'])->middleware('throttle:submissions');
+        Route::post('/announcements', [\App\Http\Controllers\Api\AgentApiController::class, 'submitAnnouncement'])->middleware('throttle:30,1');
+        Route::post('/announcements/{id}/pay', [\App\Http\Controllers\Api\AgentApiController::class, 'payAnnouncement'])->middleware('throttle:30,1');
         Route::get('/earnings', [\App\Http\Controllers\Api\AgentApiController::class, 'earnings']);
         Route::get('/disputes', [\App\Http\Controllers\Api\AgentApiController::class, 'disputes']);
         Route::post('/disputes', [\App\Http\Controllers\Api\AgentApiController::class, 'disputes']);
@@ -51,8 +51,8 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
     // Auth endpoints
     Route::get('/auth/google', [MobileAppController::class, 'googleRedirect']);
     Route::post('/auth/google', [MobileAppController::class, 'googleTokenLogin']);
-    Route::post('/auth/register', [MobileAppController::class, 'register'])->middleware('throttle:auth');
-    Route::post('/auth/login', [MobileAppController::class, 'login'])->middleware('throttle:auth');
+    Route::post('/auth/register', [MobileAppController::class, 'register'])->middleware('throttle:20,1');
+    Route::post('/auth/login', [MobileAppController::class, 'login'])->middleware('throttle:20,1');
 
     // Authenticated Mobile App Routes
     Route::middleware('auth:sanctum')->group(function () {
@@ -70,8 +70,8 @@ Route::prefix('v1')->middleware('throttle:api')->group(function () {
         Route::post('/articles/{id}/comment', [MobileAppController::class, 'comment']);
 
         // Paywall & M-Pesa Subscriptions
-        Route::post('/articles/{id}/pay', [MobileAppController::class, 'payArticle'])->middleware('throttle:submissions');
-        Route::post('/subscriptions/pay', [MobileAppController::class, 'paySubscription'])->middleware('throttle:submissions');
+        Route::post('/articles/{id}/pay', [MobileAppController::class, 'payArticle'])->middleware('throttle:30,1');
+        Route::post('/subscriptions/pay', [MobileAppController::class, 'paySubscription'])->middleware('throttle:30,1');
         Route::get('/paywall/status', [MobileAppController::class, 'checkPaywallStatus']);
     });
 

@@ -2849,6 +2849,22 @@ $sendTestEmail = function () {
                             @endif
                         </div>
 
+                        <!-- Mobile App Authentication Toggles -->
+                        <div class="p-4 bg-gray-50 dark:bg-gray-955 rounded-lg border border-gray-200 dark:border-gray-850 space-y-4 col-span-full">
+                            <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Mobile App Authentication Methods</h4>
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400">Control login options shown to users on the mobile companion application (Android / iOS).</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                                <div class="flex items-center p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-800">
+                                    <input type="checkbox" wire:model="mobile_app_google_login_enabled" id="mobile_app_google_login_enabled_social" class="h-4 w-4 rounded text-[#C8102E] border-gray-300">
+                                    <label for="mobile_app_google_login_enabled_social" class="ml-2 text-xs font-bold cursor-pointer text-gray-900 dark:text-white">Enable Google Sign-in on Mobile App</label>
+                                </div>
+                                <div class="flex items-center p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-800">
+                                    <input type="checkbox" wire:model="mobile_app_phone_login_enabled" id="mobile_app_phone_login_enabled_social" class="h-4 w-4 rounded text-[#C8102E] border-gray-300">
+                                    <label for="mobile_app_phone_login_enabled_social" class="ml-2 text-xs font-bold cursor-pointer text-gray-900 dark:text-white">Enable Kenyan Phone Sign-In (07/01 Numbers)</label>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Other Quick Sign-in Checks -->
                         <div class="p-4 bg-gray-50 dark:bg-gray-955 rounded-lg border border-gray-200 dark:border-gray-850 space-y-4 col-span-full">
                             <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">Other OAuth Options</h4>

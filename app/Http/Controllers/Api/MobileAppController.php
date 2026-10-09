@@ -333,31 +333,6 @@ class MobileAppController extends Controller
     }
 
     /**
-     * Register a new subscriber.
-     */
-    /**
-     * Register a new subscriber (via email or Kenyan phone number 07/01).
-     */
-    public function register(Request $request)
-    {
-        $this->checkMaintenance();
-
-        // Normalize phone number if supplied (remove spaces, strip +254/254 prefix to 0)
-        if ($request->has('phone') && !empty($request->phone)) {
-            $phoneInput = preg_replace('/\s+/', '', trim($request->phone));
-            $phoneInput = preg_replace('/^(?:\+254|254)/', '0', $phoneInput);
-            $request->merge(['phone' => $phoneInput]);
-        }
-
-        // Convert empty string inputs to null so nullable validation passes cleanly
-        if ($request->has('email') && trim((string)$request->email) === '') {
-            $request->merge(['email' => null]);
-        }
-        if ($request->has('phone') && trim((string)$request->phone) === '') {
-            $request->merge(['phone' => null]);
-        }
-
-    /**
      * Generate all possible formatting variants for a Kenyan phone number.
      */
     private function getPhoneVariants(?string $input): array
@@ -379,6 +354,21 @@ class MobileAppController extends Controller
     public function register(Request $request)
     {
         $this->checkMaintenance();
+
+        // Normalize phone number if supplied (remove spaces, strip +254/254 prefix to 0)
+        if ($request->has('phone') && !empty($request->phone)) {
+            $phoneInput = preg_replace('/\s+/', '', trim($request->phone));
+            $phoneInput = preg_replace('/^(?:\+254|254)/', '0', $phoneInput);
+            $request->merge(['phone' => $phoneInput]);
+        }
+
+        // Convert empty string inputs to null so nullable validation passes cleanly
+        if ($request->has('email') && trim((string)$request->email) === '') {
+            $request->merge(['email' => null]);
+        }
+        if ($request->has('phone') && trim((string)$request->phone) === '') {
+            $request->merge(['phone' => null]);
+        }
 
         $hasPhoneColumn = \Illuminate\Support\Facades\Schema::hasColumn('users', 'phone');
 

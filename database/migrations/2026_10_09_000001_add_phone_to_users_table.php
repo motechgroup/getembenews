@@ -16,6 +16,12 @@ return new class extends Migration
                 $table->string('phone')->nullable()->unique()->after('email');
             });
         }
+
+        try {
+            \Illuminate\Support\Facades\DB::statement('ALTER TABLE users MODIFY email VARCHAR(255) NULL;');
+        } catch (\Throwable $e) {
+            // Ignore if driver does not support MODIFY (e.g. SQLite in tests)
+        }
     }
 
     /**

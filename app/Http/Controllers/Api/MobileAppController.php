@@ -345,9 +345,9 @@ class MobileAppController extends Controller
         // Validate strictly 10-digit Kenyan phone format starting with 07 or 01 (e.g. 0712345678 or 0112345678)
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'nullable|string|email|max:255|unique:users,email',
+            'email' => 'nullable|string|max:255',
             'phone' => ['nullable', 'string', 'regex:/^(07|01)\d{8}$/', 'unique:users,phone'],
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:6',
         ]);
 
         if (empty($request->email) && empty($request->phone)) {
@@ -358,6 +358,17 @@ class MobileAppController extends Controller
 
         $phone = $request->filled('phone') ? trim($request->phone) : null;
         $email = $request->filled('email') ? strip_tags(trim(strtolower($request->email))) : "{$phone}@getembetv.co.ke";
+
+        // Ensure email is unique by appending timestamp if a collision occurs on auto-generated phone email
+        if (User::where('email', $email)->exists()) {
+            if ($phone) {
+                $email = "{$phone}_" . time() . "@getembetv.co.ke";
+            } else {
+                throw ValidationException::withMessages([
+                    'email' => ['The email address has already been taken.'],
+                ]);
+            }
+        }
 
         $user = User::create([
             'name' => strip_tags(trim($request->name)),

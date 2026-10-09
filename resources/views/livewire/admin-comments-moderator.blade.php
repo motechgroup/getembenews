@@ -56,7 +56,12 @@ $delete = function ($id) {
                         <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-850/50">
                             <td class="p-3 font-bold text-gray-900 dark:text-white">
                                 <div>{{ $comment->user->name }}</div>
-                                <div class="text-[10px] text-gray-400 font-normal">{{ $comment->user->email }}</div>
+                                @if($comment->user->email)
+                                    <div class="text-[10px] text-gray-500 font-mono">✉️ {{ $comment->user->email }}</div>
+                                @endif
+                                @if($comment->user->phone || $comment->user->mpesa_phone)
+                                    <div class="text-[10px] text-gray-500 font-mono">📱 {{ $comment->user->phone ?? $comment->user->mpesa_phone }}</div>
+                                @endif
                             </td>
                             <td class="p-3 text-gray-700 dark:text-gray-300 max-w-md">
                                 <p class="leading-relaxed">{{ $comment->body }}</p>

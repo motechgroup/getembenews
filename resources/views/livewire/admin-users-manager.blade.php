@@ -38,7 +38,7 @@ $openForm = function ($id = null) {
         $user = User::findOrFail($id);
         $this->name = $user->name;
         $this->email = $user->email ?? '';
-        $this->phone = $user->phone ?? '';
+        $this->phone = $user->phone ?? $user->mpesa_phone ?? '';
         $this->role = $user->role;
         $this->password = '';
     } else {
@@ -136,7 +136,8 @@ with(function () {
             $q->where(function($inner) {
                 $inner->where('name', 'like', '%' . $this->search . '%')
                       ->orWhere('email', 'like', '%' . $this->search . '%')
-                      ->orWhere('phone', 'like', '%' . $this->search . '%');
+                      ->orWhere('phone', 'like', '%' . $this->search . '%')
+                      ->orWhere('mpesa_phone', 'like', '%' . $this->search . '%');
             });
         })
         ->when($this->roleFilter, function ($q) {
@@ -285,6 +286,9 @@ with(function () {
                 </thead>
                 <tbody class="divide-y divide-gray-150 dark:divide-gray-850">
                     @foreach($users as $user)
+                        @php
+                            $userPhone = $user->phone ?? $user->mpesa_phone;
+                        @endphp
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-950/50">
                             <td class="p-4 flex items-center space-x-3">
                                 <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-500 overflow-hidden shrink-0">
@@ -296,20 +300,26 @@ with(function () {
                                 </div>
                                 <div>
                                     <div class="font-bold text-gray-900 dark:text-white">{{ $user->name }}</div>
-                                    @if($user->email)
-                                        <div class="text-[10px] text-gray-500 font-mono">✉️ {{ $user->email }}</div>
-                                    @endif
-                                    @if($user->phone)
-                                        <div class="text-[10px] text-gray-600 dark:text-gray-400 font-mono">📱 {{ $user->phone }}</div>
-                                    @endif
+                                    <div class="text-[10px] font-mono text-gray-500 flex items-center gap-1">
+                                        <span>✉️</span>
+                                        <span class="{{ $user->email ? 'text-gray-700 dark:text-gray-300 font-semibold' : 'text-gray-400 italic' }}">
+                                            {{ $user->email ?? 'No Email' }}
+                                        </span>
+                                    </div>
+                                    <div class="text-[10px] font-mono text-gray-500 flex items-center gap-1">
+                                        <span>📱</span>
+                                        <span class="{{ $userPhone ? 'text-gray-700 dark:text-gray-300 font-semibold' : 'text-gray-400 italic' }}">
+                                            {{ $userPhone ?? 'No Phone' }}
+                                        </span>
+                                    </div>
                                 </div>
                             </td>
                             <td class="p-4">
-                                @if($user->phone && !$user->email)
+                                @if($userPhone && !$user->email)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-400">📱 Phone User</span>
-                                @elseif($user->email && !$user->phone)
+                                @elseif($user->email && !$userPhone)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-400">✉️ Email User</span>
-                                @elseif($user->email && $user->phone)
+                                @elseif($user->email && $userPhone)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-400">📱+✉️ Full Account</span>
                                 @else
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">Guest</span>

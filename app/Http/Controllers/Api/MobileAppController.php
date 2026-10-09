@@ -383,37 +383,16 @@ class MobileAppController extends Controller
         $phone = $request->filled('phone') ? trim($request->phone) : null;
         $email = $request->filled('email') ? strip_tags(trim(strtolower($request->email))) : null;
 
-        try {
-            $userData = [
-                'name' => strip_tags(trim($request->name)),
-                'email' => $email,
-                'mpesa_phone' => $phone,
-                'password' => Hash::make($request->password),
-                'role' => 'subscriber',
-            ];
+        $userData = [
+            'name' => strip_tags(trim($request->name)),
+            'email' => $email,
+            'phone' => $phone,
+            'mpesa_phone' => $phone,
+            'password' => Hash::make($request->password),
+            'role' => 'subscriber',
+        ];
 
-            if ($hasPhoneColumn) {
-                $userData['phone'] = $phone;
-            }
-
-            $user = User::create($userData);
-        } catch (\Illuminate\Database\QueryException $e) {
-            // Fallback for un-migrated database schema where email column is NOT NULL or phone column missing
-            $fallbackEmail = $email ?: ($phone ? "user_{$phone}@getembetv.co.ke" : null);
-            $userData = [
-                'name' => strip_tags(trim($request->name)),
-                'email' => $fallbackEmail,
-                'mpesa_phone' => $phone,
-                'password' => Hash::make($request->password),
-                'role' => 'subscriber',
-            ];
-
-            if ($hasPhoneColumn) {
-                $userData['phone'] = $phone;
-            }
-
-            $user = User::create($userData);
-        }
+        $user = User::create($userData);
 
         $token = $user->createToken('mobile-app-token')->plainTextToken;
 

@@ -54,31 +54,34 @@ header('Content-Type: text/html; charset=utf-8');
     <div class="card">
         <div class="header">
             <h1>🚀 Getembe News Shared Hosting Auto-Updater</h1>
-            <p class="subtitle">Direct GitHub ZIP Deployment & Database Synchronizer (v3.0)</p>
+            <p class="subtitle">Direct GitHub ZIP Deployment & Database Synchronizer (v3.1)</p>
         </div>
 <?php
 
 $baseDir = realpath(__DIR__ . '/..');
 $zipUrl = 'https://github.com/motechgroup/getembenews/archive/refs/heads/main.zip';
-$tempZip = storage_path('app/latest-github.zip');
+$tempDir = sys_get_temp_dir();
+$tempZip = $tempDir . '/latest-github-' . time() . '.zip';
 
 // 1. Fetch GitHub Commit Details via API
 $commitHash = 'Unknown';
 $commitMsg = 'Unknown';
 $commitDate = 'Unknown';
 
-$chCommit = curl_init('https://api.github.com/repos/motechgroup/getembenews/commits/main');
-curl_setopt($chCommit, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($chCommit, CURLOPT_USERAGENT, 'GetembeUpdater/1.0');
-curl_setopt($chCommit, CURLOPT_SSL_VERIFYPEER, false);
-$commitJson = curl_exec($chCommit);
-curl_close($chCommit);
+try {
+    $chCommit = curl_init('https://api.github.com/repos/motechgroup/getembenews/commits/main');
+    curl_setopt($chCommit, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($chCommit, CURLOPT_USERAGENT, 'GetembeUpdater/1.0');
+    curl_setopt($chCommit, CURLOPT_SSL_VERIFYPEER, false);
+    $commitJson = curl_exec($chCommit);
+    curl_close($chCommit);
 
-if ($commitJson && ($commitData = json_decode($commitJson, true))) {
-    $commitHash = substr($commitData['sha'] ?? 'Unknown', 0, 7);
-    $commitMsg = $commitData['commit']['message'] ?? 'No commit message';
-    $commitDate = isset($commitData['commit']['committer']['date']) ? date('M d, Y H:i:s T', strtotime($commitData['commit']['committer']['date'])) : 'Unknown';
-}
+    if ($commitJson && ($commitData = json_decode($commitJson, true))) {
+        $commitHash = substr($commitData['sha'] ?? 'Unknown', 0, 7);
+        $commitMsg = $commitData['commit']['message'] ?? 'No commit message';
+        $commitDate = isset($commitData['commit']['committer']['date']) ? date('M d, Y H:i:s T', strtotime($commitData['commit']['committer']['date'])) : 'Unknown';
+    }
+} catch (\Throwable $e) {}
 
 echo '<div class="commit-info">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -91,69 +94,82 @@ echo '<div class="commit-info">
 
 // 2. Download ZIP from GitHub
 echo '<div class="step-title"><span>📥 Step 1: Downloading Latest Codebase ZIP</span></div>';
-$ch = curl_init($zipUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-curl_setopt($ch, CURLOPT_USERAGENT, 'GetembeUpdater/1.0');
-$zipData = curl_exec($ch);
-$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-curl_close($ch);
+$zipDownloaded = false;
 
-if ($httpCode === 200 && $zipData && strlen($zipData) > 1000) {
-    file_put_contents($tempZip, $zipData);
-    echo '<div class="success">✔ Downloaded main.zip successfully (' . round(strlen($zipData) / 1024, 1) . ' KB)</div>';
+try {
+    $ch = curl_init($zipUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'GetembeUpdater/1.0');
+    $zipData = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
 
-    // 3. Extract Files
-    echo '<div class="step-title"><span>📂 Step 2: Extracting & Overwriting Project Files</span></div>';
-    if (class_exists('ZipArchive')) {
-        $zip = new ZipArchive;
-        if ($zip->open($tempZip) === TRUE) {
-            $extractedFiles = [];
-            for ($i = 0; $i < $zip->numFiles; $i++) {
-                $filename = $zip->getNameIndex($i);
-                $relativePath = preg_replace('/^getembenews-main\//', '', $filename);
-                
-                if (empty($relativePath) || str_starts_with($relativePath, '.env') || str_starts_with($relativePath, 'vendor/') || str_starts_with($relativePath, 'storage/')) {
-                    continue;
-                }
-
-                $targetPath = $baseDir . '/' . $relativePath;
-                
-                if (str_ends_with($filename, '/')) {
-                    if (!file_exists($targetPath)) {
-                        @mkdir($targetPath, 0755, true);
-                    }
-                } else {
-                    $dir = dirname($targetPath);
-                    if (!file_exists($dir)) {
-                        @mkdir($dir, 0755, true);
-                    }
-                    $content = $zip->getFromIndex($i);
-                    @file_put_contents($targetPath, $content);
-                    $extractedFiles[] = $relativePath;
-                }
-            }
-            $zip->close();
-            @unlink($tempZip);
-
-            echo '<div class="success">✔ Extracted ' . count($extractedFiles) . ' updated files directly into project root:</div>';
-            echo '<div class="file-list">';
-            foreach (array_slice($extractedFiles, 0, 40) as $f) {
-                echo '<div class="file-item">✓ ' . htmlspecialchars($f) . '</div>';
-            }
-            if (count($extractedFiles) > 40) {
-                echo '<div class="file-item" style="color:#38bdf8;">... and ' . (count($extractedFiles) - 40) . ' more files updated.</div>';
-            }
-            echo '</div>';
-        } else {
-            echo '<div class="error">✖ Could not open downloaded zip file.</div>';
-        }
+    if ($httpCode === 200 && $zipData && strlen($zipData) > 1000) {
+        @file_put_contents($tempZip, $zipData);
+        $zipDownloaded = true;
+        echo '<div class="success">✔ Downloaded main.zip successfully (' . round(strlen($zipData) / 1024, 1) . ' KB)</div>';
     } else {
-        echo '<div class="error">✖ PHP ZipArchive extension is disabled on host.</div>';
+        echo '<div class="error">✖ Failed downloading zip from GitHub (HTTP ' . $httpCode . ').</div>';
     }
-} else {
-    echo '<div class="error">✖ Failed downloading zip from GitHub (HTTP ' . $httpCode . ').</div>';
+} catch (\Throwable $e) {
+    echo '<div class="error">✖ Download error: ' . htmlspecialchars($e->getMessage()) . '</div>';
+}
+
+// 3. Extract Files
+if ($zipDownloaded && file_exists($tempZip)) {
+    echo '<div class="step-title"><span>📂 Step 2: Extracting & Overwriting Project Files</span></div>';
+    try {
+        if (class_exists('ZipArchive')) {
+            $zip = new ZipArchive;
+            if ($zip->open($tempZip) === TRUE) {
+                $extractedFiles = [];
+                for ($i = 0; $i < $zip->numFiles; $i++) {
+                    $filename = $zip->getNameIndex($i);
+                    $relativePath = preg_replace('/^getembenews-main\//', '', $filename);
+                    
+                    if (empty($relativePath) || str_starts_with($relativePath, '.env') || str_starts_with($relativePath, 'vendor/') || str_starts_with($relativePath, 'storage/')) {
+                        continue;
+                    }
+
+                    $targetPath = $baseDir . '/' . $relativePath;
+                    
+                    if (str_ends_with($filename, '/')) {
+                        if (!file_exists($targetPath)) {
+                            @mkdir($targetPath, 0755, true);
+                        }
+                    } else {
+                        $dir = dirname($targetPath);
+                        if (!file_exists($dir)) {
+                            @mkdir($dir, 0755, true);
+                        }
+                        $content = $zip->getFromIndex($i);
+                        @file_put_contents($targetPath, $content);
+                        $extractedFiles[] = $relativePath;
+                    }
+                }
+                $zip->close();
+                @unlink($tempZip);
+
+                echo '<div class="success">✔ Extracted ' . count($extractedFiles) . ' updated files directly into project root:</div>';
+                echo '<div class="file-list">';
+                foreach (array_slice($extractedFiles, 0, 40) as $f) {
+                    echo '<div class="file-item">✓ ' . htmlspecialchars($f) . '</div>';
+                }
+                if (count($extractedFiles) > 40) {
+                    echo '<div class="file-item" style="color:#38bdf8;">... and ' . (count($extractedFiles) - 40) . ' more files updated.</div>';
+                }
+                echo '</div>';
+            } else {
+                echo '<div class="error">✖ Could not open downloaded zip file.</div>';
+            }
+        } else {
+            echo '<div class="error">✖ PHP ZipArchive extension is disabled on host.</div>';
+        }
+    } catch (\Throwable $e) {
+        echo '<div class="error">✖ Extraction Error: ' . htmlspecialchars($e->getMessage()) . '</div>';
+    }
 }
 
 // 4. Database Migrations
@@ -173,7 +189,7 @@ try {
     
     $viewFiles = glob(storage_path('framework/views/*.php'));
     $purgedViewsCount = 0;
-    if ($viewFiles) {
+    if ($viewFiles && is_array($viewFiles)) {
         foreach ($viewFiles as $file) {
             if (@unlink($file)) {
                 $purgedViewsCount++;

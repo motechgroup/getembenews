@@ -37,8 +37,10 @@ class SocialAuthController extends Controller
             
             $state = Str::random(32);
             if (!empty($mobileRedirect)) {
-                $state = 'mobile_' . base64_encode($mobileRedirect) . '_' . $state;
+                $state = 'mobile.' . $state;
                 session(['mobile_redirect_uri' => $mobileRedirect]);
+                session(['mobile_redirect_uri_' . $state => $mobileRedirect]);
+                \Illuminate\Support\Facades\Cache::put('mobile_oauth_redirect_' . $state, $mobileRedirect, 600);
             }
             session(['oauth_state_' . $provider => $state]);
 
@@ -65,11 +67,14 @@ class SocialAuthController extends Controller
         $provider = strtolower($provider);
 
         $state = $request->input('state', '');
-        $mobileRedirectUri = session('mobile_redirect_uri');
+        $mobileRedirectUri = session('mobile_redirect_uri') 
+            ?? session('mobile_redirect_uri_' . $state) 
+            ?? \Illuminate\Support\Facades\Cache::get('mobile_oauth_redirect_' . $state);
+
         if (empty($mobileRedirectUri) && str_starts_with($state, 'mobile_')) {
             $parts = explode('_', $state);
             if (isset($parts[1]) && !empty($parts[1])) {
-                $mobileRedirectUri = base64_decode($parts[1]);
+                $mobileRedirectUri = @base64_decode($parts[1]);
             }
         }
 
@@ -171,6 +176,9 @@ class SocialAuthController extends Controller
 
             if (!empty($mobileRedirectUri)) {
                 session()->forget('mobile_redirect_uri');
+                session()->forget('mobile_redirect_uri_' . $state);
+                \Illuminate\Support\Facades\Cache::forget('mobile_oauth_redirect_' . $state);
+
                 $sanctumToken = $user->createToken('mobile-google-app')->plainTextToken;
                 $separator = str_contains($mobileRedirectUri, '?') ? '&' : '?';
                 $appRedirect = $mobileRedirectUri . $separator . 'token=' . urlencode($sanctumToken);
@@ -181,18 +189,24 @@ class SocialAuthController extends Controller
                     <head>
                         <meta charset='utf-8'>
                         <meta name='viewport' content='width=device-width, initial-scale=1'>
+                        <meta http-equiv='refresh' content='0;url=" . htmlspecialchars($appRedirect, ENT_QUOTES) . "'>
                         <title>Authenticating with Getembe News...</title>
                         <script>
-                            window.location.href = '" . addslashes($appRedirect) . "';
+                            window.location.replace('" . addslashes($appRedirect) . "');
                         </script>
                     </head>
                     <body style='font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 50px 20px; background: #0f172a; color: #fff;'>
-                        <h2 style='color: #cc6c3b;'>Authentication Successful</h2>
-                        <p>Returning to Getembe News App...</p>
-                        <a href='" . htmlspecialchars($appRedirect, ENT_QUOTES) . "' style='display: inline-block; margin-top: 15px; padding: 12px 24px; background: #cc6c3b; color: #fff; text-decoration: none; font-weight: bold; border-radius: 8px;'>Tap here to return to App</a>
+                        <div style='max-width: 400px; margin: 0 auto; background: #1e293b; padding: 30px; border-radius: 16px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.5);'>
+                            <h2 style='color: #FF7900; margin-top: 0;'>Sign-In Successful!</h2>
+                            <p style='color: #94a3b8; font-size: 14px;'>Redirecting back to Getembe News App...</p>
+                            <a href='" . htmlspecialchars($appRedirect, ENT_QUOTES) . "' style='display: inline-block; margin-top: 15px; padding: 14px 28px; background: #FF7900; color: #fff; text-decoration: none; font-weight: bold; border-radius: 10px; font-size: 15px;'>Open Getembe App</a>
+                        </div>
                     </body>
                     </html>
-                ", 200, ['Content-Type' => 'text/html']);
+                ", 302, [
+                    'Content-Type' => 'text/html',
+                    'Location' => $appRedirect,
+                ]);
             }
 
             if ($user->isStaff()) {

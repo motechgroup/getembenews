@@ -71,6 +71,7 @@ $targetFiles = [
     'database/migrations/2026_10_09_000002_force_nullable_email_on_users_table.php',
     'database/migrations/2026_10_09_000003_fix_users_phone_column.php',
     'app/Http/Controllers/Api/MobileAppController.php',
+    'app/Http/Controllers/Auth/SocialAuthController.php',
     'routes/web.php',
     'public/app-ads.txt',
     'public/update-app.php',

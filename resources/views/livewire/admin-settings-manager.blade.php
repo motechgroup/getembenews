@@ -91,6 +91,8 @@ state([
     'mobile_app_facebook_native_id' => fn() => Setting::get('mobile_app_facebook_native_id', ''),
     'mobile_app_native_ad_code' => fn() => Setting::get('mobile_app_native_ad_code', ''),
     'mobile_app_native_ad_frequency' => fn() => Setting::get('mobile_app_native_ad_frequency', '5'),
+    'mobile_app_google_login_enabled' => fn() => (bool) Setting::get('mobile_app_google_login_enabled', true),
+    'mobile_app_phone_login_enabled' => fn() => (bool) Setting::get('mobile_app_phone_login_enabled', true),
     'mobile_app_maintenance_mode' => fn() => (bool) Setting::get('mobile_app_maintenance_mode', false),
 
     // 2. Social Links
@@ -1270,7 +1272,7 @@ $save = function () use ($logAction) {
         'live_tv_url', 'live_tv_embed_code', 'live_tv_type', 'live_radio_url', 'live_tv_active', 'live_radio_active', 'weather_city', 'homepage_categories', 'show_views_count',
         'app_play_store_url', 'app_app_store_url', 'app_banner_title', 'app_banner_desc',
         'tv_schedule', 'radio_schedule',
-        'mobile_app_version_ios', 'mobile_app_version_android', 'mobile_app_force_update', 'mobile_app_ios_link', 'mobile_app_android_link', 'mobile_app_ads_enabled', 'mobile_app_admob_banner_id', 'mobile_app_admob_interstitial_id', 'mobile_app_facebook_ads_enabled', 'mobile_app_facebook_banner_id', 'mobile_app_facebook_interstitial_id', 'mobile_app_native_ads_enabled', 'mobile_app_admob_native_id', 'mobile_app_facebook_native_id', 'mobile_app_native_ad_code', 'mobile_app_native_ad_frequency', 'mobile_app_maintenance_mode',
+        'mobile_app_version_ios', 'mobile_app_version_android', 'mobile_app_force_update', 'mobile_app_ios_link', 'mobile_app_android_link', 'mobile_app_google_login_enabled', 'mobile_app_phone_login_enabled', 'mobile_app_ads_enabled', 'mobile_app_admob_banner_id', 'mobile_app_admob_interstitial_id', 'mobile_app_facebook_ads_enabled', 'mobile_app_facebook_banner_id', 'mobile_app_facebook_interstitial_id', 'mobile_app_native_ads_enabled', 'mobile_app_admob_native_id', 'mobile_app_facebook_native_id', 'mobile_app_native_ad_code', 'mobile_app_native_ad_frequency', 'mobile_app_maintenance_mode',
         'adsense_enabled', 'adsense_client_id', 'adsense_code',
         'facebook_ads_enabled', 'facebook_ads_code',
         'custom_ads_enabled',
@@ -3375,6 +3377,21 @@ $sendTestEmail = function () {
                         <div class="flex items-center space-x-3 pt-2">
                             <input type="checkbox" id="mobile_app_force_update" wire:model="mobile_app_force_update" class="h-4 w-4 rounded border-gray-300 text-[#C8102E] focus:ring-[#C8102E]">
                             <label for="mobile_app_force_update" class="text-xs font-bold text-gray-700 dark:text-gray-300">Force Upgrade (Require users to update the mobile application to continue)</label>
+                        </div>
+
+                        <!-- Mobile Authentication Methods -->
+                        <div class="border-t border-gray-200 dark:border-gray-800 pt-3 space-y-2">
+                            <h5 class="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Mobile App Authentication Methods</h5>
+                            <div class="flex flex-wrap items-center gap-6 pt-1">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" id="mobile_app_google_login_enabled" wire:model="mobile_app_google_login_enabled" class="h-4 w-4 rounded border-gray-300 text-[#C8102E] focus:ring-[#C8102E]">
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Enable Google Sign-In</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" id="mobile_app_phone_login_enabled" wire:model="mobile_app_phone_login_enabled" class="h-4 w-4 rounded border-gray-300 text-[#C8102E] focus:ring-[#C8102E]">
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Enable Phone Sign-In (Kenyan 07/01)</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 

@@ -83,6 +83,8 @@ class MobileAppController extends Controller
                 'mobile_app_facebook_native_id' => Setting::get('mobile_app_facebook_native_id', ''),
                 'mobile_app_native_ad_code' => Setting::get('mobile_app_native_ad_code', ''),
                 'mobile_app_native_ad_frequency' => (int) Setting::get('mobile_app_native_ad_frequency', 5),
+                'mobile_app_google_login_enabled' => (bool) filter_var(Setting::get('mobile_app_google_login_enabled', '1'), FILTER_VALIDATE_BOOLEAN),
+                'mobile_app_phone_login_enabled' => (bool) filter_var(Setting::get('mobile_app_phone_login_enabled', '1'), FILTER_VALIDATE_BOOLEAN),
                 'mobile_app_maintenance_mode' => (bool) Setting::get('mobile_app_maintenance_mode', false),
                 'show_views_count' => (bool) Setting::get('show_views_count', true),
                 'live_tv_url' => trim(Setting::get('live_tv_url', '')),
@@ -333,19 +335,35 @@ class MobileAppController extends Controller
     /**
      * Register a new subscriber.
      */
+    /**
+     * Register a new subscriber (via email or Kenyan phone number 07/01).
+     */
     public function register(Request $request)
     {
         $this->checkMaintenance();
 
+        // Validate strictly 10-digit Kenyan phone format starting with 07 or 01 (e.g. 0712345678 or 0112345678)
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'email' => 'nullable|string|email|max:255|unique:users,email',
+            'phone' => ['nullable', 'string', 'regex:/^(07|01)\d{8}$/', 'unique:users,phone'],
+            'password' => 'required|string|min:6|confirmed',
         ]);
+
+        if (empty($request->email) && empty($request->phone)) {
+            throw ValidationException::withMessages([
+                'phone' => ['Please enter a valid 10-digit Kenyan phone number starting with 07 or 01 (e.g., 0712345678 or 0112345678) or an email.'],
+            ]);
+        }
+
+        $phone = $request->filled('phone') ? trim($request->phone) : null;
+        $email = $request->filled('email') ? strip_tags(trim(strtolower($request->email))) : "{$phone}@getembetv.co.ke";
 
         $user = User::create([
             'name' => strip_tags(trim($request->name)),
-            'email' => strip_tags(trim(strtolower($request->email))),
+            'email' => $email,
+            'phone' => $phone,
+            'mpesa_phone' => $phone,
             'password' => Hash::make($request->password),
             'role' => 'subscriber',
         ]);
@@ -442,23 +460,39 @@ class MobileAppController extends Controller
     }
 
     /**
-     * Authenticate mobile user.
+     * Authenticate mobile user via email or Kenyan phone number (07/01).
      */
     public function login(Request $request)
     {
         $this->checkMaintenance();
 
         $request->validate([
-            'email' => 'required|email',
+            'login_key' => 'nullable|string',
+            'email' => 'nullable|string',
+            'phone' => 'nullable|string',
             'password' => 'required',
             'device_name' => 'nullable|string'
         ]);
 
-        $user = User::where('email', strtolower($request->email))->first();
+        $inputKey = trim($request->login_key ?? $request->email ?? $request->phone ?? '');
+
+        if (empty($inputKey)) {
+            throw ValidationException::withMessages([
+                'login_key' => ['Please enter your email address or Kenyan phone number (07XX / 01XX).'],
+            ]);
+        }
+
+        // Normalize Kenyan phone format if starting with country code (+254 or 254)
+        $cleanPhone = preg_replace('/^(?:\+254|254)/', '0', $inputKey);
+
+        $user = User::where('email', strtolower($inputKey))
+            ->orWhere('phone', $cleanPhone)
+            ->orWhere('mpesa_phone', $cleanPhone)
+            ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'login_key' => ['The provided credentials are incorrect.'],
             ]);
         }
 

@@ -13,6 +13,7 @@ state([
     'userId' => null,
     'name' => '',
     'email' => '',
+    'phone' => '',
     'password' => '',
     'role' => 'user',
     
@@ -22,7 +23,8 @@ state([
 rules(function () {
     return [
         'name' => 'required|string|max:255',
-        'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->userId)],
+        'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->userId)],
+        'phone' => ['nullable', 'string', 'max:20', Rule::unique('users')->ignore($this->userId)],
         'password' => $this->userId ? 'nullable|string|min:8' : 'required|string|min:8',
         'role' => 'required|string|in:admin,editor,author,user,reporter,contributor,subscriber,manager,writing-article',
     ];
@@ -35,12 +37,14 @@ $openForm = function ($id = null) {
     if ($id) {
         $user = User::findOrFail($id);
         $this->name = $user->name;
-        $this->email = $user->email;
+        $this->email = $user->email ?? '';
+        $this->phone = $user->phone ?? '';
         $this->role = $user->role;
         $this->password = '';
     } else {
         $this->name = '';
         $this->email = '';
+        $this->phone = '';
         $this->role = 'user';
         $this->password = '';
     }
@@ -55,10 +59,16 @@ $closeForm = function () {
 $saveUser = function () {
     $this->validate();
 
+    if (empty($this->email) && empty($this->phone)) {
+        $this->addError('email', 'Please provide either an Email address or Phone number.');
+        return;
+    }
+
     if ($this->userId) {
         $user = User::findOrFail($this->userId);
         $user->name = $this->name;
-        $user->email = $this->email;
+        $user->email = $this->email ? strtolower(trim($this->email)) : null;
+        $user->phone = $this->phone ? trim($this->phone) : null;
         $user->role = $this->role;
         if ($this->password) {
             $user->password = Hash::make($this->password);
@@ -68,12 +78,14 @@ $saveUser = function () {
     } else {
         $user = User::create([
             'name' => $this->name,
-            'email' => $this->email,
+            'email' => $this->email ? strtolower(trim($this->email)) : null,
+            'phone' => $this->phone ? trim($this->phone) : null,
+            'mpesa_phone' => $this->phone ? trim($this->phone) : null,
             'role' => $this->role,
             'password' => Hash::make($this->password),
         ]);
 
-        if (in_array($this->role, ['admin', 'editor', 'author', 'manager', 'writing-article'])) {
+        if (in_array($this->role, ['admin', 'editor', 'author', 'manager', 'writing-article']) && $user->email) {
             \App\Support\Mailer::sendNewAccountNotification($user, $this->password);
         }
 
@@ -118,13 +130,14 @@ with(function () {
         ->when($this->search, function ($q) {
             $q->where(function($inner) {
                 $inner->where('name', 'like', '%' . $this->search . '%')
-                      ->orWhere('email', 'like', '%' . $this->search . '%');
+                      ->orWhere('email', 'like', '%' . $this->search . '%')
+                      ->orWhere('phone', 'like', '%' . $this->search . '%');
             });
         })
         ->when($this->roleFilter, function ($q) {
             $q->where('role', $this->roleFilter);
         })
-        ->orderBy('name', 'asc')
+        ->orderBy('created_at', 'desc')
         ->paginate(15);
 
     return compact('users');
@@ -156,7 +169,7 @@ with(function () {
     <!-- Search & Filter Controls -->
     <div class="flex flex-col sm:flex-row gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 shadow-sm">
         <div class="flex-grow">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search users by name or email..." 
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search users by name, email, or phone number..." 
                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C8102E]">
         </div>
         <div class="w-full sm:w-48">
@@ -168,14 +181,14 @@ with(function () {
                 <option value="author">Author</option>
                 <option value="writing-article">Writing Article</option>
                 <option value="user">User</option>
+                <option value="subscriber">Subscriber</option>
                 <option value="reporter">Reporter (Legacy)</option>
                 <option value="contributor">Contributor (Legacy)</option>
-                <option value="subscriber">Subscriber (Legacy)</option>
             </select>
         </div>
     </div>
 
-    <!-- Users Form Modal (Overlaid or inline depending on state) -->
+    <!-- Users Form Modal -->
     @if($isFormOpen)
         <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 shadow space-y-4">
             <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider border-b border-gray-100 dark:border-gray-800 pb-2">
@@ -184,31 +197,33 @@ with(function () {
             
             <form wire:submit.prevent="saveUser" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="space-y-1">
-                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Name</label>
+                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Full Name</label>
                     <input type="text" wire:model="name" required class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                     @error('name') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>
                 <div class="space-y-1">
-                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Address</label>
-                    <input type="email" wire:model="email" required class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Email Address (Optional if Phone provided)</label>
+                    <input type="email" wire:model="email" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
                     @error('email') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Kenyan Phone Number (Optional if Email provided)</label>
+                    <input type="text" wire:model="phone" placeholder="e.g. 0712345678" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                    @error('phone') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>
                 <div class="space-y-1">
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Role</label>
                     <select wire:model="role" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
-                        <option value="user">User</option>
+                        <option value="user">User (Subscriber)</option>
                         <option value="author">Author</option>
                         <option value="writing-article">Writing Article</option>
                         <option value="manager">Manager</option>
                         <option value="editor">Editor</option>
                         <option value="admin">Administrator</option>
-                        @if(in_array($role, ['reporter', 'contributor', 'subscriber']))
-                            <option value="{{ $role }}">{{ ucfirst($role) }} (Legacy)</option>
-                        @endif
                     </select>
                     @error('role') <p class="text-red-500 text-[10px]">{{ $message }}</p> @enderror
                 </div>
-                <div class="space-y-1">
+                <div class="space-y-1 sm:col-span-2">
                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">
                         Password {{ $userId ? '(Leave blank to keep current)' : '' }}
                     </label>
@@ -234,7 +249,8 @@ with(function () {
             <table class="w-full text-left border-collapse text-xs">
                 <thead>
                     <tr class="bg-gray-50 dark:bg-gray-950 text-gray-500 font-bold border-b border-gray-200 dark:border-gray-800 uppercase tracking-wider text-[10px]">
-                        <th class="p-4">User Info</th>
+                        <th class="p-4">User Details</th>
+                        <th class="p-4">Reg Method</th>
                         <th class="p-4">Current Role</th>
                         <th class="p-4">Quick Convert Role</th>
                         <th class="p-4">Registered Date</th>
@@ -254,8 +270,24 @@ with(function () {
                                 </div>
                                 <div>
                                     <div class="font-bold text-gray-900 dark:text-white">{{ $user->name }}</div>
-                                    <div class="text-[10px] text-gray-500 font-mono">{{ $user->email }}</div>
+                                    @if($user->email)
+                                        <div class="text-[10px] text-gray-500 font-mono">✉️ {{ $user->email }}</div>
+                                    @endif
+                                    @if($user->phone)
+                                        <div class="text-[10px] text-gray-600 dark:text-gray-400 font-mono">📱 {{ $user->phone }}</div>
+                                    @endif
                                 </div>
+                            </td>
+                            <td class="p-4">
+                                @if($user->phone && !$user->email)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-400">📱 Phone User</span>
+                                @elseif($user->email && !$user->phone)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-400">✉️ Email User</span>
+                                @elseif($user->email && $user->phone)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-400">📱+✉️ Full Account</span>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">Guest</span>
+                                @endif
                             </td>
                             <td class="p-4">
                                 <button type="button" wire:click="$set('roleFilter', '{{ $user->role }}')" 

@@ -236,6 +236,12 @@ class AppUpdater
                     \App\Models\Setting::set('header_menu', $headerMenu);
                 }
             }
+
+            // Ensure reader polls and quizzes are active
+            \App\Models\Setting::set('polls_widget_active', true);
+            \App\Models\Setting::set('quizzes_widget_active', true);
+            \Illuminate\Support\Facades\Cache::forget('setting_v1_polls_widget_active');
+            \Illuminate\Support\Facades\Cache::forget('setting_v1_quizzes_widget_active');
         } catch (\Throwable $e) {}
 
         // 5. Purge Caches & Compiled Views

@@ -3466,6 +3466,7 @@ $sendTestEmail = function () {
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">AdMob Native Advanced ID</label>
                                     <input type="text" wire:model="mobile_app_admob_native_id" placeholder="ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white">
+                                    <p class="text-[10px] text-gray-400">AdMob Native Advanced ad unit format (or Banner format for inline rectangle banners).</p>
                                 </div>
                                 <div class="space-y-1">
                                     <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Facebook Native Placement ID</label>

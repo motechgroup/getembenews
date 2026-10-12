@@ -36,7 +36,7 @@ class SeoSitemapController extends Controller
                 '/contact' => ['freq' => 'monthly', 'priority' => '0.4'],
                 '/privacy' => ['freq' => 'monthly', 'priority' => '0.4'],
                 '/announcements' => ['freq' => 'weekly', 'priority' => '0.5'],
-                '/live-tv' => ['freq' => 'daily', 'priority' => '0.6'],
+                '/tv' => ['freq' => 'daily', 'priority' => '0.6'],
                 '/live-radio' => ['freq' => 'daily', 'priority' => '0.6'],
             ];
 

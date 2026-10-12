@@ -309,11 +309,31 @@ Route::get('/feed/google-news', [SeoSitemapController::class, 'googleNewsFeed'])
 
 Route::get('/robots.txt', function () {
     $siteUrl = rtrim(url('/'), '/');
-    $default = "User-agent: *\nDisallow: /admin\nDisallow: /login\nDisallow: /register\n\nSitemap: {$siteUrl}/sitemap.xml\nSitemap: {$siteUrl}/news-sitemap.xml";
-    $content = trim(\App\Models\Setting::get('robots_txt_content', $default));
+    $default = "User-agent: *\nDisallow: /admin\nDisallow: /login\nDisallow: /register\nDisallow: /dashboard\nDisallow: /agent/\nDisallow: /api/\nDisallow: /run-\nDisallow: /update-app\nDisallow: /clear-cache\nDisallow: /generate-key\nDisallow: /announcements/*/download/\nDisallow: /announcements/*/print\nDisallow: /articles/*/view\n\n# Allow media and asset crawling\nAllow: /storage/*.*\nAllow: /images/*.*\nAllow: /build/*.*\n\nSitemap: {$siteUrl}/sitemap.xml\nSitemap: {$siteUrl}/news-sitemap.xml";
+    $content = trim(\App\Models\Setting::get('robots_txt_content', ''));
     
-    if (empty($content)) {
+    if (empty($content) || $content === "User-agent: *\nDisallow: /admin\nSitemap: https://getembetv.co.ke/sitemap.xml\nSitemap: https://getembetv.co.ke/news-sitemap.xml") {
         $content = $default;
+    } else {
+        // Ensure utility disallows exist if not already present
+        $mustDisallow = [
+            'Disallow: /admin',
+            'Disallow: /login',
+            'Disallow: /dashboard',
+            'Disallow: /agent/',
+            'Disallow: /run-',
+            'Disallow: /update-app',
+            'Disallow: /announcements/*/download/',
+            'Disallow: /announcements/*/print',
+        ];
+        foreach ($mustDisallow as $rule) {
+            if (!str_contains($content, $rule)) {
+                $content = $rule . "\n" . $content;
+            }
+        }
+        if (!str_contains($content, 'User-agent:')) {
+            $content = "User-agent: *\n" . $content;
+        }
     }
     
     // If Sitemap reference is missing, append it

@@ -7,6 +7,20 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Cache;
 
 Route::get('/update-app', function () {
+    $updaterFile = base_path('app/Support/AppUpdater.php');
+    $rawUrl = 'https://raw.githubusercontent.com/motechgroup/getembenews/main/app/Support/AppUpdater.php?v=' . time();
+    $ch = curl_init($rawUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'GetembeUpdater/2.0');
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $content = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($code === 200 && !empty($content)) {
+        @file_put_contents($updaterFile, $content);
+    }
     return response(\App\Support\AppUpdater::run(), 200);
 });
 

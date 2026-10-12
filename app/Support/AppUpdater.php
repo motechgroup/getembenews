@@ -104,10 +104,11 @@ class AppUpdater
 
             // Always ensure key updated files are tracked
             $essentialFiles = [
-                'app/Http/Controllers/AnnouncementController.php',
-                'app/Http/Controllers/SeoSitemapController.php',
+                'index.php',
                 '.htaccess',
                 'public/.htaccess',
+                'app/Http/Controllers/AnnouncementController.php',
+                'app/Http/Controllers/SeoSitemapController.php',
                 'routes/web.php',
                 'routes/api.php',
                 'public/update-app.php',

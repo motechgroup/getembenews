@@ -14,7 +14,8 @@ class AnnouncementController extends Controller
     protected function authorizeAccess()
     {
         if (!auth()->check() && !session()->has('agent_logged_in')) {
-            abort(403, 'Unauthorized access to announcement records.');
+            redirect()->guest(route('login'))->send();
+            exit;
         }
     }
 

@@ -96,8 +96,10 @@ class MobileAppController extends Controller
                 'announcement_rate_tv' => (int) Setting::get('announcement_rate_tv', 5),
                 'announcement_rate_radio' => (int) Setting::get('announcement_rate_radio', 3),
                 'announcement_rate_both' => (int) Setting::get('announcement_rate_both', 7),
-                'simulated_polls' => json_decode(Setting::get('simulated_polls', '[]'), true),
-                'simulated_quizzes' => json_decode(Setting::get('simulated_quizzes', '[]'), true),
+                'polls_widget_active' => (bool) Setting::get('polls_widget_active', true),
+                'quizzes_widget_active' => (bool) Setting::get('quizzes_widget_active', true),
+                'simulated_polls' => $this->getFormattedPolls(),
+                'simulated_quizzes' => $this->getFormattedQuizzes(),
             ]
         ]);
     }
@@ -154,12 +156,21 @@ class MobileAppController extends Controller
 
         $nativeAds = Advertisement::active()->where('location', 'mobile_native')->get();
 
+        $polls = $this->getFormattedPolls();
+        $quizzes = $this->getFormattedQuizzes();
+        $pollsActive = (bool) Setting::get('polls_widget_active', true);
+        $quizzesActive = (bool) Setting::get('quizzes_widget_active', true);
+
         return response()->json([
             'status' => 'success',
             'data' => [
                 'featured_article' => $featuredArticle,
                 'latest_articles' => $latestArticles,
                 'category_sections' => $categorySections,
+                'active_poll' => ($pollsActive && !empty($polls)) ? $polls[0] : null,
+                'active_quiz' => ($quizzesActive && !empty($quizzes)) ? $quizzes[0] : null,
+                'polls_widget_active' => $pollsActive,
+                'quizzes_widget_active' => $quizzesActive,
                 'native_ads' => [
                     'enabled' => (bool) Setting::get('mobile_app_native_ads_enabled', false),
                     'admob_native_id' => Setting::get('mobile_app_admob_native_id', ''),
@@ -1489,6 +1500,113 @@ class MobileAppController extends Controller
             'message' => $hasAccess ? 'Access verified.' : 'Payment pending PIN entry.',
             'user' => $user->fresh()
         ]);
+    }
+
+    /**
+     * Get formatted and normalized reader polls.
+     */
+    public function getFormattedPolls(): array
+    {
+        $raw = Setting::get('simulated_polls', []);
+        $polls = is_array($raw) ? $raw : json_decode($raw ?? '[]', true);
+        if (!is_array($polls)) {
+            $polls = [];
+        }
+
+        $formatted = [];
+        foreach ($polls as $p) {
+            if (empty($p['question'])) {
+                continue;
+            }
+            $options = $p['options'] ?? [];
+            if (is_string($options)) {
+                $options = array_filter(array_map('trim', explode(',', $options)));
+            } elseif (is_object($options)) {
+                $options = (array) $options;
+            }
+            $options = array_values((array) $options);
+            if (empty($options)) {
+                $options = ['Yes', 'No', 'Undecided'];
+            }
+            $formatted[] = [
+                'id' => (string) ($p['id'] ?? uniqid()),
+                'question' => (string) $p['question'],
+                'options' => $options,
+                'created_at' => (string) ($p['created_at'] ?? now()->format('Y-m-d H:i:s')),
+            ];
+        }
+        return $formatted;
+    }
+
+    /**
+     * Get formatted and normalized trivia quizzes with guaranteed questions.
+     */
+    public function getFormattedQuizzes(): array
+    {
+        $raw = Setting::get('simulated_quizzes', []);
+        $quizzes = is_array($raw) ? $raw : json_decode($raw ?? '[]', true);
+        if (!is_array($quizzes)) {
+            $quizzes = [];
+        }
+
+        $defaultQuestions = [
+            [
+                'q' => 'Which facility was recently launched in Getembe County to benefit the youth?',
+                'options' => ['A modern stadium', 'A state-of-the-art tech and innovation hub', 'An agricultural training college'],
+                'correct' => 1,
+                'explanation' => 'Getembe County recently commissioned a modern technology hub focusing on software engineering and coding bootcamps.'
+            ],
+            [
+                'q' => 'What is the main cultural art attraction Kisii County is globally known for?',
+                'options' => ['Traditional Beadwork', 'Soapstone Carvings', 'Pottery & Ceramics'],
+                'correct' => 1,
+                'explanation' => 'Kisii County (specifically Tabaka region) is world-famous for its soapstone carvings.'
+            ],
+            [
+                'q' => 'What is the primary currency utilized in Getembe News settings?',
+                'options' => ['KSH (Kenyan Shilling)', 'USD (US Dollar)', 'EUR (Euro)'],
+                'correct' => 0,
+                'explanation' => 'Getembe News is based in Kisii, Kenya, and defaults to KSH (Kenyan Shilling).'
+            ],
+            [
+                'q' => 'What is the primary language spoken in the Gusii community?',
+                'options' => ['Ekegusii', 'Dholuo', 'Kalenjin', 'Kikuyu'],
+                'correct' => 0,
+                'explanation' => 'Ekegusii is the native language of the Abagusii people in Kisii/Nyamira.'
+            ],
+            [
+                'q' => 'Which agricultural crop is widely grown as a cash crop in Kisii highlands?',
+                'options' => ['Wheat', 'Tea & Coffee', 'Cotton', 'Sisal'],
+                'correct' => 1,
+                'explanation' => 'Tea and Coffee are the primary cash crops grown in the fertile soils of Kisii.'
+            ],
+            [
+                'q' => 'What is the official app name of the Getembe News platform?',
+                'options' => ['Getembe Digital', 'Getembe News Mobile', 'Getembe News Reader'],
+                'correct' => 0,
+                'explanation' => 'The official app name was recently updated to Getembe Digital.'
+            ]
+        ];
+
+        $formatted = [];
+        foreach ($quizzes as $q) {
+            if (empty($q['title'])) {
+                continue;
+            }
+            $questions = !empty($q['questions']) && is_array($q['questions']) ? $q['questions'] : [];
+            if (empty($questions)) {
+                $requestedCount = (int) ($q['questions_count'] ?? 3);
+                $questions = array_slice($defaultQuestions, 0, max(2, min($requestedCount, count($defaultQuestions))));
+            }
+            $formatted[] = [
+                'id' => (string) ($q['id'] ?? uniqid()),
+                'title' => (string) $q['title'],
+                'questions_count' => count($questions),
+                'questions' => $questions,
+                'created_at' => (string) ($q['created_at'] ?? now()->format('Y-m-d H:i:s')),
+            ];
+        }
+        return $formatted;
     }
 }
 

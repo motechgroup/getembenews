@@ -3,6 +3,9 @@
     $pollsRaw = \App\Models\Setting::get('simulated_polls', '[]');
     $polls = is_array($pollsRaw) ? $pollsRaw : json_decode($pollsRaw ?? '[]', true);
     $activePoll = (is_array($polls) && !empty($polls) && isset($polls[0])) ? $polls[0] : null;
+    if ($activePoll && isset($activePoll['options'])) {
+        $activePoll['options'] = array_values((array) $activePoll['options']);
+    }
 
     $quizzesWidgetActive = (bool) \App\Models\Setting::get('quizzes_widget_active', true);
     $quizzesRaw = \App\Models\Setting::get('simulated_quizzes', '[]');

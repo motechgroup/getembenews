@@ -896,22 +896,34 @@ $addPoll = function () use ($logAction) {
     if (!$this->newPollQuestion) return;
 
     $polls = json_decode(Setting::get('simulated_polls', '[]'), true);
+    if (!is_array($polls)) $polls = [];
+    $rawOpts = array_filter(array_map('trim', explode(',', $this->newPollOptions)));
+    $options = array_values($rawOpts);
+    if (empty($options)) {
+        $options = ['Yes', 'No', 'Undecided'];
+    }
     array_unshift($polls, [
         'id' => uniqid(),
-        'question' => $this->newPollQuestion,
-        'options' => array_filter(array_map('trim', explode(',', $this->newPollOptions))),
+        'question' => trim($this->newPollQuestion),
+        'options' => $options,
         'created_at' => now()->format('Y-m-d H:i:s')
     ]);
-    Setting::set('simulated_polls', json_encode($polls));
+    Setting::set('simulated_polls', json_encode(array_values($polls)));
+    Setting::set('polls_widget_active', true);
+    $this->polls_widget_active = true;
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_simulated_polls');
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_polls_widget_active');
     $logAction("Added simulated poll: {$this->newPollQuestion}");
     $this->reset(['newPollQuestion', 'newPollOptions']);
-    session()->flash('poll_success', 'Poll added successfully.');
+    session()->flash('poll_success', 'Poll added and activated successfully.');
 };
 
 $deletePoll = function ($id) use ($logAction) {
     $polls = json_decode(Setting::get('simulated_polls', '[]'), true);
+    if (!is_array($polls)) $polls = [];
     $polls = array_filter($polls, fn($p) => $p['id'] !== $id);
     Setting::set('simulated_polls', json_encode(array_values($polls)));
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_simulated_polls');
     $logAction("Deleted simulated poll");
     session()->flash('poll_success', 'Poll removed successfully.');
 };
@@ -921,22 +933,29 @@ $addQuiz = function () use ($logAction) {
     if (!$this->newQuizTitle) return;
 
     $quizzes = json_decode(Setting::get('simulated_quizzes', '[]'), true);
+    if (!is_array($quizzes)) $quizzes = [];
     array_unshift($quizzes, [
         'id' => uniqid(),
-        'title' => $this->newQuizTitle,
+        'title' => trim($this->newQuizTitle),
         'questions_count' => (int) $this->newQuizQuestions ?: 5,
         'created_at' => now()->format('Y-m-d H:i:s')
     ]);
-    Setting::set('simulated_quizzes', json_encode($quizzes));
+    Setting::set('simulated_quizzes', json_encode(array_values($quizzes)));
+    Setting::set('quizzes_widget_active', true);
+    $this->quizzes_widget_active = true;
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_simulated_quizzes');
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_quizzes_widget_active');
     $logAction("Added simulated quiz: {$this->newQuizTitle}");
     $this->reset(['newQuizTitle', 'newQuizQuestions']);
-    session()->flash('quiz_success', 'Quiz added successfully.');
+    session()->flash('quiz_success', 'Quiz added and activated successfully.');
 };
 
 $deleteQuiz = function ($id) use ($logAction) {
     $quizzes = json_decode(Setting::get('simulated_quizzes', '[]'), true);
+    if (!is_array($quizzes)) $quizzes = [];
     $quizzes = array_filter($quizzes, fn($q) => $q['id'] !== $id);
     Setting::set('simulated_quizzes', json_encode(array_values($quizzes)));
+    \Illuminate\Support\Facades\Cache::forget('setting_v1_simulated_quizzes');
     $logAction("Deleted simulated quiz");
     session()->flash('quiz_success', 'Quiz removed successfully.');
 };

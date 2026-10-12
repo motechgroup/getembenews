@@ -129,6 +129,8 @@ class AppUpdater
                 'app/Http/Controllers/AnnouncementController.php',
                 'app/Http/Controllers/SeoSitemapController.php',
                 'app/Http/Controllers/Api/MobileAppController.php',
+                'resources/views/partials/sidebar-widgets.blade.php',
+                'resources/views/livewire/admin-settings-manager.blade.php',
                 'app/Support/Seo.php',
                 'app/Support/AppUpdater.php',
                 'routes/web.php',

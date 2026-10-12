@@ -411,6 +411,19 @@ state([
     'test_sms_message' => 'Hello! This is a test SMS alert from Getembe News admin panel.',
     'test_sms_success' => '',
     'test_sms_error' => '',
+
+    // Africa's Talking Airtime Top-Up Configuration
+    'airtime_enabled' => fn() => (bool) Setting::get('airtime_enabled', true),
+    'airtime_at_username' => fn() => Setting::get('airtime_at_username', ''),
+    'airtime_at_api_key' => fn() => Setting::get('airtime_at_api_key', ''),
+    'airtime_sandbox' => fn() => (bool) Setting::get('airtime_sandbox', false),
+    'airtime_default_amount' => fn() => (int) Setting::get('airtime_default_amount', 20),
+    'airtime_auto_on_signup' => fn() => (bool) Setting::get('airtime_auto_on_signup', false),
+    'airtime_auto_amount' => fn() => (int) Setting::get('airtime_auto_amount', 10),
+    'test_airtime_phone' => '',
+    'test_airtime_amount' => 10,
+    'test_airtime_success' => '',
+    'test_airtime_error' => '',
 ]);
 
 if (!function_exists('sortScheduleSlots')) {
@@ -1301,7 +1314,8 @@ $save = function () use ($logAction) {
         'sms_template_draft', 'sms_template_payment',
         'mpesa_env', 'mpesa_transaction_type', 'mpesa_consumer_key', 'mpesa_consumer_secret',
         'mpesa_shortcode', 'mpesa_till_number', 'mpesa_passkey', 'mpesa_initiator_name', 'mpesa_initiator_password', 'mpesa_callback_url',
-        'paywall_enabled', 'paywall_default_article_price', 'paywall_daily_price', 'paywall_weekly_price', 'paywall_monthly_price'
+        'paywall_enabled', 'paywall_default_article_price', 'paywall_daily_price', 'paywall_weekly_price', 'paywall_monthly_price',
+        'airtime_enabled', 'airtime_at_username', 'airtime_at_api_key', 'airtime_sandbox', 'airtime_default_amount', 'airtime_auto_on_signup', 'airtime_auto_amount'
     ];
 
     foreach (['tv_schedule', 'radio_schedule'] as $schedKey) {
@@ -1459,6 +1473,36 @@ $sendTestSms = function () {
     } catch (\Exception $e) {
         $this->test_sms_error = "Error sending SMS: " . $e->getMessage();
         $this->test_sms_success = '';
+    }
+};
+
+$sendTestAirtime = function () {
+    $this->validate([
+        'test_airtime_phone' => 'required|string',
+    ]);
+
+    // Save configurations first
+    $fields = [
+        'airtime_enabled', 'airtime_at_username', 'airtime_at_api_key',
+        'airtime_sandbox', 'airtime_default_amount',
+        'airtime_auto_on_signup', 'airtime_auto_amount'
+    ];
+    foreach ($fields as $field) {
+        Setting::set($field, $this->{$field});
+    }
+
+    try {
+        $result = \App\Support\Airtime::send($this->test_airtime_phone, (float) ($this->test_airtime_amount ?: 10), null, auth()->id());
+        if ($result['success']) {
+            $this->test_airtime_success = "Airtime dispatched successfully! " . ($result['message'] ?? '');
+            $this->test_airtime_error = '';
+        } else {
+            $this->test_airtime_error = "Airtime dispatch failed: " . ($result['message'] ?? 'Check credentials or logs.');
+            $this->test_airtime_success = '';
+        }
+    } catch (\Throwable $e) {
+        $this->test_airtime_error = "Error: " . $e->getMessage();
+        $this->test_airtime_success = '';
     }
 };
 
@@ -1885,6 +1929,7 @@ $sendTestEmail = function () {
     facebook_ads_enabled: @entangle('facebook_ads_enabled'),
     captcha_driver: @entangle('captcha_driver'),
     sms_provider: @entangle('sms_provider'),
+    airtime_auto_on_signup: @entangle('airtime_auto_on_signup'),
     saved: false
 }" @settings-saved.window="saved = true; setTimeout(() => saved = false, 3000)">
     
@@ -1943,6 +1988,9 @@ $sendTestEmail = function () {
         </a>
         <a href="/admin/settings/sms" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'sms' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
             SMS Alert Gateway
+        </a>
+        <a href="/admin/settings/airtime" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'airtime' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
+            Airtime Top-Up
         </a>
         <a href="/admin/settings/security" class="px-3 py-1.5 text-[10px] font-bold rounded transition shrink-0 whitespace-nowrap {{ $activeTab === 'security' ? 'bg-[#C8102E] text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white' }}">
             Security & Privacy
@@ -5158,6 +5206,133 @@ $sendTestEmail = function () {
 
                     <div class="pt-4 border-t border-gray-100 dark:border-gray-800">
                         <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-4 py-2 rounded transition">Save SMS Configuration</button>
+                    </div>
+                </div>
+
+                <!-- AIRTIME TOP-UP (AFRICA'S TALKING) TAB -->
+                <div x-show="activeTab === 'airtime'" class="space-y-6" style="display: none;">
+                    <div class="border-b border-gray-150 dark:border-gray-800 pb-3 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Africa's Talking Airtime Top-Up Settings</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Top-up prepaid airtime directly to user phones across Safaricom, Airtel, and Telkom.</p>
+                        </div>
+                        <span class="px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400">
+                            Africa's Talking API
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Left: API Credentials & General Settings -->
+                        <div class="space-y-5">
+                            <div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-lg border border-gray-200 dark:border-gray-800 space-y-4">
+                                <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">API Credentials</h4>
+
+                                <div class="flex items-center space-x-2">
+                                    <input type="checkbox" wire:model="airtime_enabled" id="airtime_enabled" class="rounded text-emerald-600 focus:ring-emerald-500 border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                    <label for="airtime_enabled" class="text-xs font-semibold text-gray-750 dark:text-gray-300">Enable Airtime Disbursements Globally</label>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">Africa's Talking Username</label>
+                                    <input type="text" wire:model="airtime_at_username" placeholder="Leave blank to use SMS username" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-emerald-500 focus:border-emerald-500 dark:text-white font-mono">
+                                    <p class="text-[10px] text-gray-500">If left blank, automatically uses your SMS Africa's Talking username (<code>{{ $sms_at_username ?: 'None set' }}</code>).</p>
+                                </div>
+
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">Africa's Talking API Key</label>
+                                    <input type="password" wire:model="airtime_at_api_key" placeholder="••••••••••••••••••••••••••••••••" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs focus:ring-emerald-500 focus:border-emerald-500 dark:text-white font-mono">
+                                    <p class="text-[10px] text-gray-500">If left blank, automatically uses your SMS Africa's Talking API Key.</p>
+                                </div>
+
+                                <div class="flex items-center space-x-2 pt-2 border-t border-gray-200 dark:border-gray-800">
+                                    <input type="checkbox" wire:model="airtime_sandbox" id="airtime_sandbox" class="rounded text-emerald-600 focus:ring-emerald-500 border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                    <label for="airtime_sandbox" class="text-xs font-semibold text-gray-750 dark:text-gray-300">Run in Africa's Talking Sandbox Environment (Testing)</label>
+                                </div>
+                            </div>
+
+                            <!-- Automatic Signup Welcome Airtime -->
+                            <div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-lg border border-gray-200 dark:border-gray-800 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Automatic Signup Welcome Bonus</h4>
+                                    <span class="text-[9px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300 px-2 py-0.5 rounded">Growth Feature</span>
+                                </div>
+                                <p class="text-[11px] text-gray-500 leading-relaxed">
+                                    Automatically disburse a one-time welcome airtime bonus to new users when they register with a valid Kenyan phone number (via Mobile App or Web).
+                                </p>
+
+                                <div class="flex items-center space-x-2">
+                                    <input type="checkbox" wire:model="airtime_auto_on_signup" id="airtime_auto_on_signup" class="rounded text-emerald-600 focus:ring-emerald-500 border-gray-300 dark:border-gray-700 dark:bg-gray-900">
+                                    <label for="airtime_auto_on_signup" class="text-xs font-bold text-gray-800 dark:text-gray-200">Automatically top up airtime on new user registration</label>
+                                </div>
+
+                                <div class="space-y-1" x-show="airtime_auto_on_signup">
+                                    <label class="text-[11px] font-bold text-gray-400">Welcome Airtime Amount per New User (KES)</label>
+                                    <div class="relative w-48">
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-gray-400 font-bold">KES</span>
+                                        <input type="number" wire:model="airtime_auto_amount" min="5" max="1000" step="5" class="w-full pl-12 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs font-mono font-bold dark:text-white">
+                                    </div>
+                                    <p class="text-[10px] text-gray-400">Recommended: KSh 10 or KSh 20.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Defaults & Test Dispatch Tool -->
+                        <div class="space-y-5">
+                            <div class="bg-gray-50 dark:bg-gray-950 p-4 rounded-lg border border-gray-200 dark:border-gray-800 space-y-4">
+                                <h4 class="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wide">Manual Top-Up Defaults</h4>
+                                <div class="space-y-1">
+                                    <label class="text-[11px] font-bold text-gray-400">Default Quick-Select Amount (KES)</label>
+                                    <div class="relative w-48">
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-gray-400 font-bold">KES</span>
+                                        <input type="number" wire:model="airtime_default_amount" min="5" max="10000" step="5" class="w-full pl-12 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs font-mono font-bold dark:text-white">
+                                    </div>
+                                    <p class="text-[10px] text-gray-400">Pre-selected in the Admin User Accounts Manager modal.</p>
+                                </div>
+                            </div>
+
+                            <!-- Live Connection Test Widget -->
+                            <div class="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-850 p-4 rounded-lg space-y-4">
+                                <div>
+                                    <h4 class="text-xs font-bold text-emerald-900 dark:text-emerald-300 uppercase tracking-wide flex items-center gap-1.5">
+                                        <span>⚡</span> Test Airtime Dispatch
+                                    </h4>
+                                    <p class="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5">Send a live test airtime top-up to verify your Africa's Talking API connectivity.</p>
+                                </div>
+
+                                @if($test_airtime_success)
+                                    <div class="p-3 bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs rounded-lg font-semibold">
+                                        {{ $test_airtime_success }}
+                                    </div>
+                                @endif
+
+                                @if($test_airtime_error)
+                                    <div class="p-3 bg-red-100 border border-red-300 text-red-900 text-xs rounded-lg font-semibold">
+                                        {{ $test_airtime_error }}
+                                    </div>
+                                @endif
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase">Test Recipient Phone</label>
+                                        <input type="text" wire:model="test_airtime_phone" placeholder="e.g. 0712345678" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs font-mono dark:text-white">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase">Amount (KES)</label>
+                                        <input type="number" wire:model="test_airtime_amount" min="5" max="100" step="5" class="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs font-mono font-bold dark:text-white">
+                                    </div>
+                                </div>
+
+                                <button type="button" wire:click="sendTestAirtime" wire:loading.attr="disabled" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-lg transition shadow disabled:opacity-50">
+                                    <span wire:loading.remove wire:target="sendTestAirtime">Dispatch Test Airtime</span>
+                                    <span wire:loading wire:target="sendTestAirtime">Calling Africa's Talking API...</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                        <button type="submit" class="bg-[#C8102E] hover:bg-red-700 text-white font-bold text-xs px-5 py-2.5 rounded-lg transition shadow">Save Airtime Configuration</button>
+                        <a href="/admin/users" class="text-xs font-bold text-emerald-600 hover:underline">Go to User Accounts Manager &rarr;</a>
                     </div>
                 </div>
 

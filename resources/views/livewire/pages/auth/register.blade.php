@@ -14,6 +14,7 @@ new #[Layout('layouts.guest')] class extends Component
 {
     public string $name = '';
     public string $email = '';
+    public string $phone = '';
     public string $password = '';
     public string $password_confirmation = '';
     public string $captchaToken = '';
@@ -37,6 +38,29 @@ new #[Layout('layouts.guest')] class extends Component
             ]);
         }
 
+        // Clean phone input
+        $cleanPhone = null;
+        if (!empty($this->phone)) {
+            $digits = preg_replace('/[^0-9]/', '', trim($this->phone));
+            if (str_starts_with($digits, '254') && strlen($digits) === 12) {
+                $cleanPhone = '0' . substr($digits, 3);
+            } elseif (strlen($digits) === 10 && (str_starts_with($digits, '07') || str_starts_with($digits, '01'))) {
+                $cleanPhone = $digits;
+            } elseif (strlen($digits) === 9 && (str_starts_with($digits, '7') || str_starts_with($digits, '1'))) {
+                $cleanPhone = '0' . $digits;
+            } else {
+                throw ValidationException::withMessages([
+                    'phone' => 'Please enter a valid 10-digit Kenyan phone number (e.g. 0712345678 or 0112345678).',
+                ]);
+            }
+
+            if (User::where('phone', $cleanPhone)->orWhere('mpesa_phone', $cleanPhone)->exists()) {
+                throw ValidationException::withMessages([
+                    'phone' => 'An account with this phone number already exists.',
+                ]);
+            }
+        }
+
         // 3. Standard and Dynamic validations
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -45,11 +69,22 @@ new #[Layout('layouts.guest')] class extends Component
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+        if ($cleanPhone) {
+            $validated['phone'] = $cleanPhone;
+            $validated['mpesa_phone'] = $cleanPhone;
+        }
 
         // Default role is subscriber for new signups
         $validated['role'] = 'subscriber';
 
         event(new Registered($user = User::create($validated)));
+
+        // Trigger welcome airtime if configured
+        try {
+            \App\Support\Airtime::triggerSignupWelcomeAirtime($user);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Signup airtime error: ' . $e->getMessage());
+        }
 
         Auth::login($user);
 
@@ -84,6 +119,17 @@ new #[Layout('layouts.guest')] class extends Component
             <x-input-label for="email" :value="__('Email')" />
             <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        </div>
+
+        <!-- Phone Number (Optional / For Airtime & SMS) -->
+        <div class="mt-4">
+            <div class="flex justify-between items-center">
+                <x-input-label for="phone" :value="__('Kenyan Phone Number')" />
+                <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Bonus Airtime Eligible</span>
+            </div>
+            <x-text-input wire:model="phone" id="phone" class="block mt-1 w-full font-mono" type="tel" name="phone" placeholder="e.g. 0712345678 or 0112345678" autocomplete="tel" />
+            <p class="text-[10px] text-gray-500 mt-1">Optional. Enter your 10-digit Safaricom/Airtel number to receive airtime top-ups.</p>
+            <x-input-error :messages="$errors->get('phone')" class="mt-1" />
         </div>
 
         <!-- Password -->

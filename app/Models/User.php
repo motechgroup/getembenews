@@ -234,4 +234,24 @@ class User extends Authenticatable
     {
         return $this->hasMany(ArticleSubscription::class)->orderBy('created_at', 'desc');
     }
+
+    public function airtimeTopups()
+    {
+        return $this->hasMany(AirtimeTopup::class)->orderBy('created_at', 'desc');
+    }
+
+    public function latestAirtimeTopup()
+    {
+        return $this->hasOne(AirtimeTopup::class)->latestOfMany();
+    }
+
+    public function hasReceivedAirtime(): bool
+    {
+        return $this->airtimeTopups()->where('status', 'sent')->exists();
+    }
+
+    public function totalAirtimeReceived(): float
+    {
+        return (float) $this->airtimeTopups()->where('status', 'sent')->sum('amount');
+    }
 }

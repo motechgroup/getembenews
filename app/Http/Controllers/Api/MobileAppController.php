@@ -440,6 +440,13 @@ class MobileAppController extends Controller
             ], 500);
         }
 
+        // Automatically trigger welcome airtime top-up if enabled in settings
+        try {
+            \App\Support\Airtime::triggerSignupWelcomeAirtime($user);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed triggering signup airtime for user #' . $user->id . ': ' . $e->getMessage());
+        }
+
         $token = $user->createToken('mobile-app-token')->plainTextToken;
 
         return response()->json([

@@ -2,12 +2,15 @@
 
 use function Livewire\Volt\{state, with, rules};
 use App\Models\User;
+use App\Models\AirtimeTopup;
+use App\Support\Airtime;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 state([
     'search' => '',
     'roleFilter' => '',
+    'airtimeFilter' => '', // '', 'received', 'not_received', 'has_phone'
     
     // Form fields
     'userId' => null,
@@ -18,6 +21,19 @@ state([
     'role' => 'user',
     
     'isFormOpen' => false,
+
+    // Single Airtime Top-up Modal State
+    'isAirtimeModalOpen' => false,
+    'airtimeUserId' => null,
+    'airtimeTargetName' => '',
+    'airtimeTargetPhone' => '',
+    'airtimeAmount' => 20,
+    'isSendingAirtime' => false,
+
+    // Bulk Airtime Top-up Modal State
+    'isBulkAirtimeModalOpen' => false,
+    'bulkAirtimeAmount' => 20,
+    'bulkTarget' => 'not_received', // 'not_received', 'all_phone'
 ]);
 
 rules(function () {
@@ -94,6 +110,13 @@ $saveUser = function () {
             \App\Support\Mailer::sendNewAccountNotification($user, $this->password);
         }
 
+        // Trigger welcome airtime if configured
+        try {
+            \App\Support\Airtime::triggerSignupWelcomeAirtime($user);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Signup airtime error: ' . $e->getMessage());
+        }
+
         session()->flash('message', 'User account created successfully.');
     }
 
@@ -130,8 +153,102 @@ $quickChangeRole = function ($id, $newRole) {
     session()->flash('message', "Converted {$targetUser->name}'s role from " . ucfirst($oldRole) . " to " . ucfirst($newRole) . " successfully.");
 };
 
+// Single Airtime Handlers
+$openAirtimeModal = function ($id) {
+    $user = User::findOrFail($id);
+    $this->airtimeUserId = $user->id;
+    $this->airtimeTargetName = $user->name;
+    $this->airtimeTargetPhone = $user->phone ?? $user->mpesa_phone ?? '';
+    $this->airtimeAmount = (float) \App\Models\Setting::get('airtime_default_amount', 20);
+    $this->isAirtimeModalOpen = true;
+};
+
+$closeAirtimeModal = function () {
+    $this->isAirtimeModalOpen = false;
+    $this->airtimeUserId = null;
+    $this->airtimeTargetName = '';
+    $this->airtimeTargetPhone = '';
+};
+
+$sendAirtime = function () {
+    if (empty($this->airtimeTargetPhone)) {
+        session()->flash('error', 'Recipient does not have a registered phone number.');
+        return;
+    }
+
+    $amount = (float) $this->airtimeAmount;
+    if ($amount < 5) {
+        session()->flash('error', 'Minimum airtime amount is KSh 5.00.');
+        return;
+    }
+
+    $user = $this->airtimeUserId ? User::find($this->airtimeUserId) : null;
+    $result = Airtime::send($this->airtimeTargetPhone, $amount, $user, auth()->id());
+
+    if ($result['success']) {
+        session()->flash('message', "🎉 " . $result['message']);
+        $this->closeAirtimeModal();
+    } else {
+        session()->flash('error', "⚠️ " . $result['message']);
+    }
+};
+
+// Bulk Airtime Handlers
+$openBulkAirtimeModal = function () {
+    $this->bulkAirtimeAmount = (float) \App\Models\Setting::get('airtime_default_amount', 20);
+    $this->bulkTarget = 'not_received';
+    $this->isBulkAirtimeModalOpen = true;
+};
+
+$closeBulkAirtimeModal = function () {
+    $this->isBulkAirtimeModalOpen = false;
+};
+
+$sendBulkAirtime = function () {
+    $query = User::query()
+        ->where(function ($q) {
+            $q->whereNotNull('phone')->where('phone', '!=', '')
+              ->orWhereNotNull('mpesa_phone')->where('mpesa_phone', '!=', '');
+        });
+
+    if ($this->bulkTarget === 'not_received') {
+        $query->whereDoesntHave('airtimeTopups', function ($q) {
+            $q->where('status', 'sent');
+        });
+    }
+
+    $eligibleUsers = $query->get();
+
+    if ($eligibleUsers->isEmpty()) {
+        session()->flash('error', 'No eligible users with registered phone numbers found.');
+        $this->closeBulkAirtimeModal();
+        return;
+    }
+
+    $items = [];
+    foreach ($eligibleUsers as $u) {
+        $phone = $u->phone ?: $u->mpesa_phone;
+        $items[] = [
+            'phone' => $phone,
+            'amount' => (float) $this->bulkAirtimeAmount,
+            'user_id' => $u->id,
+        ];
+    }
+
+    $result = Airtime::sendBatch($items, auth()->id());
+
+    if ($result['success']) {
+        session()->flash('message', "🚀 Bulk Airtime Processed: " . $result['message']);
+    } else {
+        session()->flash('error', "Bulk Airtime Result: " . $result['message']);
+    }
+
+    $this->closeBulkAirtimeModal();
+};
+
 with(function () {
     $users = User::query()
+        ->with(['latestAirtimeTopup'])
         ->when($this->search, function ($q) {
             $q->where(function($inner) {
                 $inner->where('name', 'like', '%' . $this->search . '%')
@@ -143,21 +260,84 @@ with(function () {
         ->when($this->roleFilter, function ($q) {
             $q->where('role', $this->roleFilter);
         })
+        ->when($this->airtimeFilter === 'received', function ($q) {
+            $q->whereHas('airtimeTopups', fn($sub) => $sub->where('status', 'sent'));
+        })
+        ->when($this->airtimeFilter === 'not_received', function ($q) {
+            $q->whereDoesntHave('airtimeTopups', fn($sub) => $sub->where('status', 'sent'))
+              ->where(fn($p) => $p->whereNotNull('phone')->where('phone', '!=', '')->orWhereNotNull('mpesa_phone')->where('mpesa_phone', '!=', ''));
+        })
+        ->when($this->airtimeFilter === 'has_phone', function ($q) {
+            $q->where(fn($p) => $p->whereNotNull('phone')->where('phone', '!=', '')->orWhereNotNull('mpesa_phone')->where('mpesa_phone', '!=', ''));
+        })
         ->orderBy('created_at', 'desc')
         ->paginate(15);
 
-    return compact('users');
+    // Summary airtime stats
+    $totalPhoneUsers = User::where(fn($p) => $p->whereNotNull('phone')->where('phone', '!=', '')->orWhereNotNull('mpesa_phone')->where('mpesa_phone', '!=', ''))->count();
+    $totalAirtimeUsers = User::whereHas('airtimeTopups', fn($q) => $q->where('status', 'sent'))->count();
+    $totalAirtimeSpent = (float) AirtimeTopup::where('status', 'sent')->sum('amount');
+
+    return compact('users', 'totalPhoneUsers', 'totalAirtimeUsers', 'totalAirtimeSpent');
 });
 
 ?>
 
 <div class="space-y-6">
-    <div class="flex justify-between items-center pb-4 border-b border-gray-250 dark:border-gray-800">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white">User Accounts Manager</h2>
+    <!-- Top Action Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-250 dark:border-gray-800">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <span>User Accounts Manager</span>
+            </h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Manage user profiles, registered phone numbers, and Africa's Talking airtime disbursements.</p>
+        </div>
         
-        <button wire:click="openForm()" class="bg-[#C8102E] hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded transition shadow">
-            Create User Account
-        </button>
+        <div class="flex items-center gap-2">
+            <!-- Bulk Airtime Button -->
+            <button wire:click="openBulkAirtimeModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition shadow flex items-center gap-1.5">
+                <span class="text-sm">⚡</span>
+                <span>Bulk Airtime Top-Up</span>
+            </button>
+
+            <!-- Create User Button -->
+            <button wire:click="openForm()" class="bg-[#C8102E] hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition shadow">
+                Create User Account
+            </button>
+        </div>
+    </div>
+
+    <!-- Live Airtime & Phone User Stat Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="p-3.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Phone Registered Users</span>
+                <span class="text-lg font-black text-gray-900 dark:text-white font-mono">{{ number_format($totalPhoneUsers) }}</span>
+            </div>
+            <div class="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
+                📱
+            </div>
+        </div>
+
+        <div class="p-3.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">Rewarded With Airtime</span>
+                <span class="text-lg font-black text-emerald-700 dark:text-emerald-400 font-mono">{{ number_format($totalAirtimeUsers) }}</span>
+            </div>
+            <div class="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">
+                🟢
+            </div>
+        </div>
+
+        <div class="p-3.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 block">Total Airtime Disbursed</span>
+                <span class="text-lg font-black text-gray-900 dark:text-white font-mono">KES {{ number_format($totalAirtimeSpent, 2) }}</span>
+            </div>
+            <div class="w-9 h-9 rounded-full bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold text-sm">
+                💰
+            </div>
+        </div>
     </div>
 
     @if (session()->has('message'))
@@ -173,12 +353,24 @@ with(function () {
     @endif
 
     <!-- Search & Filter Controls -->
-    <div class="flex flex-col sm:flex-row gap-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-4 shadow-sm">
+    <div class="flex flex-col sm:flex-row gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-3.5 shadow-sm">
         <div class="flex-grow">
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search users by name, email, or phone number..." 
                    class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C8102E]">
         </div>
+
+        <!-- Airtime Status Filter -->
         <div class="w-full sm:w-48">
+            <select wire:model.live="airtimeFilter" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 font-semibold">
+                <option value="">All Airtime States</option>
+                <option value="received">🟢 Airtime Received</option>
+                <option value="not_received">⚪ Not Received Yet</option>
+                <option value="has_phone">📱 Has Phone Number</option>
+            </select>
+        </div>
+
+        <!-- Role Filter -->
+        <div class="w-full sm:w-44">
             <select wire:model.live="roleFilter" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded p-2 text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C8102E]">
                 <option value="">All Roles</option>
                 <option value="admin">Administrator</option>
@@ -193,6 +385,122 @@ with(function () {
             </select>
         </div>
     </div>
+
+    <!-- SINGLE AIRTIME TOP-UP MODAL -->
+    @if($isAirtimeModalOpen)
+        <div class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">⚡</div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white">Top Up Airtime</h3>
+                            <p class="text-[10px] text-gray-500">Disbursed instantly via Africa's Talking</p>
+                        </div>
+                    </div>
+                    <button wire:click="closeAirtimeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg font-bold">&times;</button>
+                </div>
+
+                <!-- Recipient Info Card -->
+                <div class="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-850 rounded-lg space-y-1">
+                    <div class="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 tracking-wider">Recipient Details</div>
+                    <div class="text-xs font-bold text-gray-900 dark:text-white">{{ $airtimeTargetName }}</div>
+                    <div class="text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                        <span>📱</span>
+                        <span>{{ $airtimeTargetPhone }}</span>
+                        <span class="text-[9px] bg-emerald-200 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200 px-1.5 py-0.2 rounded font-sans">Safaricom / Airtel</span>
+                    </div>
+                </div>
+
+                <!-- Amount Selection -->
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Select or Enter Top-Up Amount (KES)</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        @foreach([10, 20, 50, 100] as $preset)
+                            <button type="button" wire:click="$set('airtimeAmount', {{ $preset }})" 
+                                    class="py-2 text-xs font-bold rounded-lg border transition {{ $airtimeAmount == $preset ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100' }}">
+                                KSh {{ $preset }}
+                            </button>
+                        @endforeach
+                    </div>
+                    
+                    <div class="pt-1">
+                        <label class="text-[10px] font-bold text-gray-400 block mb-1">Custom Amount</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-gray-400 font-bold">KES</span>
+                            <input type="number" wire:model="airtimeAmount" min="5" max="10000" step="5" 
+                                   class="w-full pl-12 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-2 text-xs text-gray-900 dark:text-white font-mono font-bold focus:ring-1 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-gray-100 dark:border-gray-800 flex space-x-2">
+                    <button wire:click="sendAirtime" wire:loading.attr="disabled" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 disabled:opacity-50">
+                        <span wire:loading.remove wire:target="sendAirtime">⚡ Confirm & Send KSh {{ $airtimeAmount }}</span>
+                        <span wire:loading wire:target="sendAirtime">Dispatching Airtime...</span>
+                    </button>
+                    <button wire:click="closeAirtimeModal()" class="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 text-gray-700 dark:text-gray-300 font-bold text-xs rounded-lg transition">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- BULK AIRTIME TOP-UP MODAL -->
+    @if($isBulkAirtimeModalOpen)
+        <div class="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">🚀</div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white">Bulk Airtime Top-Up</h3>
+                            <p class="text-[10px] text-gray-500">Send airtime to multiple phone users simultaneously</p>
+                        </div>
+                    </div>
+                    <button wire:click="closeBulkAirtimeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-lg font-bold">&times;</button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="font-bold text-gray-700 dark:text-gray-300 block mb-1">Target Recipients</label>
+                        <select wire:model="bulkTarget" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-2 text-xs text-gray-900 dark:text-white font-semibold">
+                            <option value="not_received">Users who have NOT received airtime yet (Avoid duplicates)</option>
+                            <option value="all_phone">All registered users with a phone number</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="font-bold text-gray-700 dark:text-gray-300 block mb-1">Airtime Amount Per User (KES)</label>
+                        <div class="grid grid-cols-4 gap-2 mb-2">
+                            @foreach([10, 20, 50, 100] as $preset)
+                                <button type="button" wire:click="$set('bulkAirtimeAmount', {{ $preset }})" 
+                                        class="py-2 text-xs font-bold rounded-lg border transition {{ $bulkAirtimeAmount == $preset ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300' }}">
+                                    KSh {{ $preset }}
+                                </button>
+                            @endforeach
+                        </div>
+                        <input type="number" wire:model="bulkAirtimeAmount" min="5" max="10000" step="5" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-2 text-xs font-mono font-bold text-gray-900 dark:text-white">
+                    </div>
+
+                    <div class="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-850 rounded-lg text-amber-800 dark:text-amber-300 text-[11px] leading-relaxed">
+                        ⚠️ <strong>Notice:</strong> This action will send an immediate bulk API request to Africa's Talking. Ensure your Africa's Talking wallet balance has sufficient funds to cover the total disbursement.
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t border-gray-100 dark:border-gray-800 flex space-x-2">
+                    <button wire:click="sendBulkAirtime" wire:loading.attr="disabled" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 disabled:opacity-50">
+                        <span wire:loading.remove wire:target="sendBulkAirtime">🚀 Dispatch Bulk Airtime</span>
+                        <span wire:loading wire:target="sendBulkAirtime">Processing Batch...</span>
+                    </button>
+                    <button wire:click="closeBulkAirtimeModal()" class="px-4 py-2.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 text-gray-700 dark:text-gray-300 font-bold text-xs rounded-lg transition">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <!-- Users Form Modal -->
     @if($isFormOpen)
@@ -217,7 +525,7 @@ with(function () {
                         <label class="text-xs font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
                             <span>📱</span> Kenyan Phone Number
                         </label>
-                        <span class="text-[9px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded">Mobile Auth</span>
+                        <span class="text-[9px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded">Airtime & Auth</span>
                     </div>
                     <input type="text" wire:model="phone" placeholder="e.g. 0712345678 or 0112345678" class="w-full bg-white dark:bg-gray-800 border border-emerald-300 dark:border-emerald-800 rounded p-2 text-xs text-gray-900 dark:text-white font-mono focus:ring-1 focus:ring-emerald-500">
                     <p class="text-[10px] text-emerald-700 dark:text-emerald-400">Strictly 10 digits starting with 07 or 01 (No country code).</p>
@@ -277,6 +585,7 @@ with(function () {
                 <thead>
                     <tr class="bg-gray-50 dark:bg-gray-950 text-gray-500 font-bold border-b border-gray-200 dark:border-gray-800 uppercase tracking-wider text-[10px]">
                         <th class="p-4">User Details</th>
+                        <th class="p-4">Airtime Status</th>
                         <th class="p-4">Reg Method</th>
                         <th class="p-4">Current Role</th>
                         <th class="p-4">Quick Convert Role</th>
@@ -288,8 +597,10 @@ with(function () {
                     @foreach($users as $user)
                         @php
                             $userPhone = $user->phone ?? $user->mpesa_phone;
+                            $hasAirtime = $user->hasReceivedAirtime();
                         @endphp
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-950/50">
+                            <!-- User Details -->
                             <td class="p-4 flex items-center space-x-3">
                                 <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center font-bold text-gray-500 overflow-hidden shrink-0">
                                     @if($user->photo_url)
@@ -308,12 +619,38 @@ with(function () {
                                     </div>
                                     <div class="text-[10px] font-mono text-gray-500 flex items-center gap-1">
                                         <span>📱</span>
-                                        <span class="{{ $userPhone ? 'text-gray-700 dark:text-gray-300 font-semibold' : 'text-gray-400 italic' }}">
+                                        <span class="{{ $userPhone ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-gray-400 italic' }}">
                                             {{ $userPhone ?? 'No Phone' }}
                                         </span>
                                     </div>
                                 </div>
                             </td>
+
+                            <!-- Airtime Status Indicator -->
+                            <td class="p-4">
+                                @if($hasAirtime)
+                                    <div class="space-y-1">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            Sent (KES {{ number_format($user->totalAirtimeReceived()) }})
+                                        </span>
+                                        @if($user->latestAirtimeTopup)
+                                            <div class="text-[9px] font-mono text-gray-400" title="Request ID: {{ $user->latestAirtimeTopup->request_id }}">
+                                                {{ $user->latestAirtimeTopup->sent_at?->format('M d, H:i') ?? 'Completed' }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                @elseif($userPhone)
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                                        Not Sent
+                                    </span>
+                                @else
+                                    <span class="text-gray-400 italic text-[10px]">No phone</span>
+                                @endif
+                            </td>
+
+                            <!-- Registration Method -->
                             <td class="p-4">
                                 @if($userPhone && !$user->email)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-400">📱 Phone User</span>
@@ -325,6 +662,8 @@ with(function () {
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">Guest</span>
                                 @endif
                             </td>
+
+                            <!-- Current Role -->
                             <td class="p-4">
                                 <button type="button" wire:click="$set('roleFilter', '{{ $user->role }}')" 
                                         title="Click to filter users by {{ $user->role }}" 
@@ -339,6 +678,8 @@ with(function () {
                                     {{ $user->role }}
                                 </button>
                             </td>
+
+                            <!-- Quick Convert Role -->
                             <td class="p-4">
                                 <select wire:change="quickChangeRole({{ $user->id }}, $event.target.value)" 
                                         class="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-[11px] font-bold rounded px-2.5 py-1 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-[#C8102E]">
@@ -349,11 +690,24 @@ with(function () {
                                     <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Convert to Admin</option>
                                 </select>
                             </td>
+
+                            <!-- Registered Date -->
                             <td class="p-4 text-gray-500">
                                 {{ $user->created_at->format('M d, Y') }}
                             </td>
+
+                            <!-- Actions -->
                             <td class="p-4 text-right space-x-2">
-                                <button wire:click="openForm({{ $user->id }})" class="text-blue-600 hover:text-blue-850 font-bold">Edit</button>
+                                @if($userPhone)
+                                    <button wire:click="openAirtimeModal({{ $user->id }})" 
+                                            class="inline-flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 px-2 py-1 rounded text-[11px] font-bold transition shadow-2xs" 
+                                            title="Send Airtime via Africa's Talking">
+                                        <span>⚡</span> Top-Up
+                                    </button>
+                                @endif
+
+                                <button wire:click="openForm({{ $user->id }})" class="text-blue-600 hover:text-blue-800 font-bold">Edit</button>
+
                                 @if(auth()->id() !== $user->id)
                                     <button onclick="confirm('Are you sure you want to delete this account?') || event.stopImmediatePropagation()" 
                                             wire:click="deleteUser({{ $user->id }})" class="text-red-650 hover:text-red-800 font-bold">Delete</button>

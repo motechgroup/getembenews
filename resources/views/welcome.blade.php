@@ -661,7 +661,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- TV Stream Player -->
                     <div class="lg:col-span-2 space-y-3">
-                        <x-tv-player :url="$tvUrl" :embed-code="$tvEmbedCode" :type="$tvType" />          </div>
+                        <x-tv-player :url="$tvUrl" :embed-code="$tvEmbedCode" :type="$tvType" />
                         <div class="bg-gray-900 p-4 border border-gray-855 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div>
                                 <span class="text-[9px] font-black text-red-500 uppercase tracking-widest block mb-0.5">Live Broadcast</span>
@@ -694,13 +694,12 @@
                             @empty
                                 <p class="text-gray-500 text-center py-4">No programs scheduled for today.</p>
                             @endforelse
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
             @endif
         @endif
-        </div>
 
         <!-- App Download Promo Banner -->
         @include('partials.app-download-banner')

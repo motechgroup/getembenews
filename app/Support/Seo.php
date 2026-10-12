@@ -127,7 +127,7 @@ class Seo
     {
         try {
             $schemas = [];
-            $siteName = Setting::get('site_name', 'Getembe News');
+            $siteName = Setting::get('site_name', 'Getembe Digital');
             $siteUrl = url('/');
             $request = request();
             $route = $request->route();

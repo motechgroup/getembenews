@@ -46,7 +46,7 @@ state([
     'pinned_articles_list' => fn() => \App\Models\Article::where('is_pinned', true)->orWhere('is_featured', true)->get(),
 
     // 1. Site Identity & Theme Settings
-    'site_name' => fn() => Setting::get('site_name', 'Getembe News'),
+    'site_name' => fn() => Setting::get('site_name', 'Getembe Digital'),
     'system_version' => fn() => Setting::get('system_version', 'v2.5.0'),
     'site_logo' => fn() => Setting::get('site_logo', ''),
     'brand_color' => fn() => Setting::get('brand_color', '#C8102E'),

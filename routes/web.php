@@ -181,7 +181,7 @@ Route::get('/', function () {
         try {
             return view('welcome', $fallbackData);
         } catch (\Throwable $e3) {
-            return response()->make('<!DOCTYPE html><html><head><title>Getembe News</title><meta name="description" content="Getembe News is your leading source for politics, business, technology, and global news."></head><body><h1>Getembe News</h1><p>Welcome to Getembe News. Latest stories updating.</p></body></html>', 200);
+            return response()->make('<!DOCTYPE html><html><head><title>Getembe Digital</title><meta name="description" content="Getembe Digital is your leading source for politics, business, technology, and global news."></head><body><h1>Getembe Digital</h1><p>Welcome to Getembe Digital. Latest stories updating.</p></body></html>', 200);
         }
     }
 })->name('home');
@@ -203,6 +203,8 @@ Route::get('/tv', function () {
     return view('live-tv', compact('tvUrl', 'tvEmbedCode', 'tvType'));
 })->name('live-tv');
 
+Route::redirect('/home', '/');
+Route::redirect('/news', '/');
 Route::redirect('/live-tv', '/tv');
 
 Route::get('/live-radio', function () {
@@ -509,7 +511,7 @@ Route::get('/debug-homepage', function () {
 
     // 3. Check Settings Table
     try {
-        $siteName = \App\Models\Setting::get('site_name', 'Getembe News');
+        $siteName = \App\Models\Setting::get('site_name', 'Getembe Digital');
         $results['setting_site_name'] = $siteName;
     } catch (\Exception $e) {
         $results['setting_site_name'] = 'FAILED: ' . $e->getMessage();

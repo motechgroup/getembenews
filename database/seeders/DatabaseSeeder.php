@@ -589,7 +589,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // 8. Seed Site Settings
-        Setting::set('site_name', 'Getembe News');
+        Setting::set('site_name', 'Getembe Digital');
         Setting::set('live_tv_url', 'https://www.youtube.com/embed/5Peo-ivmupE');
         Setting::set('live_radio_url', 'http://stream.zeno.fm/f5r7x1t1zv8uv'); // A live radio URL placeholder
         Setting::set('weather_city', 'Kisii');

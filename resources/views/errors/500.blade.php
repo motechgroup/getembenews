@@ -44,7 +44,7 @@
                 Getembe
             </div>
             <div class="bg-gray-900 px-3.5 py-1.5 text-white font-sans font-black tracking-tight text-xs sm:text-sm uppercase border-l border-gray-800">
-                News
+                Digital
             </div>
         </a>
         <a href="/" wire:navigate.skip class="text-xs font-bold text-gray-400 hover:text-white transition uppercase tracking-wider">
@@ -92,7 +92,7 @@
 
     <!-- Footer -->
     <footer class="max-w-7xl mx-auto w-full px-6 py-8 border-t border-gray-900 text-center text-xs text-gray-600 z-10">
-        &copy; {{ date('Y') }} Getembe News. All rights reserved. Kisii County, Kenya.
+        &copy; {{ date('Y') }} Getembe Digital. All rights reserved. Kisii County, Kenya.
     </footer>
 </body>
 </html>

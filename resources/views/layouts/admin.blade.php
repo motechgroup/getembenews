@@ -15,10 +15,10 @@
     </script>
 
     @php
-        $siteName = \App\Models\Setting::get('site_name', 'Getembe News');
+        $siteName = \App\Models\Setting::get('site_name', 'Getembe Digital');
         $parts = explode(' ', trim($siteName), 2);
         $firstWord = $parts[0] ?? 'Getembe';
-        $secondWord = $parts[1] ?? 'News';
+        $secondWord = $parts[1] ?? 'Digital';
     @endphp
     <title>{{ $title ?? 'Admin Dashboard - ' . $siteName }}</title>
 

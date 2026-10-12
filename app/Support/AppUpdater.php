@@ -118,12 +118,19 @@ class AppUpdater
                 'favicon.ico',
                 'favicon.png',
                 'site.webmanifest',
+                'resources/views/welcome.blade.php',
                 'resources/views/layouts/news.blade.php',
                 'resources/views/layouts/admin.blade.php',
                 'resources/views/layouts/app.blade.php',
                 'resources/views/layouts/guest.blade.php',
+                'resources/views/components/application-logo.blade.php',
+                'resources/views/errors/404.blade.php',
+                'resources/views/errors/500.blade.php',
                 'app/Http/Controllers/AnnouncementController.php',
                 'app/Http/Controllers/SeoSitemapController.php',
+                'app/Http/Controllers/Api/MobileAppController.php',
+                'app/Support/Seo.php',
+                'app/Support/AppUpdater.php',
                 'routes/web.php',
                 'routes/api.php',
                 'public/update-app.php',
@@ -196,6 +203,36 @@ class AppUpdater
             }
             if (file_exists($basePath . '/public/favicon.png') && !file_exists($basePath . '/favicon.png')) {
                 @copy($basePath . '/public/favicon.png', $basePath . '/favicon.png');
+            }
+        } catch (\Throwable $e) {}
+
+        // Ensure site branding is Getembe Digital and header menu is sanitized
+        try {
+            \App\Models\Setting::set('site_name', 'Getembe Digital');
+
+            $headerMenu = \App\Models\Setting::get('header_menu', []);
+            if (is_string($headerMenu)) {
+                $headerMenu = json_decode($headerMenu, true);
+            }
+            if (is_array($headerMenu)) {
+                $menuUpdated = false;
+                foreach ($headerMenu as &$mItem) {
+                    if (isset($mItem['url']) && ($mItem['url'] === '/news' || $mItem['url'] === '/home')) {
+                        $mItem['url'] = '/';
+                        $menuUpdated = true;
+                    }
+                    if (isset($mItem['children']) && is_array($mItem['children'])) {
+                        foreach ($mItem['children'] as &$cItem) {
+                            if (isset($cItem['url']) && ($cItem['url'] === '/news' || $cItem['url'] === '/home')) {
+                                $cItem['url'] = '/';
+                                $menuUpdated = true;
+                            }
+                        }
+                    }
+                }
+                if ($menuUpdated) {
+                    \App\Models\Setting::set('header_menu', $headerMenu);
+                }
             }
         } catch (\Throwable $e) {}
 

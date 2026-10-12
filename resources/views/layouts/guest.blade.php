@@ -46,10 +46,10 @@
                 <!-- Branded Logo Header -->
                 <div class="flex justify-center mb-6">
                     @php
-                        $siteName = \App\Models\Setting::get('site_name', 'Getembe News');
+                        $siteName = \App\Models\Setting::get('site_name', 'Getembe Digital');
                         $parts = explode(' ', trim($siteName), 2);
                         $firstWord = $parts[0] ?? 'Getembe';
-                        $secondWord = $parts[1] ?? 'News';
+                        $secondWord = $parts[1] ?? 'Digital';
                     @endphp
                     <a href="/" class="flex items-center overflow-hidden rounded-md border border-gray-800 dark:border-gray-700 shadow-lg" wire:navigate.skip>
                         <!-- Left: Orange -->

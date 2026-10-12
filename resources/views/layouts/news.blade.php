@@ -16,10 +16,10 @@
 
     <!-- SEO Metadata -->
     @php
-        $siteName = \App\Models\Setting::get('site_name', 'Getembe News');
+        $siteName = \App\Models\Setting::get('site_name', 'Getembe Digital');
         $parts = explode(' ', trim($siteName), 2);
         $firstWord = $parts[0] ?? 'Getembe';
-        $secondWord = $parts[1] ?? 'News';
+        $secondWord = $parts[1] ?? 'Digital';
 
         $brandColor = \App\Models\Setting::get('brand_color', '#be5b27');
         $footerBgColor = \App\Models\Setting::get('footer_bg_color', '#111827');
@@ -43,6 +43,9 @@
                 }
                 if (!isset($item['url']) || !isset($item['label'])) {
                     return null;
+                }
+                if ($item['url'] === '/news' || $item['url'] === '/home') {
+                    $item['url'] = '/';
                 }
                 if (!empty($item['children']) && is_array($item['children'])) {
                     $item['children'] = $filterMenu($item['children']);

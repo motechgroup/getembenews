@@ -91,7 +91,7 @@ class SeoSitemapController extends Controller
     {
         $xml = Cache::remember('seo_news_sitemap_xml', 900, function () {
             $siteUrl = rtrim(url('/'), '/');
-            $siteName = htmlspecialchars(Setting::get('site_name', 'Getembe News'), ENT_XML1, 'UTF-8');
+            $siteName = htmlspecialchars(Setting::get('site_name', 'Getembe Digital'), ENT_XML1, 'UTF-8');
             $fortyEightHoursAgo = now()->subHours(48);
 
             // Fetch articles published in the last 48 hours
@@ -137,7 +137,7 @@ class SeoSitemapController extends Controller
     {
         $xml = Cache::remember('seo_google_news_rss_feed', 900, function () {
             $siteUrl = rtrim(url('/'), '/');
-            $siteName = htmlspecialchars(Setting::get('site_name', 'Getembe News'), ENT_XML1, 'UTF-8');
+            $siteName = htmlspecialchars(Setting::get('site_name', 'Getembe Digital'), ENT_XML1, 'UTF-8');
             $siteDesc = htmlspecialchars(Setting::get('site_description', 'Your leading source for politics, business, technology, sports, opinion, and global news.'), ENT_XML1, 'UTF-8');
             $fortyEightHoursAgo = now()->subHours(48);
 

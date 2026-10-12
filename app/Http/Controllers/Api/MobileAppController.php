@@ -46,7 +46,7 @@ class MobileAppController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                'site_name' => Setting::get('site_name', 'Getembe News'),
+                'site_name' => Setting::get('site_name', 'Getembe Digital'),
                 'site_logo' => Setting::get('site_logo', ''),
                 'brand_color' => Setting::get('brand_color', '#FF7900'),
                 'theme_color_secondary' => Setting::get('theme_color_secondary', '#222222'),

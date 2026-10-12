@@ -58,7 +58,7 @@
             <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6 mt-12">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs text-gray-500 dark:text-gray-400 space-y-1.5">
                     <div>
-                        &copy; {{ date('Y') }} {{ \App\Models\Setting::get('site_name', 'Getembe News') }}. All rights reserved.
+                        &copy; {{ date('Y') }} {{ \App\Models\Setting::get('site_name', 'Getembe Digital') }}. All rights reserved.
                     </div>
                     <div class="flex flex-wrap items-center justify-center gap-3 text-[11px]">
                         <span class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2.5 py-0.5 rounded font-mono font-semibold">

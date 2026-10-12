@@ -107,6 +107,21 @@ class AppUpdater
                 'index.php',
                 '.htaccess',
                 'public/.htaccess',
+                'public/favicon.ico',
+                'public/favicon.png',
+                'public/favicon-32x32.png',
+                'public/favicon-16x16.png',
+                'public/apple-touch-icon.png',
+                'public/android-chrome-192x192.png',
+                'public/android-chrome-512x512.png',
+                'public/site.webmanifest',
+                'favicon.ico',
+                'favicon.png',
+                'site.webmanifest',
+                'resources/views/layouts/news.blade.php',
+                'resources/views/layouts/admin.blade.php',
+                'resources/views/layouts/app.blade.php',
+                'resources/views/layouts/guest.blade.php',
                 'app/Http/Controllers/AnnouncementController.php',
                 'app/Http/Controllers/SeoSitemapController.php',
                 'routes/web.php',
@@ -167,6 +182,21 @@ class AppUpdater
                 ->orderBy('id', 'desc')
                 ->take(5)
                 ->get();
+        } catch (\Throwable $e) {}
+
+        // Ensure default favicon setting is set
+        try {
+            $currentFav = \App\Models\Setting::get('favicon');
+            if (empty($currentFav)) {
+                \App\Models\Setting::set('favicon', '/favicon.png');
+            }
+            // Copy favicons to base path if missing
+            if (file_exists($basePath . '/public/favicon.ico') && !file_exists($basePath . '/favicon.ico')) {
+                @copy($basePath . '/public/favicon.ico', $basePath . '/favicon.ico');
+            }
+            if (file_exists($basePath . '/public/favicon.png') && !file_exists($basePath . '/favicon.png')) {
+                @copy($basePath . '/public/favicon.png', $basePath . '/favicon.png');
+            }
         } catch (\Throwable $e) {}
 
         // 5. Purge Caches & Compiled Views

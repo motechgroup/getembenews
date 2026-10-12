@@ -2027,12 +2027,13 @@ $sendTestEmail = function () {
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700 dark:text-gray-300">Favicon Icon</label>
                             <div class="flex flex-col space-y-2">
-                                @if($favicon)
-                                    <div class="flex items-center space-x-2">
-                                        <img src="{{ $favicon }}" alt="Favicon Preview" class="w-8 h-8 object-contain border border-gray-200 dark:border-gray-700 rounded p-1 bg-white">
-                                        <span class="text-[10px] text-gray-500 truncate max-w-[150px]">{{ basename($favicon) }}</span>
-                                    </div>
-                                @endif
+                                @php
+                                    $previewFavicon = $favicon ?: asset('favicon.png');
+                                @endphp
+                                <div class="flex items-center space-x-2">
+                                    <img src="{{ $previewFavicon }}" alt="Favicon Preview" class="w-8 h-8 object-contain border border-gray-200 dark:border-gray-700 rounded p-1 bg-white">
+                                    <span class="text-[10px] text-gray-500 truncate max-w-[150px]">{{ basename($previewFavicon) }}</span>
+                                </div>
                                 <div class="flex items-center space-x-2">
                                     <input type="file" wire:model="uploadedFavicon" class="hidden" id="upload-favicon-input" accept=".ico,.png,.svg,.jpg,.jpeg">
                                     <label for="upload-favicon-input" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-[11px] font-bold py-1.5 px-3 rounded cursor-pointer transition border border-gray-300 dark:border-gray-700">

@@ -575,4 +575,88 @@ Route::get('/llms-full.txt', function () {
     return response("# Getembe News Full Index\n\nhttps://getembetv.co.ke/", 200, ['Content-Type' => 'text/markdown; charset=UTF-8']);
 });
 
+Route::get('/favicon.ico', function () {
+    $path = public_path('favicon.ico');
+    if (!file_exists($path)) {
+        $path = base_path('favicon.ico');
+    }
+    if (file_exists($path)) {
+        return response()->file($path, [
+            'Content-Type' => 'image/x-icon',
+            'Cache-Control' => 'public, max-age=604800',
+        ]);
+    }
+    abort(404);
+});
+
+Route::get('/favicon.png', function () {
+    $path = public_path('favicon.png');
+    if (!file_exists($path)) {
+        $path = base_path('favicon.png');
+    }
+    if (file_exists($path)) {
+        return response()->file($path, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=604800',
+        ]);
+    }
+    abort(404);
+});
+
+Route::get('/favicon-32x32.png', function () {
+    $path = public_path('favicon-32x32.png');
+    if (!file_exists($path)) {
+        $path = base_path('favicon-32x32.png');
+    }
+    if (file_exists($path)) {
+        return response()->file($path, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=604800',
+        ]);
+    }
+    abort(404);
+});
+
+Route::get('/favicon-16x16.png', function () {
+    $path = public_path('favicon-16x16.png');
+    if (!file_exists($path)) {
+        $path = base_path('favicon-16x16.png');
+    }
+    if (file_exists($path)) {
+        return response()->file($path, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=604800',
+        ]);
+    }
+    abort(404);
+});
+
+Route::get('/apple-touch-icon.png', function () {
+    $path = public_path('apple-touch-icon.png');
+    if (!file_exists($path)) {
+        $path = base_path('apple-touch-icon.png');
+    }
+    if (file_exists($path)) {
+        return response()->file($path, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=604800',
+        ]);
+    }
+    abort(404);
+});
+
+Route::get('/site.webmanifest', function () {
+    $path = public_path('site.webmanifest');
+    if (!file_exists($path)) {
+        $path = base_path('site.webmanifest');
+    }
+    if (file_exists($path)) {
+        return response()->file($path, [
+            'Content-Type' => 'application/manifest+json',
+            'Cache-Control' => 'public, max-age=604800',
+        ]);
+    }
+    abort(404);
+});
+
 Route::get('/{slug}', [ArticleController::class, 'category'])->name('category.show');

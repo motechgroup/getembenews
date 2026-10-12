@@ -65,16 +65,13 @@ $baseDir = realpath(__DIR__ . '/..');
 
 // List of updated files to fetch directly from GitHub raw content
 $targetFiles = [
-    'resources/views/livewire/admin-settings-manager.blade.php',
-    'resources/views/livewire/admin-users-manager.blade.php',
-    'database/migrations/2026_10_09_000001_add_phone_to_users_table.php',
-    'database/migrations/2026_10_09_000002_force_nullable_email_on_users_table.php',
-    'database/migrations/2026_10_09_000003_fix_users_phone_column.php',
-    'app/Http/Controllers/Api/MobileAppController.php',
-    'app/Http/Controllers/Auth/SocialAuthController.php',
-    'routes/api.php',
+    'app/Http/Controllers/AnnouncementController.php',
+    'app/Http/Controllers/SeoSitemapController.php',
+    '.htaccess',
+    'public/.htaccess',
     'routes/web.php',
-    'public/app-ads.txt',
+    'routes/api.php',
+    'resources/views/livewire/admin-settings-manager.blade.php',
     'public/update-app.php',
 ];
 

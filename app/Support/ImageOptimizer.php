@@ -49,15 +49,17 @@ class ImageOptimizer
 
             // Generate WebP thumbnail using GD
             try {
+                @ini_set('memory_limit', '256M');
                 $info = @getimagesize($fullPath);
-                if ($info) {
-                    $mime = $info['mime'];
-                    $srcImg = match ($mime) {
-                        'image/jpeg' => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($fullPath) : null,
-                        'image/png' => function_exists('imagecreatefrompng') ? @imagecreatefrompng($fullPath) : null,
-                        'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($fullPath) : null,
-                        default => null
-                    };
+                $mime = $info['mime'] ?? null;
+                $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+
+                $srcImg = match (true) {
+                    $mime === 'image/jpeg' || $mime === 'image/pjpeg' || in_array($ext, ['jpg', 'jpeg', 'jfif']) => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($fullPath) : null,
+                    $mime === 'image/png' || $ext === 'png' => function_exists('imagecreatefrompng') ? @imagecreatefrompng($fullPath) : null,
+                    $mime === 'image/webp' || $ext === 'webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($fullPath) : null,
+                    default => null
+                };
 
                     if ($srcImg) {
                         $origW = imagesx($srcImg);
@@ -92,7 +94,6 @@ class ImageOptimizer
                             return $cachedUrl;
                         }
                     }
-                }
             } catch (\Throwable $e) {
                 // Fallback to original URL
             }

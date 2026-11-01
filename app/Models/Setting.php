@@ -14,18 +14,41 @@ class Setting extends Model
 
     // Cache settings to avoid redundant queries during a single request
     protected static $cachedSettings = [];
+    protected static bool $allSettingsLoaded = false;
+
+    /**
+     * Load all settings into an in-memory dictionary once per request.
+     */
+    protected static function loadAllSettings(): void
+    {
+        if (static::$allSettingsLoaded) {
+            return;
+        }
+
+        try {
+            $all = Cache::remember('all_settings_map_v2', 3600, function () {
+                return static::query()->pluck('value', 'key')->all();
+            });
+
+            if (is_array($all)) {
+                // Merge with any in-memory overrides already set
+                static::$cachedSettings = array_merge($all, static::$cachedSettings);
+            }
+            static::$allSettingsLoaded = true;
+        } catch (\Throwable $e) {
+            // Fallback gracefully if database is not reachable yet
+        }
+    }
 
     public static function get(string $key, $default = null)
     {
-        if (array_key_exists($key, static::$cachedSettings)) {
-            return static::$cachedSettings[$key];
+        if (!static::$allSettingsLoaded) {
+            static::loadAllSettings();
         }
 
-        $cacheKey = 'setting_v1_' . $key;
-        $value = Cache::remember($cacheKey, 3600, function () use ($key, $default) {
-            $setting = static::where('key', $key)->first();
-            return $setting ? $setting->value : $default;
-        });
+        $value = array_key_exists($key, static::$cachedSettings)
+            ? static::$cachedSettings[$key]
+            : $default;
 
         if (is_bool($default)) {
             $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
@@ -40,8 +63,6 @@ class Setting extends Model
                 $value = $default;
             }
         }
-
-        static::$cachedSettings[$key] = $value;
 
         return $value;
     }
@@ -58,8 +79,9 @@ class Setting extends Model
 
         $setting = static::updateOrCreate(['key' => $key], ['value' => $dbValue]);
         
-        Cache::forget('setting_v1_' . $key);
         static::$cachedSettings[$key] = $cachedValue;
+        Cache::forget('all_settings_map_v2');
+        Cache::forget('setting_v1_' . $key);
         
         return $setting;
     }

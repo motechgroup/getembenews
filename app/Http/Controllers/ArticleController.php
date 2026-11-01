@@ -14,12 +14,13 @@ class ArticleController extends Controller
      */
     public function show(string $slug)
     {
-        $article = Article::where('slug', $slug)->firstOrFail();
+        $article = Article::with(['category', 'author'])->where('slug', $slug)->firstOrFail();
         
         // Views count is now tracked securely via client-side behavioral verification endpoint
 
         // Fetch related articles (same category, excluding current)
-        $relatedArticles = Article::published()
+        $relatedArticles = Article::with(['category', 'author'])
+            ->published()
             ->forCategory($article->category_id)
             ->where('id', '!=', $article->id)
             ->take(3)
@@ -94,7 +95,8 @@ class ArticleController extends Controller
             $category->id = 0;
         }
 
-        $articles = Article::published()
+        $articles = Article::with(['category', 'author'])
+            ->published()
             ->when($category->id > 0, function ($q) use ($category) {
                 $q->forCategory($category->id);
             }, function ($q) use ($slug) {
@@ -113,7 +115,8 @@ class ArticleController extends Controller
     {
         $query = $request->input('q');
         
-        $articles = Article::published()
+        $articles = Article::with(['category', 'author'])
+            ->published()
             ->when($query, function ($q) use ($query) {
                 $q->where(function ($inner) use ($query) {
                     $inner->where('title', 'like', '%' . $query . '%')
@@ -133,7 +136,8 @@ class ArticleController extends Controller
     {
         $author = \App\Models\User::findOrFail($id);
         
-        $articles = Article::published()
+        $articles = Article::with(['category', 'author'])
+            ->published()
             ->where('user_id', $id)
             ->paginate(10);
             

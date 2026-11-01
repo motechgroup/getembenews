@@ -369,7 +369,7 @@
                                         @foreach($col1 as $item)
                                             <article class="group flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
                                                 <div class="w-20 h-14 overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800 relative">
-                                                    <img src="{{ $item->featured_image }}" alt="{{ $item->title }}" class="w-full h-full object-cover" loading="lazy">
+                                                    <img src="{{ $item->optimizedImage(160, 112) }}" alt="{{ $item->title }}" class="w-full h-full object-cover" loading="lazy" decoding="async">
                                                     @if($item->is_featured)
                                                         <span class="absolute top-1 right-1 bg-yellow-500 text-white p-0.5 rounded-full shadow z-10 scale-75">
                                                             <svg class="h-2 w-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -399,7 +399,7 @@
                                         @foreach($col2 as $item)
                                             <article class="group flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-855 last:border-0 last:pb-0">
                                                 <div class="w-20 h-14 overflow-hidden rounded bg-gray-105 dark:bg-gray-850 shrink-0 border border-gray-200 dark:border-gray-800 relative">
-                                                    <img src="{{ $item->featured_image }}" alt="{{ $item->title }}" class="w-full h-full object-cover" loading="lazy">
+                                                    <img src="{{ $item->optimizedImage(160, 112) }}" alt="{{ $item->title }}" class="w-full h-full object-cover" loading="lazy" decoding="async">
                                                     @if($item->is_featured)
                                                         <span class="absolute top-1 right-1 bg-yellow-500 text-white p-0.5 rounded-full shadow z-10 scale-75">
                                                             <svg class="h-2 w-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
@@ -589,7 +589,7 @@
                             @endphp
                             @if($recItem)
                                 <a href="/articles/{{ $recItem->slug }}" class="relative block aspect-[16/10] overflow-hidden rounded group bg-gray-950 shadow border border-gray-150 dark:border-gray-855">
-                                    <img src="{{ $recItem->featured_image }}" alt="{{ $recItem->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85" loading="lazy">
+                                    <img src="{{ $recItem->optimizedImage(450, 280) }}" alt="{{ $recItem->title }}" class="absolute inset-0 w-full h-full object-cover group-hover:scale-102 transition duration-500 opacity-90 group-hover:opacity-85" loading="lazy" decoding="async">
                                     <div class="absolute bottom-3 left-3 bg-[#C8102E] text-white text-[8px] font-black uppercase px-2 py-0.5 tracking-wider rounded z-20">
                                         {{ $recItem->category?->name ?? 'General' }}
                                     </div>

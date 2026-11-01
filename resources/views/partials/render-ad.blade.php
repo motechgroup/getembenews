@@ -10,12 +10,14 @@
         $adsenseClientId = 'ca-' . $adsenseClientId;
     }
 
-    // Retrieve active database advertisement placement
+    // Retrieve active database advertisement placement (cached to eliminate ORDER BY RAND disk sorts)
     $dbAd = null;
     try {
-        $dbAd = \App\Models\Advertisement::active()->location($location)->inRandomOrder()->first();
-        if ($dbAd) {
-            $dbAd->increment('impressions');
+        $ads = \Illuminate\Support\Facades\Cache::remember("active_ads_{$location}", 120, function () use ($location) {
+            return \App\Models\Advertisement::active()->location($location)->get();
+        });
+        if ($ads && $ads->isNotEmpty()) {
+            $dbAd = $ads->random();
         }
     } catch (\Throwable $e) {
         $dbAd = null;
@@ -61,7 +63,7 @@
     <div class="w-full text-center my-4 overflow-hidden min-h-[90px] flex flex-col items-center justify-center">
         <span class="text-[9px] text-gray-400 dark:text-gray-500 block mb-1 font-bold tracking-wider uppercase">ADVERTISEMENT</span>
         @if(!empty($adsenseCode))
-            {!! $adsenseCode !!}
+            {!! preg_replace('/<script\b[^>]*src=[\"\x27][^\"\x27]*adsbygoogle\.js[^\"\x27]*[\"\x27][^>]*><\/script>/i', '', $adsenseCode) !!}
         @else
             <ins class="adsbygoogle"
                  style="display:block"

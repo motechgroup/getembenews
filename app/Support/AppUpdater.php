@@ -244,25 +244,35 @@ class AppUpdater
             \Illuminate\Support\Facades\Cache::forget('setting_v1_quizzes_widget_active');
         } catch (\Throwable $e) {}
 
-        // 5. Purge Caches & Compiled Views
+        // 5. Purge Stale Caches and Build Production Optimized Framework Caches
         $cacheLogs = [];
         try {
             Artisan::call('optimize:clear');
-            $cacheLogs[] = "Configuration, route, and event caches cleared.";
+            $cacheLogs[] = "Stale configuration, route, and event caches cleared.";
         } catch (\Throwable $e) {
             $cacheLogs[] = "Optimize clear: " . $e->getMessage();
         }
 
-        $viewFilesCount = 0;
-        $viewFiles = glob(storage_path('framework/views/*.php'));
-        if ($viewFiles) {
-            foreach ($viewFiles as $f) {
-                if (@unlink($f)) {
-                    $viewFilesCount++;
-                }
-            }
+        try {
+            Artisan::call('config:cache');
+            $cacheLogs[] = "Production configuration compiled and cached.";
+        } catch (\Throwable $e) {
+            $cacheLogs[] = "Config cache note: " . $e->getMessage();
         }
-        $cacheLogs[] = "{$viewFilesCount} compiled Blade template view files purged.";
+
+        try {
+            Artisan::call('route:cache');
+            $cacheLogs[] = "Production routes compiled and cached.";
+        } catch (\Throwable $e) {
+            $cacheLogs[] = "Route cache note: " . $e->getMessage();
+        }
+
+        try {
+            Artisan::call('view:cache');
+            $cacheLogs[] = "Blade templates pre-compiled.";
+        } catch (\Throwable $e) {
+            $cacheLogs[] = "View cache note: " . $e->getMessage();
+        }
 
         if (function_exists('opcache_reset')) {
             $op = @opcache_reset();

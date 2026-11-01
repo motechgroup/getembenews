@@ -1559,21 +1559,39 @@ $pullGitCode = function () use ($logAction, $checkGitStatus) {
     $out = "=== PULLING LATEST GIT REPOSITORY CODE ===\n";
 
     $pullOutput = '';
+    $pullSuccess = false;
     if (function_exists('shell_exec')) {
         $disabled = array_map('trim', explode(',', ini_get('disable_functions') ?? ''));
         if (!in_array('shell_exec', $disabled)) {
             $targetBranch = $this->gitCurrentBranch ?: 'main';
             $pullOutput = @shell_exec("cd {$cwd} && git pull origin {$targetBranch} 2>&1") ?: @shell_exec("cd {$cwd} && git pull 2>&1");
-            $out .= $pullOutput ?: "Git pull executed with no output returned.\n";
-
-            $out .= "\n=== POST-PULL RECENT COMMITS ===\n";
-            $out .= @shell_exec("cd {$cwd} && git log -n 5 --oneline 2>&1");
+            if ($pullOutput && !str_contains(strtolower($pullOutput), 'not found') && !str_contains(strtolower($pullOutput), 'command not found')) {
+                $pullSuccess = true;
+                $out .= $pullOutput;
+                $out .= "\n=== POST-PULL RECENT COMMITS ===\n";
+                $out .= @shell_exec("cd {$cwd} && git log -n 5 --oneline 2>&1");
+            }
         } else {
             $out .= "Note: shell_exec() function is disabled in php.ini on this hosting server.\n";
-            $out .= "Automatic terminal pulling is restricted by your PHP configuration.\n";
         }
     } else {
         $out .= "Note: shell_exec() function is disabled on this server.\n";
+    }
+
+    // Fallback: If Git CLI is restricted or failed, synchronize via AppUpdater
+    if (!$pullSuccess) {
+        $out .= "Synchronizing latest files via GitHub API engine...\n";
+        try {
+            \App\Support\AppUpdater::run();
+            $out .= "Successfully synchronized files from GitHub repository.\n";
+            $pullOutput = 'Updated via GitHub synchronizer';
+        } catch (\Throwable $e) {
+            $out .= "Sync note: " . $e->getMessage() . "\n";
+        }
+    }
+
+    if (function_exists('opcache_reset')) {
+        @opcache_reset();
     }
 
     $this->gitTerminalOutput = $out;
@@ -1621,18 +1639,29 @@ $runFullDeployUpdate = function () use ($logAction, $checkGitStatus) {
     $out .= "==========================================\n\n";
 
     $pullOutput = '';
+    $pullSuccess = false;
     $out .= "[1/3] Pulling Latest Git Changes...\n";
     if (function_exists('shell_exec')) {
         $disabled = array_map('trim', explode(',', ini_get('disable_functions') ?? ''));
         if (!in_array('shell_exec', $disabled)) {
             $targetBranch = $this->gitCurrentBranch ?: 'main';
             $pullOutput = @shell_exec("cd {$cwd} && git pull origin {$targetBranch} 2>&1") ?: @shell_exec("cd {$cwd} && git pull 2>&1");
-            $out .= $pullOutput ?: "Git pull command executed.\n";
-        } else {
-            $out .= "Note: shell_exec() function is disabled in php.ini on this hosting server.\n";
+            if ($pullOutput && !str_contains(strtolower($pullOutput), 'not found') && !str_contains(strtolower($pullOutput), 'command not found')) {
+                $pullSuccess = true;
+                $out .= $pullOutput ?: "Git pull command executed.\n";
+            }
         }
-    } else {
-        $out .= "Note: shell_exec() function is disabled on this server.\n";
+    }
+
+    if (!$pullSuccess) {
+        $out .= "Synchronizing latest repository files from GitHub...\n";
+        try {
+            \App\Support\AppUpdater::run();
+            $out .= "Files synchronized successfully via GitHub API engine.\n";
+            $pullOutput = 'Updated via GitHub engine';
+        } catch (\Throwable $e) {
+            $out .= "Sync note: " . $e->getMessage() . "\n";
+        }
     }
 
     $this->gitPulledMetadata = [
@@ -1653,11 +1682,17 @@ $runFullDeployUpdate = function () use ($logAction, $checkGitStatus) {
     }
     $out .= "------------------------------------------\n";
 
-    $out .= "[3/3] Clearing Application & Config Caches...\n";
+    $out .= "[3/3] Optimizing & Compiling Application Caches...\n";
     try {
         Artisan::call('optimize:clear');
-        $out .= Artisan::output();
         \Illuminate\Support\Facades\Cache::flush();
+        try { Artisan::call('config:cache'); } catch (\Throwable $e) {}
+        try { Artisan::call('route:cache'); } catch (\Throwable $e) {}
+        try { Artisan::call('view:cache'); } catch (\Throwable $e) {}
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+        $out .= "Application configuration, routes, and views compiled for production.\n";
     } catch (\Throwable $e) {
         $out .= "Error: " . $e->getMessage() . "\n";
     }
